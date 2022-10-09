@@ -1,0 +1,260 @@
+@media screen and (max-width: 480px) {
+  body {
+    max-width: 95%;
+    font-size: 110%; } }
+@media screen and (min-width: 480px) {
+  body {
+    max-width: 80%; } }
+@media screen and (min-width: 550px) {
+  body {
+    font-size: 120%; }
+    body .intro {
+      flex-direction: row-reverse; } }
+@media screen and (min-width: 1000px) {
+  body {
+    max-width: 1000px; }
+    body header {
+      flex-direction: row; }
+    body .papers {
+      flex-direction: row; }
+      body .papers p:last-child {
+        flex-basis: 9em;
+        text-align: right; }
+      body .papers p:first-child {
+        flex-basis: auto;
+        text-align: left; } }
+body {
+  font-family: Neuton, serif;
+  margin-top: 0em;
+  margin-left: auto;
+  margin-right: auto; }
+
+* a {
+  text-decoration: none; }
+  * a:hover {
+    text-decoration: underline; }
+  * a:focus {
+    outline: none; }
+
+h1, h2, h3, h4 {
+  font-family: Neuton, serif;
+  font-weight: lighter; }
+
+ul {
+  padding-left: 1em; }
+
+ol {
+  padding-left: 1em; }
+  ol li {
+    padding-left: 0.5em; }
+    ol li ol li {
+      list-style-type: lower-alpha; }
+
+figure {
+  padding: 0em;
+  margin: 0em; }
+
+.classplan table {
+  text-align: left;
+  border-collapse: collapse; }
+  .classplan table th, .classplan table td {
+    padding: 0.5em;
+    border-top: 0.1em solid;
+    border-bottom: 0.1em solid; }
+
+.papers {
+  padding: 0em;
+  margin: 0em;
+  border-top: dotted 0.1em;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; }
+  .papers p {
+    padding: 0em;
+    margin: 0.5em 0em; }
+
+.bibliography table {
+  text-align: left;
+  border-collapse: collapse; }
+  .bibliography table th, .bibliography table td {
+    padding: 0.5em; }
+
+.infotable table {
+  padding-top: 0.5em;
+  border-collapse: collapse; }
+  .infotable table th, .infotable table td {
+    padding: 0.1em 0.5em; }
+  .infotable table td:first-child {
+    font-weight: bold;
+    text-align: right; }
+
+.bibliography table td:last-child, footer {
+  font-size: 80%; }
+
+header {
+  font-family: Neuton;
+  font-size: 110%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0em;
+  margin-bottom: 2em;
+  padding-top: 0.5em;
+  padding-bottom: 0.2em; }
+  header h1 {
+    text-align: center;
+    margin: 0em; }
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center; }
+
+nav ul {
+  padding-left: 0em;
+  margin: 0.5em 0em; }
+nav li {
+  display: inline;
+  list-style-type: none;
+  margin: 0em;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  text-align: left; }
+
+footer {
+  border-top: 0.1em dotted;
+  margin-top: 2em;
+  padding-top: 0.3em; }
+
+#mypicture {
+  width: 10em; }
+  @media screen and (min-width: 960px) {
+    #mypicture {
+      width: 15em; } }
+  @media screen and (max-width: 480px) {
+    #mypicture {
+      margin-left: 0; } }
+
+.clearfix {
+  float: none;
+  clear: both; }
+
+* {
+  color: #161316; }
+
+body {
+  background-color: #fffffb; }
+  body ::-moz-selection {
+    background-color: #9c0d38;
+    color: #e6e6e2; }
+  body ::-selection {
+    background-color: #9c0d38;
+    color: #e6e6e2; }
+
+a, a:active, a:visited {
+  color: #1d58b2; }
+
+code {
+  color: #9c0d38; }
+
+h1, h2, h3, h4, h5, h6 {
+  color: #9c0d38; }
+  h1 a, h1 a:active, h1 a:visited, h2 a, h2 a:active, h2 a:visited, h3 a, h3 a:active, h3 a:visited, h4 a, h4 a:active, h4 a:visited, h5 a, h5 a:active, h5 a:visited, h6 a, h6 a:active, h6 a:visited {
+    color: #9c0d38; }
+  h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
+    background-color: #e6e6e2;
+    text-decoration: none; }
+
+header a, header a:active, header a:visited {
+  color: #161316; }
+header a.active {
+  color: #9c0d38; }
+header a:hover {
+  color: #9c0d38;
+  background-color: #fffffb;
+  text-decoration: none; }
+
+footer {
+  color: #302d30;
+  border-color: #302d30; }
+  footer a, footer a:active, footer a:visited {
+    color: #3772cc; }
+
+.papers ul {
+  background: #e6e6e2; }
+
+.bibliography table tbody > tr:nth-child(odd), .classplan table tbody > tr:nth-child(odd) {
+  background: #e6e6e2; }
+
+.infotable table {
+  background: #e6e6e2; }
+
+#mypicture {
+  border-color: #302d30; }
+
+@media print {
+  footer, nav {
+    display: none; }
+
+  width: 100%;
+  margin: 0px;
+  padding: 0px;
+  a:after {
+    content: " '(' attr(href) ') '"; }
+
+  * {
+    color: #000; }
+
+  body {
+    background-color: #fff; }
+    body ::-moz-selection {
+      background-color: #000;
+      color: #fff; }
+    body ::-selection {
+      background-color: #000;
+      color: #fff; }
+
+  a, a:active, a:visited {
+    color: #000; }
+
+  code {
+    color: #000; }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #000; }
+    h1 a, h1 a:active, h1 a:visited, h2 a, h2 a:active, h2 a:visited, h3 a, h3 a:active, h3 a:visited, h4 a, h4 a:active, h4 a:visited, h5 a, h5 a:active, h5 a:visited, h6 a, h6 a:active, h6 a:visited {
+      color: #000; }
+    h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
+      background-color: #fff;
+      text-decoration: none; }
+
+  header a, header a:active, header a:visited {
+    color: #000; }
+  header a.active {
+    color: #000; }
+  header a:hover {
+    color: #000;
+    background-color: #fff;
+    text-decoration: none; }
+
+  footer {
+    color: #000;
+    border-color: #000; }
+    footer a, footer a:active, footer a:visited {
+      color: #000; }
+
+  .papers ul {
+    background: #fff; }
+
+  .bibliography table tbody > tr:nth-child(odd), .classplan table tbody > tr:nth-child(odd) {
+    background: #fff; }
+
+  .infotable table {
+    background: #fff; }
+
+  #mypicture {
+    border-color: #000; } }
+
+/*# sourceMappingURL=stylesheet.css.map */
