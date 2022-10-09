@@ -1,2 +1,2 @@
 # skapita
-Personal website for Shelvean Kapita
+Personal website of Shelvean Kapita
