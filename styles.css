@@ -137,6 +137,13 @@ footer {
     #mypicture {
       margin-left: 0; } }
 
+@media screen and (max-width: 550px){
+    #org61aaa33{
+        text-align:center    
+    }  
+  }
+
+
 .clearfix {
   float: none;
   clear: both; }
