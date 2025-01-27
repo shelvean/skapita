@@ -4,6 +4,7 @@ const mergeBtn = document.getElementById('mergeBtn');
 const sortBtn = document.getElementById('sortBtn');
 const deleteBtn = document.getElementById('deleteBtn');
 const rotateBtn = document.getElementById('rotateBtn');
+const clearBtn = document.getElementById('clearBtn'); // Clear Files Button
 
 let pdfFiles = [];
 
@@ -71,6 +72,14 @@ rotateBtn.addEventListener('click', async () => {
   downloadPdf(rotatedPdfBytes, 'rotated.pdf');
 });
 
+// Clear Files
+clearBtn.addEventListener('click', () => {
+  pdfFiles = []; // Clear the files array
+  pdfList.innerHTML = ''; // Clear the displayed list
+  pdfInput.value = ''; // Reset the file input
+  alert('All files have been cleared.');
+});
+
 // Helper function to download PDF
 function downloadPdf(bytes, filename) {
   const blob = new Blob([bytes], { type: 'application/pdf' });
@@ -91,3 +100,4 @@ function updatePdfList() {
     pdfList.appendChild(listItem);
   });
 }
+ 
