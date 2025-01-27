@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage PDF Files</title>
+  <style>
+     /* Styles for the PDF Organizer app */
+    .pdf-organizer { margin-top: 40px; border-top: 2px solid #ccc; padding-top: 20px; }
+    .pdf-organizer h2 { margin-bottom: 20px; }
+    .pdf-organizer .file-input { margin-bottom: 20px; }
+    .pdf-organizer .actions button { margin-right: 10px; }
+    .pdf-organizer #pdfList { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Your existing website content -->
+    <h1>Manage PDF Files</h1>
+    /* <p>This is my personal website where I share my projects and interests.</p> */
+
+    <!-- PDF Organizer App -->
+    <div class="pdf-organizer">
+      <h2>PDF Organizer</h2>
+      <input type="file" id="pdfInput" class="file-input" multiple accept="application/pdf">
+      <div class="actions">
+        <button id="mergeBtn">Merge PDFs</button>
+        <button id="sortBtn">Sort PDFs</button>
+        <button id="deleteBtn">Delete Selected</button>
+        <button id="rotateBtn">Rotate PDF</button>
+      </div>
+      <div id="pdfList"></div>
+    </div>
+  </div>
+
+  <!-- Include pdf-lib library -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <!-- Include the PDF Organizer script -->
+  <script src="pdf-organizer.js"></script>
+</body>
+</html>
