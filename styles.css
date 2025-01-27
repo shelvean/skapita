@@ -268,4 +268,10 @@ footer {
   #mypicture {
     border-color: #000; } }
 
+.pdf-organizer { margin-top: 40px; border-top: 2px solid #ccc; padding-top: 20px; }
+    .pdf-organizer h2 { margin-bottom: 20px; }
+    .pdf-organizer .file-input { margin-bottom: 20px; }
+    .pdf-organizer .actions button { margin-right: 10px; }
+    .pdf-organizer #pdfList { margin-top: 20px; }
+
 /*# sourceMappingURL=stylesheet.css.map */
