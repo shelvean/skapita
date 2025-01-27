@@ -77,7 +77,7 @@ clearBtn.addEventListener('click', () => {
   pdfFiles = []; // Clear the files array
   pdfList.innerHTML = ''; // Clear the displayed list
   pdfInput.value = ''; // Reset the file input
-  alert('All files have been cleared.');
+  console.log('All files have been cleared.'); // Log to console for debugging
 });
 
 // Helper function to download PDF
@@ -100,4 +100,3 @@ function updatePdfList() {
     pdfList.appendChild(listItem);
   });
 }
- 
