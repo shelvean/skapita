@@ -10,6 +10,8 @@ let pdfFiles = [];
 // Load PDF files
 pdfInput.addEventListener('change', async (event) => {
   const files = event.target.files;
+  pdfFiles = []; // Clear existing files
+  pdfList.innerHTML = ''; // Clear the list
   for (let file of files) {
     pdfFiles.push(file);
     const listItem = document.createElement('div');
@@ -75,7 +77,9 @@ function downloadPdf(bytes, filename) {
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = filename;
-  link.click();
+  document.body.appendChild(link); // Append the link to the DOM
+  link.click(); // Trigger the download
+  document.body.removeChild(link); // Clean up
 }
 
 // Update PDF list display
