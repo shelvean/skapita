@@ -4,72 +4,67 @@ const mergeBtn = document.getElementById('mergeBtn');
 const sortBtn = document.getElementById('sortBtn');
 const deleteBtn = document.getElementById('deleteBtn');
 const rotateBtn = document.getElementById('rotateBtn');
-const clearBtn = document.getElementById('clearBtn'); // Clear Files Button
+const clearBtn = document.getElementById('clearBtn');
 
 let pdfFiles = [];
+let pdfDoc = null;
 
-// Load PDF files
+// Load PDF file
 pdfInput.addEventListener('change', async (event) => {
-  const files = event.target.files;
+  const file = event.target.files[0];
+  if (!file) return;
+
   pdfFiles = []; // Clear existing files
   pdfList.innerHTML = ''; // Clear the list
-  for (let file of files) {
-    pdfFiles.push(file);
-    const listItem = document.createElement('div');
-    listItem.textContent = file.name;
-    pdfList.appendChild(listItem);
-  }
-});
 
-// Merge PDFs
-mergeBtn.addEventListener('click', async () => {
-  if (pdfFiles.length < 2) {
-    alert('Please select at least 2 PDFs to merge.');
-    return;
-  }
-
-  const { PDFDocument } = PDFLib;
-
-  const mergedPdf = await PDFDocument.create();
-  for (let file of pdfFiles) {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
-    const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-    pages.forEach(page => mergedPdf.addPage(page));
-  }
-
-  const mergedPdfBytes = await mergedPdf.save();
-  downloadPdf(mergedPdfBytes, 'merged.pdf');
-});
-
-// Sort PDFs (alphabetically by filename)
-sortBtn.addEventListener('click', () => {
-  pdfFiles.sort((a, b) => a.name.localeCompare(b.name));
-  updatePdfList();
-});
-
-// Delete Selected PDFs
-deleteBtn.addEventListener('click', () => {
-  // Implement logic to delete selected files (e.g., using checkboxes)
-  alert('Delete functionality not implemented yet.');
-});
-
-// Rotate PDF
-rotateBtn.addEventListener('click', async () => {
-  if (pdfFiles.length === 0) {
-    alert('Please select a PDF to rotate.');
-    return;
-  }
-
-  const { PDFDocument } = PDFLib;
-  const file = pdfFiles[0];
   const arrayBuffer = await file.arrayBuffer();
-  const pdfDoc = await PDFDocument.load(arrayBuffer);
-  const pages = pdfDoc.getPages();
-  pages.forEach(page => page.setRotation(90)); // Rotate 90 degrees
+  pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
 
-  const rotatedPdfBytes = await pdfDoc.save();
-  downloadPdf(rotatedPdfBytes, 'rotated.pdf');
+  // Display pages with checkboxes
+  pdfDoc.getPages().forEach((page, index) => {
+    const listItem = document.createElement('div');
+    listItem.innerHTML = `
+      <input type="checkbox" id="page-${index}" class="page-checkbox">
+      <label for="page-${index}">Page ${index + 1}</label>
+    `;
+    pdfList.appendChild(listItem);
+  });
+});
+
+// Delete Selected Pages
+deleteBtn.addEventListener('click', async () => {
+  if (!pdfDoc) {
+    alert('Please upload a PDF first.');
+    return;
+  }
+
+  const checkboxes = document.querySelectorAll('.page-checkbox');
+  const pagesToDelete = [];
+
+  checkboxes.forEach((checkbox, index) => {
+    if (checkbox.checked) {
+      pagesToDelete.push(index);
+    }
+  });
+
+  if (pagesToDelete.length === 0) {
+    alert('Please select at least one page to delete.');
+    return;
+  }
+
+  // Create a new PDF without the selected pages
+  const newPdf = await PDFLib.PDFDocument.create();
+  const pages = pdfDoc.getPages();
+
+  for (let i = 0; i < pages.length; i++) {
+    if (!pagesToDelete.includes(i)) {
+      const [copiedPage] = await newPdf.copyPages(pdfDoc, [i]);
+      newPdf.addPage(copiedPage);
+    }
+  }
+
+  const newPdfBytes = await newPdf.save();
+  downloadPdf(newPdfBytes, 'updated.pdf');
 });
 
 // Clear Files
@@ -89,14 +84,4 @@ function downloadPdf(bytes, filename) {
   document.body.appendChild(link); // Append the link to the DOM
   link.click(); // Trigger the download
   document.body.removeChild(link); // Clean up
-}
-
-// Update PDF list display
-function updatePdfList() {
-  pdfList.innerHTML = '';
-  pdfFiles.forEach(file => {
-    const listItem = document.createElement('div');
-    listItem.textContent = file.name;
-    pdfList.appendChild(listItem);
-  });
 }
