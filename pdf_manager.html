@@ -3,40 +3,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manage PDF Files</title>
-  <link rel="stylesheet" href="styles_pdf.css"> 
+  <title>PDF Merger</title>
   <style>
-     /* Styles for the PDF Organizer app */
-    .pdf-organizer { margin-top: 40px; border-top: 2px solid #ccc; padding-top: 20px; }
-    .pdf-organizer h2 { margin-bottom: 20px; }
-    .pdf-organizer .file-input { margin-bottom: 20px; }
-    .pdf-organizer .actions button { margin-right: 10px; }
-    .pdf-organizer #pdfList { margin-top: 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    .file-input {
+      margin: 20px 0;
+      padding: 10px;
+      border: 2px dashed #3498db;
+      border-radius: 5px;
+      width: 100%;
+    }
+    .actions {
+      margin: 20px 0;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .clear-btn {
+      background-color: #e74c3c;
+    }
+    .clear-btn:hover {
+      background-color: #c0392b;
+    }
+    #fileList {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Your existing website content -->
-    <h1>Manage PDF Files</h1>
-   
-    <!-- PDF Organizer App -->
-    <div class="pdf-organizer">
-      <h2>PDF Organizer</h2>
-      <input type="file" id="pdfInput" class="file-input" multiple accept="application/pdf">
-      <div class="actions">
-        <button id="mergeBtn">Merge PDFs</button>
-        <button id="sortBtn">Sort PDFs</button>
-        <button id="deleteBtn">Delete Selected Pages</button>
-        <button id="rotateBtn">Rotate PDF</button>
-        <button id="clearBtn">Clear Files</button> <!-- New Clear Files Button -->
-      </div>
-      <div id="pdfList"></div>
-    </div>
+  <h1>PDF Merger</h1>
+  <input type="file" id="pdfInput" class="file-input" multiple accept="application/pdf">
+  <div class="actions">
+    <button id="mergeBtn">Merge PDFs</button>
+    <button id="clearBtn" class="clear-btn">Clear Files</button>
   </div>
+  <div id="fileList"></div>
 
-  <!-- Include pdf-lib library -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  <!-- Include the PDF Organizer script -->
-  <script src="pdf_organizer.js"></script>
+  <script>
+    const pdfInput = document.getElementById('pdfInput');
+    const mergeBtn = document.getElementById('mergeBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const fileList = document.getElementById('fileList');
+
+    let pdfFiles = [];
+
+    // Handle file selection
+    pdfInput.addEventListener('change', (event) => {
+      pdfFiles = Array.from(event.target.files);
+      updateFileList();
+    });
+
+    // Merge PDFs
+    mergeBtn.addEventListener('click', async () => {
+      if (pdfFiles.length < 2) {
+        alert('Please select at least 2 PDF files to merge');
+        return;
+      }
+
+      const mergedPdf = await PDFLib.PDFDocument.create();
+      
+      for (const file of pdfFiles) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+        const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+        pages.forEach(page => mergedPdf.addPage(page));
+      }
+
+      const mergedPdfBytes = await mergedPdf.save();
+      downloadPdf(mergedPdfBytes, 'merged.pdf');
+    });
+
+    // Clear files
+    clearBtn.addEventListener('click', () => {
+      pdfFiles = [];
+      pdfInput.value = '';
+      fileList.innerHTML = '';
+    });
+
+    // Update file list display
+    function updateFileList() {
+      fileList.innerHTML = pdfFiles
+        .map(file => `<div>${file.name}</div>`)
+        .join('');
+    }
+
+    // Download helper
+    function downloadPdf(bytes, filename) {
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
 </body>
 </html>
