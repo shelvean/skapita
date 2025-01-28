@@ -17,6 +17,7 @@
       border: 2px dashed #3498db;
       border-radius: 5px;
       width: 100%;
+      cursor: pointer;
     }
     .actions {
       margin: 20px 0;
@@ -36,7 +37,22 @@
     #clearBtn { background-color: #e74c3c; }
     #clearBtn:hover { background-color: #c0392b; }
     #fileList { margin-top: 20px; }
-    .file-item { margin: 5px 0; padding: 5px; background: #f8f9fa; border-radius: 3px; }
+    .file-item { 
+      margin: 5px 0; 
+      padding: 8px;
+      background: #f8f9fa; 
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .remove-btn {
+      background: none;
+      border: none;
+      color: #e74c3c;
+      cursor: pointer;
+      padding: 0 5px;
+    }
   </style>
 </head>
 <body>
@@ -45,7 +61,7 @@
          accept="application/pdf, image/jpeg, image/png">
   <div class="actions">
     <button id="mergeBtn">Merge Files</button>
-    <button id="clearBtn">Clear Files</button>
+    <button id="clearBtn">Clear All Files</button>
   </div>
   <div id="fileList"></div>
 
@@ -59,8 +75,19 @@
     let selectedFiles = [];
 
     fileInput.addEventListener('change', (event) => {
-      selectedFiles = Array.from(event.target.files);
+      const newFiles = Array.from(event.target.files);
+      // Check for duplicates
+      newFiles.forEach(file => {
+        if(!selectedFiles.some(existingFile => 
+          existingFile.name === file.name && 
+          existingFile.size === file.size &&
+          existingFile.lastModified === file.lastModified
+        )) {
+          selectedFiles.push(file);
+        }
+      });
       updateFileList();
+      event.target.value = ''; // Reset input to allow more selections
     });
 
     mergeBtn.addEventListener('click', async () => {
@@ -91,16 +118,22 @@
           image = await mergedPdf.embedPng(imageBytes);
         }
 
-        // Create page with original dimensions
-        const page = mergedPdf.addPage([image.width, image.height]);
+        // Create A4 page (595x842 points)
+        const page = mergedPdf.addPage([595, 842]);
         
-        // Scale image to 50% and center
-        const scaledWidth = image.width * 0.5;
-        const scaledHeight = image.height * 0.5;
-        
+        // Scale image to 50% of page width while maintaining aspect ratio
+        const maxWidth = 595 * 0.5;
+        const scaleFactor = maxWidth / image.width;
+        const scaledWidth = image.width * scaleFactor;
+        const scaledHeight = image.height * scaleFactor;
+
+        // Center the image
+        const x = (595 - scaledWidth) / 2;
+        const y = (842 - scaledHeight) / 2;
+
         page.drawImage(image, {
-          x: (image.width - scaledWidth) / 2,
-          y: (image.height - scaledHeight) / 2,
+          x,
+          y,
           width: scaledWidth,
           height: scaledHeight,
         });
@@ -119,14 +152,27 @@
 
     clearBtn.addEventListener('click', () => {
       selectedFiles = [];
-      fileInput.value = '';
-      fileList.innerHTML = '';
+      updateFileList();
     });
 
     function updateFileList() {
       fileList.innerHTML = selectedFiles
-        .map(file => `<div class="file-item">${file.name}</div>`)
+        .map((file, index) => `
+          <div class="file-item">
+            <span>${file.name}</span>
+            <button class="remove-btn" data-index="${index}">×</button>
+          </div>
+        `)
         .join('');
+
+      // Add remove functionality for individual files
+      document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = parseInt(e.target.dataset.index);
+          selectedFiles.splice(index, 1);
+          updateFileList();
+        });
+      });
     }
 
     function downloadPdf(bytes, filename) {
@@ -141,3 +187,4 @@
   </script>
 </body>
 </html>
+ 
