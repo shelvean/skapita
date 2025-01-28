@@ -114,6 +114,7 @@ clearBtn.addEventListener('click', () => {
   pdfList.innerHTML = ''; // Clear the displayed list
   sortOrderInputs.innerHTML = ''; // Clear the sort order inputs
   pdfInput.value = ''; // Reset the file input
+  pdfDoc = null; // Reset the PDF document
   console.log('All files have been cleared.'); // Log to console for debugging
 });
 
