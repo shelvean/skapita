@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDF Merger</title>
+  <title>Universal PDF Merger</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -20,85 +20,133 @@
     }
     .actions {
       margin: 20px 0;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
     button {
       padding: 10px 20px;
-      background-color: #3498db;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin-right: 10px;
     }
-    button:hover {
+    #mergeBtn {
+      background-color: #3498db;
+    }
+    #mergeBtn:hover {
       background-color: #2980b9;
     }
-    .clear-btn {
+    #clearBtn {
       background-color: #e74c3c;
     }
-    .clear-btn:hover {
+    #clearBtn:hover {
       background-color: #c0392b;
     }
     #fileList {
       margin-top: 20px;
     }
+    .file-item {
+      margin: 5px 0;
+      padding: 5px;
+      background: #f8f9fa;
+      border-radius: 3px;
+    }
   </style>
 </head>
 <body>
-  <h1>PDF Merger</h1>
-  <input type="file" id="pdfInput" class="file-input" multiple accept="application/pdf">
+  <h1>Universal PDF Merger</h1>
+  <input type="file" id="fileInput" class="file-input" multiple 
+         accept="application/pdf, image/jpeg, image/png">
   <div class="actions">
-    <button id="mergeBtn">Merge PDFs</button>
-    <button id="clearBtn" class="clear-btn">Clear Files</button>
+    <button id="mergeBtn">Merge Files</button>
+    <button id="clearBtn">Clear Files</button>
   </div>
   <div id="fileList"></div>
 
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script>
-    const pdfInput = document.getElementById('pdfInput');
+    const fileInput = document.getElementById('fileInput');
     const mergeBtn = document.getElementById('mergeBtn');
     const clearBtn = document.getElementById('clearBtn');
     const fileList = document.getElementById('fileList');
 
-    let pdfFiles = [];
+    let selectedFiles = [];
 
     // Handle file selection
-    pdfInput.addEventListener('change', (event) => {
-      pdfFiles = Array.from(event.target.files);
+    fileInput.addEventListener('change', (event) => {
+      selectedFiles = Array.from(event.target.files);
       updateFileList();
     });
 
-    // Merge PDFs
+    // Merge files (PDFs and images)
     mergeBtn.addEventListener('click', async () => {
-      if (pdfFiles.length < 2) {
-        alert('Please select at least 2 PDF files to merge');
+      if (selectedFiles.length < 1) {
+        alert('Please select at least one file');
         return;
       }
 
       const mergedPdf = await PDFLib.PDFDocument.create();
       
-      for (const file of pdfFiles) {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
-        const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-        pages.forEach(page => mergedPdf.addPage(page));
+      for (const file of selectedFiles) {
+        try {
+          if (file.type === 'application/pdf') {
+            // Handle PDF files
+            const arrayBuffer = await file.arrayBuffer();
+            const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+            const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+            pages.forEach(page => mergedPdf.addPage(page));
+          } else if (file.type.startsWith('image/')) {
+            // Handle image files
+            const imageBytes = await file.arrayBuffer();
+            let image;
+            
+            if (file.type === 'image/jpeg') {
+              image = await mergedPdf.embedJpg(imageBytes);
+            } else if (file.type === 'image/png') {
+              image = await mergedPdf.embedPng(imageBytes);
+            } else {
+              alert(`Unsupported image format: ${file.type}`);
+              return;
+            }
+
+            // Create PDF page with image dimensions
+            const page = mergedPdf.addPage([image.width, image.height]);
+            page.drawImage(image, {
+              x: 0,
+              y: 0,
+              width: image.width,
+              height: image.height,
+            });
+          } else {
+            alert(`Unsupported file type: ${file.type}`);
+            return;
+          }
+        } catch (error) {
+          alert(`Error processing ${file.name}: ${error.message}`);
+          return;
+        }
       }
 
       const mergedPdfBytes = await mergedPdf.save();
-      downloadPdf(mergedPdfBytes, 'merged.pdf');
+      downloadPdf(mergedPdfBytes, 'merged-files.pdf');
     });
 
     // Clear files
     clearBtn.addEventListener('click', () => {
-      pdfFiles = [];
-      pdfInput.value = '';
+      selectedFiles = [];
+      fileInput.value = '';
       fileList.innerHTML = '';
     });
 
     // Update file list display
     function updateFileList() {
-      fileList.innerHTML = pdfFiles
-        .map(file => `<div>${file.name}</div>`)
+      fileList.innerHTML = selectedFiles
+        .map(file => `
+          <div class="file-item">
+            ${file.name} (${file.type.replace('/', '/').toUpperCase()})
+          </div>
+        `)
         .join('');
     }
 
