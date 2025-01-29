@@ -37,10 +37,10 @@
     #clearBtn { background-color: #e74c3c; }
     #clearBtn:hover { background-color: #c0392b; }
     #fileList { margin-top: 20px; }
-    .file-item { 
-      margin: 5px 0; 
+    .file-item {
+      margin: 5px 0;
       padding: 8px;
-      background: #f8f9fa; 
+      background: #f8f9fa;
       border-radius: 5px;
       display: flex;
       align-items: center;
@@ -76,7 +76,7 @@
 </head>
 <body>
   <h1>PDF & Image Merger</h1>
-  <input type="file" id="fileInput" class="file-input" multiple 
+  <input type="file" id="fileInput" class="file-input" multiple
          accept="application/pdf, image/jpeg, image/png">
   <div class="actions">
     <button id="mergeBtn">Merge Files</button>
@@ -110,8 +110,8 @@
       const newFiles = Array.from(event.target.files);
       // Check for duplicates
       newFiles.forEach(file => {
-        if(!selectedFiles.some(existingFile => 
-          existingFile.name === file.name && 
+        if(!selectedFiles.some(existingFile =>
+          existingFile.name === file.name &&
           existingFile.size === file.size &&
           existingFile.lastModified === file.lastModified
         )) {
@@ -142,7 +142,7 @@
           // Handle image files
           const imageBytes = await file.arrayBuffer();
           let image;
-          
+
           if (file.type === 'image/jpeg') {
             image = await mergedPdf.embedJpg(imageBytes);
           } else if (file.type === 'image/png') {
@@ -151,7 +151,7 @@
 
           // Create A4 page (595x842 points)
           const page = mergedPdf.addPage([595, 842]);
-          
+
           // Scale image to 50% of page width while maintaining aspect ratio
           const maxWidth = 595 * 0.5;
           const scaleFactor = maxWidth / image.width;
