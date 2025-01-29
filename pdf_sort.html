@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF Sort</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        #pdf-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .page-container {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+            cursor: move;
+            user-select: none;
+        }
+
+        .page-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            background: #f0f0f0;
+        }
+
+        .page-number {
+            margin-top: 5px;
+            font-size: 12px;
+        }
+
+        #download-btn {
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: none;
+        }
+
+        #download-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <input type="file" id="pdf-input" accept="application/pdf">
+        <div id="pdf-preview"></div>
+        <button id="download-btn" onclick="generatePDF()">Download Sorted PDF</button>
+    </div>
+
+    <script>
+        let pdfDoc = null;
+        let pageOrder = [];
+        let draggedIndex = null;
+
+        document.getElementById('pdf-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const pdfData = new Uint8Array(e.target.result);
+                    pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
+                    pageOrder = Array.from({ length: pdfDoc.numPages }, (_, i) => i + 1);
+                    renderPreview();
+                    document.getElementById('download-btn').style.display = 'block';
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        async function renderPreview() {
+            const previewContainer = document.getElementById('pdf-preview');
+            previewContainer.innerHTML = '';
+
+            for (const pageNumber of pageOrder) {
+                const page = await pdfDoc.getPage(pageNumber);
+                const viewport = page.getViewport({ scale: 0.5 });
+                
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                await page.render({ canvasContext: context, viewport }).promise;
+                
+                const pageContainer = document.createElement('div');
+                pageContainer.className = 'page-container';
+                pageContainer.draggable = true;
+                pageContainer.ondragstart = (e) => {
+                    draggedIndex = pageOrder.indexOf(pageNumber);
+                    e.dataTransfer.setData('text/plain', '');
+                };
+                pageContainer.ondragover = (e) => e.preventDefault();
+                pageContainer.ondrop = (e) => {
+                    e.preventDefault();
+                    const dropIndex = pageOrder.indexOf(parseInt(e.target.closest('.page-container').querySelector('.page-number').textContent));
+                    [pageOrder[draggedIndex], pageOrder[dropIndex]] = [pageOrder[dropIndex], pageOrder[draggedIndex]];
+                    renderPreview();
+                };
+
+                const img = new Image();
+                img.src = canvas.toDataURL();
+                img.className = 'page-preview';
+                
+                const pageNum = document.createElement('div');
+                pageNum.className = 'page-number';
+                pageNum.textContent = pageNumber;
+
+                pageContainer.appendChild(img);
+                pageContainer.appendChild(pageNum);
+                previewContainer.appendChild(pageContainer);
+            }
+        }
+
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            for (const pageNumber of pageOrder) {
+                const page = await pdfDoc.getPage(pageNumber);
+                const viewport = page.getViewport({ scale: 1.0 });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                
+                await page.render({ canvasContext: context, viewport }).promise;
+                
+                const imgData = canvas.toDataURL('image/jpeg', 0.8);
+                if (pageNumber !== 1) doc.addPage();
+                doc.addImage(imgData, 'JPEG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight());
+            }
+            
+            doc.save('sorted-pdf.pdf');
+        }
+    </script>
+</body>
+</html>
