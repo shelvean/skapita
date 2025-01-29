@@ -25,17 +25,6 @@
       gap: 10px;
       flex-wrap: wrap;
     }
-    button {
-      padding: 10px 20px;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #mergeBtn { background-color: #3498db; }
-    #mergeBtn:hover { background-color: #2980b9; }
-    #clearBtn { background-color: #e74c3c; }
-    #clearBtn:hover { background-color: #c0392b; }
     #fileList { margin-top: 20px; }
     .file-item {
       margin: 5px 0;
@@ -72,6 +61,53 @@
       color: #666;
       margin-top: 10px;
     }
+
+    /* New Button-18 Styling */
+    .button-18 {
+      align-items: center;
+      background-color: #0A66C2;
+      border: 0;
+      border-radius: 100px;
+      box-sizing: border-box;
+      color: #ffffff;
+      cursor: pointer;
+      display: inline-flex;
+      font-family: -apple-system, system-ui, system-ui, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, Oxygen, "Oxygen Sans", Cantarell, "Droid Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Lucida Grande", Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      justify-content: center;
+      line-height: 20px;
+      max-width: 480px;
+      min-height: 40px;
+      min-width: 0px;
+      overflow: hidden;
+      padding: 0px;
+      padding-left: 20px;
+      padding-right: 20px;
+      text-align: center;
+      touch-action: manipulation;
+      transition: background-color 0.167s cubic-bezier(0.4, 0, 0.2, 1) 0s, box-shadow 0.167s cubic-bezier(0.4, 0, 0.2, 1) 0s, color 0.167s cubic-bezier(0.4, 0, 0.2, 1) 0s;
+      user-select: none;
+      -webkit-user-select: none;
+      vertical-align: middle;
+    }
+
+    .button-18:hover,
+    .button-18:focus { 
+      background-color: #16437E;
+      color: #ffffff;
+    }
+
+    .button-18:active {
+      background: #09223b;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .button-18:disabled { 
+      cursor: not-allowed;
+      background: rgba(0, 0, 0, 0.08);
+      color: rgba(0, 0, 0, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -79,8 +115,8 @@
   <input type="file" id="fileInput" class="file-input" multiple
          accept="application/pdf, image/jpeg, image/png">
   <div class="actions">
-    <button id="mergeBtn">Merge Files</button>
-    <button id="clearBtn">Clear All Files</button>
+    <button id="mergeBtn" class="button-18" role="button">Merge Files</button>
+    <button id="clearBtn" class="button-18" role="button">Clear All Files</button>
   </div>
   <div id="fileList"></div>
   <div class="drag-instruction">Drag and drop files to reorder them.</div>
@@ -89,7 +125,7 @@
   <div id="previewSection">
     <h2>Preview Merged PDF</h2>
     <iframe id="previewPdf" src=""></iframe>
-    <button id="downloadBtn" style="margin-top: 10px;">Download Merged PDF</button>
+    <button id="downloadBtn" class="button-18" role="button">Download Merged PDF</button>
   </div>
 
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
