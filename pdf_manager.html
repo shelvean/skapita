@@ -45,6 +45,10 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      cursor: grab;
+    }
+    .file-item.dragging {
+      opacity: 0.5;
     }
     .remove-btn {
       background: none;
@@ -52,6 +56,21 @@
       color: #e74c3c;
       cursor: pointer;
       padding: 0 5px;
+    }
+    #previewSection {
+      margin-top: 20px;
+      display: none; /* Hidden by default */
+    }
+    #previewPdf {
+      width: 100%;
+      height: 500px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .drag-instruction {
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -64,6 +83,14 @@
     <button id="clearBtn">Clear All Files</button>
   </div>
   <div id="fileList"></div>
+  <div class="drag-instruction">Drag and drop files to reorder them.</div>
+
+  <!-- Preview Section -->
+  <div id="previewSection">
+    <h2>Preview Merged PDF</h2>
+    <iframe id="previewPdf" src=""></iframe>
+    <button id="downloadBtn" style="margin-top: 10px;">Download Merged PDF</button>
+  </div>
 
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script>
@@ -71,8 +98,13 @@
     const mergeBtn = document.getElementById('mergeBtn');
     const clearBtn = document.getElementById('clearBtn');
     const fileList = document.getElementById('fileList');
+    const previewSection = document.getElementById('previewSection');
+    const previewPdf = document.getElementById('previewPdf');
+    const downloadBtn = document.getElementById('downloadBtn');
 
     let selectedFiles = [];
+    let mergedPdfBlobUrl = null;
+    let dragIndex = null; // Track the index of the dragged file
 
     fileInput.addEventListener('change', (event) => {
       const newFiles = Array.from(event.target.files);
@@ -97,68 +129,78 @@
       }
 
       const mergedPdf = await PDFLib.PDFDocument.create();
-      const { pdfFiles, imageFiles } = sortFiles();
 
-      // Process PDFs first
-      for (const file of pdfFiles) {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
-        const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-        pages.forEach(page => mergedPdf.addPage(page));
-      }
+      // Process files in the order they appear in the list
+      for (const file of selectedFiles) {
+        if (file.type === 'application/pdf') {
+          // Handle PDF files
+          const arrayBuffer = await file.arrayBuffer();
+          const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+          const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+          pages.forEach(page => mergedPdf.addPage(page));
+        } else if (file.type.startsWith('image/')) {
+          // Handle image files
+          const imageBytes = await file.arrayBuffer();
+          let image;
+          
+          if (file.type === 'image/jpeg') {
+            image = await mergedPdf.embedJpg(imageBytes);
+          } else if (file.type === 'image/png') {
+            image = await mergedPdf.embedPng(imageBytes);
+          }
 
-      // Process images last
-      for (const file of imageFiles) {
-        const imageBytes = await file.arrayBuffer();
-        let image;
-        
-        if (file.type === 'image/jpeg') {
-          image = await mergedPdf.embedJpg(imageBytes);
-        } else if (file.type === 'image/png') {
-          image = await mergedPdf.embedPng(imageBytes);
+          // Create A4 page (595x842 points)
+          const page = mergedPdf.addPage([595, 842]);
+          
+          // Scale image to 50% of page width while maintaining aspect ratio
+          const maxWidth = 595 * 0.5;
+          const scaleFactor = maxWidth / image.width;
+          const scaledWidth = image.width * scaleFactor;
+          const scaledHeight = image.height * scaleFactor;
+
+          // Center the image
+          const x = (595 - scaledWidth) / 2;
+          const y = (842 - scaledHeight) / 2;
+
+          page.drawImage(image, {
+            x,
+            y,
+            width: scaledWidth,
+            height: scaledHeight,
+          });
         }
-
-        // Create A4 page (595x842 points)
-        const page = mergedPdf.addPage([595, 842]);
-        
-        // Scale image to 50% of page width while maintaining aspect ratio
-        const maxWidth = 595 * 0.5;
-        const scaleFactor = maxWidth / image.width;
-        const scaledWidth = image.width * scaleFactor;
-        const scaledHeight = image.height * scaleFactor;
-
-        // Center the image
-        const x = (595 - scaledWidth) / 2;
-        const y = (842 - scaledHeight) / 2;
-
-        page.drawImage(image, {
-          x,
-          y,
-          width: scaledWidth,
-          height: scaledHeight,
-        });
       }
 
       const mergedPdfBytes = await mergedPdf.save();
-      downloadPdf(mergedPdfBytes, 'merged-document.pdf');
-    });
 
-    function sortFiles() {
-      return {
-        pdfFiles: selectedFiles.filter(f => f.type === 'application/pdf'),
-        imageFiles: selectedFiles.filter(f => f.type.startsWith('image/'))
-      };
-    }
+      // Generate Blob URL for preview
+      if (mergedPdfBlobUrl) {
+        URL.revokeObjectURL(mergedPdfBlobUrl); // Clean up previous Blob URL
+      }
+      mergedPdfBlobUrl = URL.createObjectURL(new Blob([mergedPdfBytes], { type: 'application/pdf' }));
+
+      // Show preview and set iframe source
+      previewSection.style.display = 'block';
+      previewPdf.src = mergedPdfBlobUrl;
+
+      // Enable download button
+      downloadBtn.onclick = () => downloadPdf(mergedPdfBytes, 'merged-document.pdf');
+    });
 
     clearBtn.addEventListener('click', () => {
       selectedFiles = [];
       updateFileList();
+      previewSection.style.display = 'none'; // Hide preview on clear
+      if (mergedPdfBlobUrl) {
+        URL.revokeObjectURL(mergedPdfBlobUrl); // Clean up Blob URL
+        mergedPdfBlobUrl = null;
+      }
     });
 
     function updateFileList() {
       fileList.innerHTML = selectedFiles
         .map((file, index) => `
-          <div class="file-item">
+          <div class="file-item" draggable="true" data-index="${index}">
             <span>${file.name}</span>
             <button class="remove-btn" data-index="${index}">×</button>
           </div>
@@ -173,6 +215,48 @@
           updateFileList();
         });
       });
+
+      // Add drag-and-drop functionality
+      const fileItems = document.querySelectorAll('.file-item');
+      fileItems.forEach(item => {
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('drop', handleDrop);
+        item.addEventListener('dragend', handleDragEnd);
+      });
+    }
+
+    function handleDragStart(e) {
+      dragIndex = parseInt(e.target.dataset.index);
+      e.target.classList.add('dragging');
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      const targetItem = e.target.closest('.file-item');
+      if (!targetItem) return;
+
+      const targetIndex = parseInt(targetItem.dataset.index);
+      if (targetIndex !== dragIndex) {
+        swapFiles(dragIndex, targetIndex);
+        dragIndex = targetIndex;
+        updateFileList();
+      }
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.target.classList.remove('dragging');
+    }
+
+    function handleDragEnd(e) {
+      e.target.classList.remove('dragging');
+    }
+
+    function swapFiles(fromIndex, toIndex) {
+      const temp = selectedFiles[fromIndex];
+      selectedFiles[fromIndex] = selectedFiles[toIndex];
+      selectedFiles[toIndex] = temp;
     }
 
     function downloadPdf(bytes, filename) {
@@ -187,4 +271,3 @@
   </script>
 </body>
 </html>
- 
