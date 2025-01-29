@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PDF & Image Merger</title>
   <style>
     body {
@@ -11,12 +11,17 @@
       margin: 20px auto;
       padding: 0 20px;
     }
-    .file-input {
-      margin: 20px 0;
-      padding: 10px;
-      border: 2px dashed #3498db;
-      border-radius: 5px;
-      width: 100%;
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+    #fileInput {
+      font-size: 100px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
       cursor: pointer;
     }
     .actions {
@@ -48,7 +53,7 @@
     }
     #previewSection {
       margin-top: 20px;
-      display: none; /* Hidden by default */
+      display: none;
     }
     #previewPdf {
       width: 100%;
@@ -61,71 +66,100 @@
       color: #666;
       margin-top: 10px;
     }
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .loading::after {
+      content: " ";
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      border: 2px solid rgba(0,0,0,0.2);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+      margin-left: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .description {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
 
-    /* New Button-18 Styling */
-    .button-18 {
-      align-items: center;
-      background-color: #0A66C2;
+    /* Button Styles */
+    .button-71 {
+      background-color: #0078d0;
       border: 0;
-      border-radius: 100px;
-      box-sizing: border-box;
-      color: #ffffff;
+      border-radius: 40px;
+      color: #fff;
       cursor: pointer;
-      display: inline-flex;
-      font-family: -apple-system, system-ui, system-ui, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, Oxygen, "Oxygen Sans", Cantarell, "Droid Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Lucida Grande", Helvetica, Arial, sans-serif;
-      font-size: 16px;
+      display: inline-block;
+      font-family: system-ui,-apple-system,system-ui,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",sans-serif;
+      font-size: 14px;
       font-weight: 600;
-      justify-content: center;
-      line-height: 20px;
-      max-width: 480px;
-      min-height: 40px;
-      min-width: 0px;
-      overflow: hidden;
-      padding: 0px;
-      padding-left: 20px;
-      padding-right: 20px;
+      outline: 0;
+      padding: 12px 18px;
+      position: relative;
       text-align: center;
-      touch-action: manipulation;
-      transition: background-color 0.167s cubic-bezier(0.4, 0, 0.2, 1) 0s, box-shadow 0.167s cubic-bezier(0.4, 0, 0.2, 1) 0s, color 0.167s cubic-bezier(0.4, 0, 0.2, 1) 0s;
+      text-decoration: none;
+      transition: all .3s;
       user-select: none;
       -webkit-user-select: none;
-      vertical-align: middle;
+      touch-action: manipulation;
     }
-
-    .button-18:hover,
-    .button-18:focus { 
-      background-color: #16437E;
-      color: #ffffff;
+    .button-71:before {
+      background-color: initial;
+      background-image: linear-gradient(#fff 0, rgba(255, 255, 255, 0) 100%);
+      border-radius: 100px;
+      content: "";
+      height: 50%;
+      left: 4%;
+      opacity: .5;
+      position: absolute;
+      top: 0;
+      transition: all .3s;
+      width: 92%;
     }
-
-    .button-18:active {
-      background: #09223b;
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    .button-18:disabled { 
-      cursor: not-allowed;
-      background: rgba(0, 0, 0, 0.08);
-      color: rgba(0, 0, 0, 0.3);
+    .button-71:hover {
+      box-shadow: rgba(255, 255, 255, .2) 0 2px 10px inset, 
+                  rgba(0, 0, 0, .1) 0 2px 3px, 
+                  rgba(0, 0, 0, .1) 0 6px 8px;
+      transform: scale(1.03);
     }
   </style>
 </head>
 <body>
   <h1>PDF & Image Merger</h1>
-  <input type="file" id="fileInput" class="file-input" multiple
-         accept="application/pdf, image/jpeg, image/png">
-  <div class="actions">
-    <button id="mergeBtn" class="button-18" role="button">Merge Files</button>
-    <button id="clearBtn" class="button-18" role="button">Clear All Files</button>
+  <div class="description">
+    <p>
+      The <strong>PDF & Image Merger</strong> allows users to merge multiple PDF documents and images into a single PDF file. 
+      Users can upload files, reorder them, preview the final document, and download the merged file with ease.
+    </p>
   </div>
+
+  <div class="actions">
+    <div class="file-input-wrapper">
+      <button class="button-71" role="button">
+        📁 Upload Files
+        <input type="file" id="fileInput" multiple accept="application/pdf, image/jpeg, image/png" />
+      </button>
+    </div>
+    <button id="mergeBtn" class="button-71" role="button">🔄 Merge</button>
+    <button id="clearBtn" class="button-71" role="button">❌ Clear</button>
+  </div>
+
   <div id="fileList"></div>
   <div class="drag-instruction">Drag and drop files to reorder them.</div>
-
-  <!-- Preview Section -->
+  
   <div id="previewSection">
     <h2>Preview Merged PDF</h2>
     <iframe id="previewPdf" src=""></iframe>
-    <button id="downloadBtn" class="button-18" role="button">Download Merged PDF</button>
+    <div class="actions">
+      <button id="downloadBtn" class="button-71" role="button">💾 Download PDF</button>
+    </div>
   </div>
 
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
@@ -140,13 +174,13 @@
 
     let selectedFiles = [];
     let mergedPdfBlobUrl = null;
-    let dragIndex = null; // Track the index of the dragged file
+    let dragIndex = null;
 
+    // File Input Handler
     fileInput.addEventListener('change', (event) => {
       const newFiles = Array.from(event.target.files);
-      // Check for duplicates
       newFiles.forEach(file => {
-        if(!selectedFiles.some(existingFile =>
+        if (!selectedFiles.some(existingFile =>
           existingFile.name === file.name &&
           existingFile.size === file.size &&
           existingFile.lastModified === file.lastModified
@@ -155,84 +189,74 @@
         }
       });
       updateFileList();
-      event.target.value = ''; // Reset input to allow more selections
+      event.target.value = '';
     });
 
+    // Merge Button Handler
     mergeBtn.addEventListener('click', async () => {
       if (selectedFiles.length < 1) {
         alert('Please select at least one file');
         return;
       }
 
-      const mergedPdf = await PDFLib.PDFDocument.create();
+      setLoadingState(true);
+      try {
+        const mergedPdf = await PDFLib.PDFDocument.create();
 
-      // Process files in the order they appear in the list
-      for (const file of selectedFiles) {
-        if (file.type === 'application/pdf') {
-          // Handle PDF files
-          const arrayBuffer = await file.arrayBuffer();
-          const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
-          const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-          pages.forEach(page => mergedPdf.addPage(page));
-        } else if (file.type.startsWith('image/')) {
-          // Handle image files
-          const imageBytes = await file.arrayBuffer();
-          let image;
+        for (const file of selectedFiles) {
+          if (file.type === 'application/pdf') {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+            const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+            pages.forEach(page => mergedPdf.addPage(page));
+          } else if (file.type.startsWith('image/')) {
+            const imageBytes = await file.arrayBuffer();
+            let image;
 
-          if (file.type === 'image/jpeg') {
-            image = await mergedPdf.embedJpg(imageBytes);
-          } else if (file.type === 'image/png') {
-            image = await mergedPdf.embedPng(imageBytes);
+            if (file.type === 'image/jpeg') {
+              image = await mergedPdf.embedJpg(imageBytes);
+            } else if (file.type === 'image/png') {
+              image = await mergedPdf.embedPng(imageBytes);
+            }
+
+            const MAX_WIDTH = 595 * 0.8;
+            const MAX_HEIGHT = 842 * 0.8;
+            const scale = Math.min(MAX_WIDTH / image.width, MAX_HEIGHT / image.height);
+            const scaledWidth = image.width * scale;
+            const scaledHeight = image.height * scale;
+
+            const page = mergedPdf.addPage([595, 842]);
+            const x = (595 - scaledWidth) / 2;
+            const y = (842 - scaledHeight) / 2;
+
+            page.drawImage(image, { x, y, width: scaledWidth, height: scaledHeight });
           }
-
-          // Create A4 page (595x842 points)
-          const page = mergedPdf.addPage([595, 842]);
-
-          // Scale image to 50% of page width while maintaining aspect ratio
-          const maxWidth = 595 * 0.5;
-          const scaleFactor = maxWidth / image.width;
-          const scaledWidth = image.width * scaleFactor;
-          const scaledHeight = image.height * scaleFactor;
-
-          // Center the image
-          const x = (595 - scaledWidth) / 2;
-          const y = (842 - scaledHeight) / 2;
-
-          page.drawImage(image, {
-            x,
-            y,
-            width: scaledWidth,
-            height: scaledHeight,
-          });
         }
+
+        const mergedPdfBytes = await mergedPdf.save();
+        cleanupBlobUrls();
+        mergedPdfBlobUrl = URL.createObjectURL(new Blob([mergedPdfBytes], { type: 'application/pdf' }));
+
+        previewSection.style.display = 'block';
+        previewPdf.src = mergedPdfBlobUrl;
+        downloadBtn.onclick = () => downloadPdf(mergedPdfBytes, 'merged-document.pdf');
+      } catch (error) {
+        console.error('Merge failed:', error);
+        alert(`Merge failed: ${error.message}`);
+      } finally {
+        setLoadingState(false);
       }
-
-      const mergedPdfBytes = await mergedPdf.save();
-
-      // Generate Blob URL for preview
-      if (mergedPdfBlobUrl) {
-        URL.revokeObjectURL(mergedPdfBlobUrl); // Clean up previous Blob URL
-      }
-      mergedPdfBlobUrl = URL.createObjectURL(new Blob([mergedPdfBytes], { type: 'application/pdf' }));
-
-      // Show preview and set iframe source
-      previewSection.style.display = 'block';
-      previewPdf.src = mergedPdfBlobUrl;
-
-      // Enable download button
-      downloadBtn.onclick = () => downloadPdf(mergedPdfBytes, 'merged-document.pdf');
     });
 
+    // Clear Button Handler
     clearBtn.addEventListener('click', () => {
       selectedFiles = [];
       updateFileList();
-      previewSection.style.display = 'none'; // Hide preview on clear
-      if (mergedPdfBlobUrl) {
-        URL.revokeObjectURL(mergedPdfBlobUrl); // Clean up Blob URL
-        mergedPdfBlobUrl = null;
-      }
+      previewSection.style.display = 'none';
+      cleanupBlobUrls();
     });
 
+    // File List Management
     function updateFileList() {
       fileList.innerHTML = selectedFiles
         .map((file, index) => `
@@ -243,16 +267,14 @@
         `)
         .join('');
 
-      // Add remove functionality for individual files
-      document.querySelectorAll('.remove-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+      fileList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-btn')) {
           const index = parseInt(e.target.dataset.index);
           selectedFiles.splice(index, 1);
           updateFileList();
-        });
+        }
       });
 
-      // Add drag-and-drop functionality
       const fileItems = document.querySelectorAll('.file-item');
       fileItems.forEach(item => {
         item.addEventListener('dragstart', handleDragStart);
@@ -262,44 +284,54 @@
       });
     }
 
+    // Drag-and-Drop Handlers
     function handleDragStart(e) {
-      dragIndex = parseInt(e.target.dataset.index);
+      dragIndex = parseInt(e.target.closest('.file-item').dataset.index);
       e.target.classList.add('dragging');
     }
 
     function handleDragOver(e) {
       e.preventDefault();
-      const targetItem = e.target.closest('.file-item');
-      if (!targetItem) return;
-
-      const targetIndex = parseInt(targetItem.dataset.index);
-      if (targetIndex !== dragIndex) {
-        swapFiles(dragIndex, targetIndex);
-        dragIndex = targetIndex;
-        updateFileList();
-      }
     }
 
     function handleDrop(e) {
       e.preventDefault();
-      e.target.classList.remove('dragging');
+      const targetItem = e.target.closest('.file-item');
+      if (!targetItem) return;
+
+      const newIndex = parseInt(targetItem.dataset.index);
+      if (dragIndex !== newIndex) {
+        const draggedItem = selectedFiles[dragIndex];
+        selectedFiles.splice(dragIndex, 1);
+        selectedFiles.splice(newIndex, 0, draggedItem);
+        updateFileList();
+      }
     }
 
     function handleDragEnd(e) {
       e.target.classList.remove('dragging');
     }
 
-    function swapFiles(fromIndex, toIndex) {
-      const temp = selectedFiles[fromIndex];
-      selectedFiles[fromIndex] = selectedFiles[toIndex];
-      selectedFiles[toIndex] = temp;
+    // Utility Functions
+    function cleanupBlobUrls() {
+      if (mergedPdfBlobUrl) {
+        URL.revokeObjectURL(mergedPdfBlobUrl);
+        mergedPdfBlobUrl = null;
+      }
+    }
+
+    function setLoadingState(isLoading) {
+      mergeBtn.disabled = isLoading;
+      clearBtn.disabled = isLoading;
+      mergeBtn.classList.toggle('loading', isLoading);
     }
 
     function downloadPdf(bytes, filename) {
+      const sanitizedFilename = filename.replace(/[^a-z0-9\._-]/gi, '_');
       const blob = new Blob([bytes], { type: 'application/pdf' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = filename;
+      link.download = sanitizedFilename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
