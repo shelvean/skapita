@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Linear System Phase Portrait</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fb;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .matrix-input {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 1rem 0;
+        }
+
+        .matrix-input input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 60px;
+            text-align: center;
+        }
+
+        .matrix-input .brackets {
+            font-size: 2rem;
+            color: #2c3e50;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+            margin: 1rem 0;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        canvas {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+
+        .equation {
+            font-size: 1.2rem;
+            text-align: center;
+            margin: 1rem 0;
+            min-height: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Linear System Phase Portrait</h1>
+        
+        <div class="equation" id="equation-display"></div>
+
+        <!-- 2x2 Matrix Input -->
+        <div class="matrix-input">
+            <div class="brackets">[</div>
+            <div>
+                <input type="number" id="a" placeholder="a" step="any" value="0">
+                <input type="number" id="b" placeholder="b" step="any" value="1">
+                <br>
+                <input type="number" id="c" placeholder="c" step="any" value="-1">
+                <input type="number" id="d" placeholder="d" step="any" value="0">
+            </div>
+            <div class="brackets">]</div>
+        </div>
+
+        <button onclick="drawPhasePortrait()">Generate Phase Portrait</button>
+        <canvas id="canvas" width="600" height="600"></canvas>
+    </div>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script>
+        // KaTeX initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            katex.render(
+                `\\begin{cases}
+                \\dot{x} = ax + by \\\\
+                \\dot{y} = cx + dy
+                \\end{cases}`,
+                document.getElementById('equation-display'),
+                {
+                    throwOnError: false,
+                    displayMode: true
+                }
+            );
+            
+            // Draw initial phase portrait
+            drawPhasePortrait();
+        });
+
+        function drawPhasePortrait() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Get coefficients
+            const a = parseFloat(document.getElementById('a').value) || 0;
+            const b = parseFloat(document.getElementById('b').value) || 0;
+            const c = parseFloat(document.getElementById('c').value) || 0;
+            const d = parseFloat(document.getElementById('d').value) || 0;
+
+            // Canvas setup
+            const scale = 30;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const arrowScale = 0.5;
+
+            // Drawing styles for vector field
+            ctx.strokeStyle = '#3498db';
+            ctx.fillStyle = '#3498db';
+            ctx.lineWidth = 1.5;
+
+            // Draw vector field
+            for (let x = -10; x <= 10; x++) {
+                for (let y = -10; y <= 10; y++) {
+                    const dx = a * x + b * y;
+                    const dy = c * x + d * y;
+                    const length = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (length === 0) continue;
+
+                    // Normalize vector
+                    const dxNormalized = (dx / length) * arrowScale;
+                    const dyNormalized = (dy / length) * arrowScale;
+
+                    // Convert to canvas coordinates
+                    const startX = centerX + x * scale;
+                    const startY = centerY - y * scale;
+                    const endX = startX + dxNormalized * scale;
+                    const endY = startY - dyNormalized * scale;
+
+                    // Draw arrow
+                    drawArrow(ctx, startX, startY, endX, endY);
+                }
+            }
+
+            // Draw trajectories in red
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+
+            // Starting points in the four quadrants
+            const startingPoints = [
+                { x: 5, y: 5 },   // Quadrant I
+                { x: -5, y: 5 },  // Quadrant II
+                { x: -5, y: -5 }, // Quadrant III
+                { x: 5, y: -5 }   // Quadrant IV
+            ];
+
+            // Draw trajectories for each starting point
+            startingPoints.forEach(point => {
+                const trajectory = computeTrajectory(point.x, point.y, a, b, c, d, scale, centerX, centerY);
+                drawTrajectory(ctx, trajectory);
+            });
+
+            // Draw axes
+            ctx.strokeStyle = '#95a5a6';
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+        }
+
+        // Compute trajectory using numerical integration
+        function computeTrajectory(x0, y0, a, b, c, d, scale, centerX, centerY) {
+            const dt = 0.02; // Time step for integration
+            const maxSteps = 1000; // Maximum number of steps
+            const points = [];
+
+            let x = x0, y = y0;
+
+            // Forward integration
+            for (let i = 0; i < maxSteps; i++) {
+                points.push({
+                    x: centerX + x * scale,
+                    y: centerY - y * scale
+                });
+
+                const dx = a * x + b * y;
+                const dy = c * x + d * y;
+                x += dx * dt;
+                y += dy * dt;
+
+                // Stop if the trajectory goes out of bounds
+                if (Math.abs(x) > 20 || Math.abs(y) > 20) break;
+            }
+
+            // Backward integration
+            x = x0, y = y0;
+            for (let i = 0; i < maxSteps; i++) {
+                const dx = a * x + b * y;
+                const dy = c * x + d * y;
+                x -= dx * dt;
+                y -= dy * dt;
+
+                // Stop if the trajectory goes out of bounds
+                if (Math.abs(x) > 20 || Math.abs(y) > 20) break;
+
+                points.unshift({
+                    x: centerX + x * scale,
+                    y: centerY - y * scale
+                });
+            }
+
+            return points;
+        }
+
+        // Draw a trajectory
+        function drawTrajectory(ctx, points) {
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.stroke();
+        }
+
+        // Draw an arrow
+        function drawArrow(ctx, fromX, fromY, toX, toY) {
+            const headlen = 5;
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+            
+            // Arrowhead
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(
+                toX - headlen * Math.cos(angle - Math.PI/6),
+                toY - headlen * Math.sin(angle - Math.PI/6)
+            );
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(
+                toX - headlen * Math.cos(angle + Math.PI/6),
+                toY - headlen * Math.sin(angle + Math.PI/6)
+            );
+            ctx.stroke();
+        }
+    </script>
+</body>
+</html>
