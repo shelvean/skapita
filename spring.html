@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mass-Spring System Simulator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -30,6 +31,11 @@
     .graph-container {
       margin-top: 20px;
     }
+    #equation {
+      font-size: 1.2em;
+      margin: 10px 0;
+      padding: 5px;
+    }
   </style>
 </head>
 <body>
@@ -44,118 +50,104 @@
     <input type="number" id="damping" value="0.5" step="0.1">
     <button onclick="resetSimulation()">Reset</button>
   </div>
-  <p>Equation: <span id="equation">m d²x/dt² + c dx/dt + kx = 0</span></p>
+  <p>Equation: <span id="equation"></span></p>
 
-  <!-- Graph Container -->
   <div class="graph-container">
     <h2>Displacement (x) vs Time (t)</h2>
     <canvas id="graphCanvas" width="800" height="200"></canvas>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script>
     const canvas = document.getElementById('simulationCanvas');
     const ctx = canvas.getContext('2d');
     const graphCanvas = document.getElementById('graphCanvas');
     const graphCtx = graphCanvas.getContext('2d');
 
-    // Parameters
-    let m = 1.0; // Mass
-    let k = 10.0; // Spring constant
-    let c = 0.5; // Damping coefficient
-    let x0 = 100; // Initial displacement
-    let v0 = 0; // Initial velocity
+    // Simulation parameters
+    let m = 1.0;
+    let k = 10.0;
+    let c = 0.5;
+    let x0 = 100;
+    let v0 = 0;
 
     // Simulation state
-    let x = x0; // Displacement
-    let v = v0; // Velocity
-    let t = 0; // Time
-    const dt = 0.01; // Time step
+    let x = x0;
+    let v = v0;
+    let t = 0;
+    const dt = 0.01;
 
-    // Spring and ball properties
-    const springLength = 200; // Equilibrium length
+    // Visual elements
+    const springLength = 200;
     const ballRadius = 20;
-    const springCoils = 20; // Number of coils in the spring
-    const springRadius = 15; // Radius of the spring coils
+    const springCoils = 20;
+    const springRadius = 15;
 
     // Graph data
-    const graphData = []; // Stores { t, x } points
-    const graphMaxTime = 10; // Maximum time to display on the graph
+    const graphData = [];
+    const graphMaxTime = 10;
+    let isSimulationRunning = true;
 
-    // Animation control
-    let isSimulationRunning = true; // Flag to control the simulation
-
-    // Function to update physics
     function updatePhysics() {
-      if (!isSimulationRunning) return; // Stop updating if simulation is paused
+      if (!isSimulationRunning) return;
 
-      const a = (-c * v - k * x) / m; // Acceleration
-      v += a * dt; // Update velocity
-      x += v * dt; // Update displacement
-      t += dt; // Update time
+      const a = (-c * v - k * x) / m;
+      v += a * dt;
+      x += v * dt;
+      t += dt;
 
-      // Add data point to graph
       graphData.push({ t, x });
-      if (t > graphMaxTime) {
-        isSimulationRunning = false; // Stop the simulation when time exceeds graphMaxTime
-      }
+      if (t > graphMaxTime) isSimulationRunning = false;
     }
 
-    // Function to draw the spring
     function drawSpring() {
-      const springTop = 50; // Top of the spring
-      const springBottom = springTop + springLength + x; // Bottom of the spring
-      const coilHeight = (springBottom - springTop) / springCoils; // Height of each coil
+      const springTop = 50;
+      const springBottom = springTop + springLength + x;
+      const coilHeight = (springBottom - springTop) / springCoils;
 
       ctx.beginPath();
-      ctx.strokeStyle = '#808080'; // Grey color for the spring
-      ctx.lineWidth = 1; // Thinner line for the spring
+      ctx.strokeStyle = '#808080';
+      ctx.lineWidth = 1;
 
       for (let i = 0; i < springCoils; i++) {
         const yStart = springTop + i * coilHeight;
-        const yEnd = springTop + (i + 1) * coilHeight;
-
-        // Draw a semi-circle for each coil
         ctx.moveTo(400 - springRadius, yStart);
-        ctx.arc(400, yStart + coilHeight / 4, springRadius, Math.PI, 0, false); // Top semi-circle
+        ctx.arc(400, yStart + coilHeight / 4, springRadius, Math.PI, 0, false);
         ctx.moveTo(400 + springRadius, yStart + coilHeight / 2);
-        ctx.arc(400, yStart + 3 * coilHeight / 4, springRadius, 0, Math.PI, false); // Bottom semi-circle
+        ctx.arc(400, yStart + 3 * coilHeight / 4, springRadius, 0, Math.PI, false);
       }
-
       ctx.stroke();
     }
 
-    // Function to draw the ball
     function drawBall() {
-      const springBottom = 50 + springLength + x; // Bottom of the spring
+      const springBottom = 50 + springLength + x;
       ctx.beginPath();
       ctx.arc(400, springBottom + ballRadius, ballRadius, 0, 2 * Math.PI);
-      ctx.fillStyle = '#800080'; // Dark purple color for the mass
+      ctx.fillStyle = '#800080';
       ctx.fill();
-      ctx.strokeStyle = '#000'; // Black border for the mass
+      ctx.strokeStyle = '#000';
       ctx.stroke();
     }
 
-    // Function to draw the simulation
     function drawSimulation() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawSpring();
       drawBall();
     }
 
-    // Function to draw the graph
     function drawGraph() {
       graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
 
-      // Draw axes
+      // Axes
       graphCtx.beginPath();
       graphCtx.strokeStyle = '#000';
       graphCtx.lineWidth = 1;
       graphCtx.moveTo(50, 20);
-      graphCtx.lineTo(50, graphCanvas.height - 20); // Y-axis
-      graphCtx.lineTo(graphCanvas.width - 20, graphCanvas.height - 20); // X-axis
+      graphCtx.lineTo(50, graphCanvas.height - 20);
+      graphCtx.lineTo(graphCanvas.width - 20, graphCanvas.height - 20);
       graphCtx.stroke();
 
-      // Draw labels
+      // Labels
       graphCtx.fillStyle = '#000';
       graphCtx.font = '12px Arial';
       graphCtx.fillText('Time (t)', graphCanvas.width - 60, graphCanvas.height - 5);
@@ -165,40 +157,48 @@
       graphCtx.fillText('Displacement (x)', 0, 0);
       graphCtx.restore();
 
-      // Draw graph data
+      // Plot data
       graphCtx.beginPath();
       graphCtx.strokeStyle = '#007bff';
       graphCtx.lineWidth = 2;
       graphCtx.moveTo(50, graphCanvas.height / 2);
 
       for (let point of graphData) {
-        const tx = 50 + ((point.t / graphMaxTime) * (graphCanvas.width - 70)); // Scale time to canvas width
-        const ty = graphCanvas.height / 2 - (point.x / x0) * (graphCanvas.height / 2 - 20); // Scale displacement to canvas height
+        const tx = 50 + ((point.t / graphMaxTime) * (graphCanvas.width - 70));
+        const ty = graphCanvas.height / 2 - (point.x / x0) * (graphCanvas.height / 2 - 20);
         graphCtx.lineTo(tx, ty);
       }
-
       graphCtx.stroke();
     }
 
-    // Function to update parameters
     function updateParameters() {
       m = parseFloat(document.getElementById('mass').value);
       k = parseFloat(document.getElementById('springConstant').value);
       c = parseFloat(document.getElementById('damping').value);
-      document.getElementById('equation').innerText = `${m} d²x/dt² + ${c} dx/dt + ${k}x = 0`;
+      
+      try {
+        const equationElement = document.getElementById('equation');
+        const latexString = `${m}\\frac{d^2x}{dt^2} + ${c}\\frac{dx}{dt} + ${k}x = 0`;
+        katex.render(latexString, equationElement, {
+          throwOnError: true,
+          displayMode: false
+        });
+      } catch (error) {
+        console.error('KaTeX error:', error);
+        document.getElementById('equation').textContent = 
+          `${m} d²x/dt² + ${c} dx/dt + ${k}x = 0`;
+      }
     }
 
-    // Function to reset simulation
     function resetSimulation() {
       x = x0;
       v = v0;
       t = 0;
-      graphData.length = 0; // Clear graph data
-      isSimulationRunning = true; // Restart the simulation
+      graphData.length = 0;
+      isSimulationRunning = true;
       updateParameters();
     }
 
-    // Main animation loop
     function animate() {
       if (isSimulationRunning) {
         updatePhysics();
@@ -208,8 +208,11 @@
       requestAnimationFrame(animate);
     }
 
-    // Start simulation
-    animate();
+    // Initialize after DOM loads
+    document.addEventListener('DOMContentLoaded', () => {
+      updateParameters();
+      animate();
+    });
   </script>
 </body>
 </html>
