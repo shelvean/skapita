@@ -172,7 +172,6 @@
 </head>
 <body>
   <div class="main-container">
-    <h1>Mass-Spring System Simulator</h1>
     <canvas id="simulationCanvas" width="800" height="400"></canvas>
     <div class="controls">
       <label for="mass">Mass (m):</label>
@@ -239,7 +238,7 @@
       const coilHeight = (springBottom - springTop) / springCoils;
 
       ctx.beginPath();
-      ctx.strokeStyle = '#808080';
+      ctx.strokeStyle = '#181b59';
       ctx.lineWidth = 1;
 
       for (let i = 0; i < springCoils; i++) {
