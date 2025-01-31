@@ -1,335 +1,400 @@
 <!DOCTYPE html>
-<html> 
-  <head> 
-    
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-5B8PRB2WZT');
-</script>
-
-    <title>Direction Field Visualizer</title> 
-    <style>
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f8f9fa;
-        }
-        .controls {
-            margin-bottom: 20px;
-            padding: 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .control-group {
-            margin: 15px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        label {
-            font-weight: 500;
-            color: #2d3436;
-            min-width: 120px;
-        }
-        input[type="number"], #equation {
-            padding: 8px 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.2s;
-        }
-        input[type="number"]:focus, #equation:focus {
-            outline: none;
-            border-color: #0078d0;
-        }
-        #equation {
-            flex: 1;
-            max-width: 300px;
-        }
-        canvas {
-            border: 2px solid #e0e0e0;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            cursor: crosshair;
-        }
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #0078d0, #0060a8);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
-        }
-        button:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-        button:active {
-            transform: translateY(0);
-        }
-        .instruction {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #2d3436;
-            pointer-events: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .canvas-container {
-            position: relative;
-            margin-top: 20px;
-        }
-        .clear-btn {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-        }
-    </style> 
-  </head> 
-  <body> 
-    <div class="controls"> 
-      <div class="control-group"> <label>Differential Equation: y'= </label> 
-        <input type="text" id="equation" value="(y**2-9)*cos(t)" placeholder="Enter equation (e.g., y*(2-y), sin(t))" /> <button onclick="drawDirectionField()">🔄 Update</button> 
-      </div> 
-      <div class="control-group"> <label>Horizontal (t) Axis:</label> 
-        <input type="number" id="tMin" value="-10" step="0.5" /> <span>to</span> 
-        <input type="number" id="tMax" value="10" step="0.5" /> 
-      </div> 
-      <div class="control-group"> <label>Vertical (y) Axis:</label> 
-        <input type="number" id="yMin" value="-10" step="0.5" /> <span>to</span> 
-        <input type="number" id="yMax" value="10" step="0.5" /> 
-      </div> 
-      <div class="control-group"> <button onclick="clearSolutions()" class="clear-btn">🧹 Clear Solutions</button> 
-      </div> 
-    </div> 
-    <div class="canvas-container"> 
-      <div class="instruction">
-         ✨ Click anywhere on the graph to draw solution curves 
-      </div> 
-      <canvas id="canvas" width="800" height="500"></canvas> 
-    </div> 
+<html>
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const SEGMENT_LENGTH = 15;
-        const GRID_STEP = 20;
-        let solutions = [];
-        let hue = 0;
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5B8PRB2WZT');
+    </script>
+    <title>Direction Field Visualizer</title>
+    <style>
+      * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: 'Segoe UI', system-ui, sans-serif;
+      }
 
-        function preprocessEquation(eq) {
-            return eq
-                .replace(/(sin|cos|tan|exp|log|sqrt|abs|asin|acos|atan)/gi, 'Math.$1')
-                .replace(/\^/g, '**')
-                .replace(/\bpi\b/gi, 'Math.PI')
-                .replace(/(?<!\w)e(?!\w)/g, 'Math.E');
-        }
+      body {
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          min-height: 100vh;
+      }
 
-        function drawDirectionField() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const equation = document.getElementById('equation').value;
-            const tMin = parseFloat(document.getElementById('tMin').value);
-            const tMax = parseFloat(document.getElementById('tMax').value);
-            const yMin = parseFloat(document.getElementById('yMin').value);
-            const yMax = parseFloat(document.getElementById('yMax').value);
+      .main-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 20px;
+      }
 
-            try {
-                const processedEquation = preprocessEquation(equation);
-                const slopeFunc = new Function('t', 'y', `return ${processedEquation};`);
-                const xScale = canvas.width / (tMax - tMin);
-                const yScale = canvas.height / (yMax - yMin);
-                const aspectRatio = yScale / xScale;
+      .controls {
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(10px);
+          border-radius: 15px;
+          padding: 1.5rem;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          margin: 0 auto 2rem;
+          width: fit-content;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+      }
 
-                // Draw grid
-                ctx.strokeStyle = '#ddd';
-                ctx.lineWidth = 0.5;
-                drawGrid(tMin, tMax, yMin, yMax, xScale, yScale);
+      .control-group {
+          margin: 1rem 0;
+          display: flex;
+          align-items: center;
+          gap: 0.8rem;
+      }
 
-                // Draw direction field
-                for (let px = GRID_STEP/2; px < canvas.width; px += GRID_STEP) {
-                    for (let py = GRID_STEP/2; py < canvas.height; py += GRID_STEP) {
-                        const t = tMin + px / xScale;
-                        const y = yMin + (canvas.height - py) / yScale;
+      label {
+          color: #2b2d42;
+          font-weight: 500;
+          min-width: 160px;
+      }
 
-                        try {
-                            if (y === 0) continue;
-                            const slope = slopeFunc(t, y);
-                            const angle = Math.atan(-slope * aspectRatio);
-                            const dx = SEGMENT_LENGTH * Math.cos(angle);
-                            const dy = SEGMENT_LENGTH * Math.sin(angle);
+      input[type="text"], input[type="number"] {
+          padding: 0.6rem 1rem;
+          border: 2px solid #dee2e6;
+          border-radius: 8px;
+          transition: all 0.3s ease;
+          background: rgba(255, 255, 255, 0.9);
+          font-size: 1rem;
+      }
 
-                            ctx.strokeStyle = slope > 0 ? '#2196F3' : '#e91e63';
-                            ctx.beginPath();
-                            ctx.moveTo(px - dx/2, py - dy/2);
-                            ctx.lineTo(px + dx/2, py + dy/2);
-                            ctx.stroke();
-                        } catch(e) {}
-                    }
-                }
+      input[type="text"]:focus, input[type="number"]:focus {
+          outline: none;
+          border-color: #4cc9f0;
+          box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
+      }
 
-                // Draw axes
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 2;
-                drawAxes(tMin, tMax, yMin, yMax, xScale, yScale);
+      button {
+          padding: 0.6rem 1.2rem;
+          border: none;
+          border-radius: 8px;
+          background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+          color: white;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+      }
 
-                // Draw solutions
-                solutions.forEach(solution => {
-                    drawSolutionCurve(solution, xScale, yScale, tMin, yMin);
-                });
+      button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
+      }
 
-            } catch (e) {
-                alert(`Error in equation: ${e.message}`);
-            }
-        }
+      .clear-btn {
+          background: linear-gradient(135deg, #ff595e 0%, #ff6b6b 100%);
+      }
 
-        function drawSolutionCurve(solution, xScale, yScale, tMin, yMin) {
-            ctx.beginPath();
-            ctx.strokeStyle = solution.color;
-            ctx.lineWidth = 2;
+      .canvas-container {
+          background: white;
+          border-radius: 15px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          position: relative;
+          overflow: hidden;
+          background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+          width: fit-content;
+          margin: 0 auto;
+      }
 
-            solution.points.forEach((point, index) => {
-                const x = (point.t - tMin) * xScale;
-                const y = canvas.height - (point.y - yMin) * yScale;
-                
-                if (index === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
-            });
+      .instruction {
+          position: absolute;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(5px);
+          padding: 0.8rem 1.5rem;
+          border-radius: 30px;
+          font-size: 0.9rem;
+          color: #4361ee;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          z-index: 10;
+          animation: float 3s ease-in-out infinite;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+      }
 
-            ctx.stroke();
-        }
+      @keyframes float {
+          0%, 100% { transform: translateX(-50%) translateY(0); }
+          50% { transform: translateX(-50%) translateY(-5px); }
+      }
 
-        function solveODE(slopeFunc, t0, y0, tMin, tMax) {
-            const step = 0.025;
-            const points = [];
-            let t = t0;
-            let y = y0;
+      canvas {
+          display: block;
+          cursor: crosshair;
+      }
 
-            // Solve forward
-            while (t <= tMax + step) {
-                points.push({ t, y });
-                if (Math.abs(y) > 1e6 || isNaN(y)) break;
-                const k1 = step * slopeFunc(t, y);
-                const k2 = step * slopeFunc(t + step/2, y + k1/2);
-                const k3 = step * slopeFunc(t + step/2, y + k2/2);
-                const k4 = step * slopeFunc(t + step, y + k3);
-                y += (k1 + 2*k2 + 2*k3 + k4)/6;
-                t += step;
-            }
+      .axis-label {
+          font-size: 0.9rem;
+          fill: #6c757d;
+          font-weight: 500;
+      }
 
-            // Solve backward
-            t = t0;
-            y = y0;
-            while (t >= tMin - step) {
-                points.unshift({ t, y });
-                if (Math.abs(y) > 1e6 || isNaN(y)) break;
-                const k1 = -step * slopeFunc(t, y);
-                const k2 = -step * slopeFunc(t - step/2, y + k1/2);
-                const k3 = -step * slopeFunc(t - step/2, y + k2/2);
-                const k4 = -step * slopeFunc(t - step, y + k3);
-                y += (k1 + 2*k2 + 2*k3 + k4)/6;
-                t -= step;
-            }
+      @media (max-width: 768px) {
+          .main-container {
+              padding: 1rem;
+          }
 
-            return points;
-        }
+          .controls {
+              padding: 1rem;
+          }
 
-        canvas.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const tMin = parseFloat(document.getElementById('tMin').value);
-            const tMax = parseFloat(document.getElementById('tMax').value);
-            const yMin = parseFloat(document.getElementById('yMin').value);
-            const yMax = parseFloat(document.getElementById('yMax').value);
-            
-            const xScale = canvas.width / (tMax - tMin);
-            const yScale = canvas.height / (yMax - yMin);
-            
-            const t = tMin + x / xScale;
-            const yVal = yMin + (canvas.height - y) / yScale;
-            
-            try {
-                const equation = document.getElementById('equation').value;
-                const processedEquation = preprocessEquation(equation);
-                const slopeFunc = new Function('t', 'y', `return ${processedEquation};`);
-                
-                const solutionPoints = solveODE(slopeFunc, t, yVal, tMin, tMax);
-                solutions.push({
-                    points: solutionPoints,
-                    color: `hsl(${hue}, 80%, 50%)`
-                });
-                
-                hue = (hue + 60) % 360;
-                drawDirectionField();
-            } catch(e) {
-                alert("Could not compute solution curve");
-            }
-        });
+          .control-group {
+              flex-wrap: wrap;
+              gap: 0.5rem;
+          }
 
-        function clearSolutions() {
-            solutions = [];
-            drawDirectionField();
-        }
+          label {
+              min-width: 100%;
+          }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-container">
+      <div class="controls">
+        <div class="control-group">
+          <label>Differential Equation: y'= </label>
+          <input type="text" id="equation" value="(y**2-9)*cos(t)" placeholder="Enter equation" />
+          <button onclick="drawDirectionField()">🔄 Update</button>
+        </div>
+        <div class="control-group">
+          <label>Horizontal (t) Axis:</label>
+          <input type="number" id="tMin" value="-10" step="0.5" />
+          <span>to</span>
+          <input type="number" id="tMax" value="10" step="0.5" />
+        </div>
+        <div class="control-group">
+          <label>Vertical (y) Axis:</label>
+          <input type="number" id="yMin" value="-10" step="0.5" />
+          <span>to</span>
+          <input type="number" id="yMax" value="10" step="0.5" />
+        </div>
+        <div class="control-group">
+          <button onclick="clearSolutions()" class="clear-btn">🧹 Clear Solutions</button>
+        </div>
+      </div>
+      <div class="canvas-container">
+        <div class="instruction">
+          ✨ Click anywhere on the graph to draw solution curves
+        </div>
+        <canvas id="canvas" width="800" height="500"></canvas>
+      </div>
+    </div>
+    <script>
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const SEGMENT_LENGTH = 15;
+      const GRID_STEP = 20;
+      let solutions = [];
+      let hue = 0;
 
-        function drawGrid(tMin, tMax, yMin, yMax, xScale, yScale) {
-            // Vertical lines (constant t)
-            for (let t = Math.ceil(tMin); t <= Math.floor(tMax); t++) {
-                const x = (t - tMin) * xScale;
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-            }
+      function preprocessEquation(eq) {
+          return eq
+              .replace(/(sin|cos|tan|exp|log|sqrt|abs|asin|acos|atan)/gi, 'Math.$1')
+              .replace(/\^/g, '**')
+              .replace(/\bpi\b/gi, 'Math.PI')
+              .replace(/(?<!\w)e(?!\w)/g, 'Math.E');
+      }
 
-            // Horizontal lines (constant y)
-            for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
-                const yPos = canvas.height - (y - yMin) * yScale;
-                ctx.beginPath();
-                ctx.moveTo(0, yPos);
-                ctx.lineTo(canvas.width, yPos);
-                ctx.stroke();
-            }
-        }
+      function drawDirectionField() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        function drawAxes(tMin, tMax, yMin, yMax, xScale, yScale) {
-            // t-axis (horizontal)
-            if (yMin <= 0 && yMax >= 0) {
-                const y0 = canvas.height - (0 - yMin) * yScale;
-                ctx.beginPath();
-                ctx.moveTo(0, y0);
-                ctx.lineTo(canvas.width, y0);
-                ctx.stroke();
-            }
+          const equation = document.getElementById('equation').value;
+          const tMin = parseFloat(document.getElementById('tMin').value);
+          const tMax = parseFloat(document.getElementById('tMax').value);
+          const yMin = parseFloat(document.getElementById('yMin').value);
+          const yMax = parseFloat(document.getElementById('yMax').value);
 
-            // y-axis (vertical)
-            if (tMin <= 0 && tMax >= 0) {
-                const x0 = (0 - tMin) * xScale;
-                ctx.beginPath();
-                ctx.moveTo(x0, 0);
-                ctx.lineTo(x0, canvas.height);
-                ctx.stroke();
-            }
-        }
+          try {
+              const processedEquation = preprocessEquation(equation);
+              const slopeFunc = new Function('t', 'y', `return ${processedEquation};`);
+              const xScale = canvas.width / (tMax - tMin);
+              const yScale = canvas.height / (yMax - yMin);
+              const aspectRatio = yScale / xScale;
 
-        // Initial draw
-        drawDirectionField();
-    </script>  
+              // Draw grid
+              ctx.strokeStyle = '#ddd';
+              ctx.lineWidth = 0.5;
+              drawGrid(tMin, tMax, yMin, yMax, xScale, yScale);
+
+              // Draw direction field
+              for (let px = GRID_STEP/2; px < canvas.width; px += GRID_STEP) {
+                  for (let py = GRID_STEP/2; py < canvas.height; py += GRID_STEP) {
+                      const t = tMin + px / xScale;
+                      const y = yMin + (canvas.height - py) / yScale;
+
+                      try {
+                          if (y === 0) continue;
+                          const slope = slopeFunc(t, y);
+                          const angle = Math.atan(-slope * aspectRatio);
+                          const dx = SEGMENT_LENGTH * Math.cos(angle);
+                          const dy = SEGMENT_LENGTH * Math.sin(angle);
+
+                          ctx.strokeStyle = slope > 0 ? '#2196F3' : '#e91e63';
+                          ctx.beginPath();
+                          ctx.moveTo(px - dx/2, py - dy/2);
+                          ctx.lineTo(px + dx/2, py + dy/2);
+                          ctx.stroke();
+                      } catch(e) {}
+                  }
+              }
+
+              // Draw axes
+              ctx.strokeStyle = '#000';
+              ctx.lineWidth = 2;
+              drawAxes(tMin, tMax, yMin, yMax, xScale, yScale);
+
+              // Draw solutions
+              solutions.forEach(solution => {
+                  drawSolutionCurve(solution, xScale, yScale, tMin, yMin);
+              });
+
+          } catch (e) {
+              alert(`Error in equation: ${e.message}`);
+          }
+      }
+
+      function drawSolutionCurve(solution, xScale, yScale, tMin, yMin) {
+          ctx.beginPath();
+          ctx.strokeStyle = solution.color;
+          ctx.lineWidth = 2;
+
+          solution.points.forEach((point, index) => {
+              const x = (point.t - tMin) * xScale;
+              const y = canvas.height - (point.y - yMin) * yScale;
+
+              if (index === 0) {
+                  ctx.moveTo(x, y);
+              } else {
+                  ctx.lineTo(x, y);
+              }
+          });
+
+          ctx.stroke();
+      }
+
+      function solveODE(slopeFunc, t0, y0, tMin, tMax) {
+          const step = 0.025;
+          const points = [];
+          let t = t0;
+          let y = y0;
+
+          // Solve forward
+          while (t <= tMax + step) {
+              points.push({ t, y });
+              if (Math.abs(y) > 1e6 || isNaN(y)) break;
+              const k1 = step * slopeFunc(t, y);
+              const k2 = step * slopeFunc(t + step/2, y + k1/2);
+              const k3 = step * slopeFunc(t + step/2, y + k2/2);
+              const k4 = step * slopeFunc(t + step, y + k3);
+              y += (k1 + 2*k2 + 2*k3 + k4)/6;
+              t += step;
+          }
+
+          // Solve backward
+          t = t0;
+          y = y0;
+          while (t >= tMin - step) {
+              points.unshift({ t, y });
+              if (Math.abs(y) > 1e6 || isNaN(y)) break;
+              const k1 = -step * slopeFunc(t, y);
+              const k2 = -step * slopeFunc(t - step/2, y + k1/2);
+              const k3 = -step * slopeFunc(t - step/2, y + k2/2);
+              const k4 = -step * slopeFunc(t - step, y + k3);
+              y += (k1 + 2*k2 + 2*k3 + k4)/6;
+              t -= step;
+          }
+
+          return points;
+      }
+
+      canvas.addEventListener('click', (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          const tMin = parseFloat(document.getElementById('tMin').value);
+          const tMax = parseFloat(document.getElementById('tMax').value);
+          const yMin = parseFloat(document.getElementById('yMin').value);
+          const yMax = parseFloat(document.getElementById('yMax').value);
+
+          const xScale = canvas.width / (tMax - tMin);
+          const yScale = canvas.height / (yMax - yMin);
+
+          const t = tMin + x / xScale;
+          const yVal = yMin + (canvas.height - y) / yScale;
+
+          try {
+              const equation = document.getElementById('equation').value;
+              const processedEquation = preprocessEquation(equation);
+              const slopeFunc = new Function('t', 'y', `return ${processedEquation};`);
+
+              const solutionPoints = solveODE(slopeFunc, t, yVal, tMin, tMax);
+              solutions.push({
+                  points: solutionPoints,
+                  color: `hsl(${hue}, 80%, 50%)`
+              });
+
+              hue = (hue + 60) % 360;
+              drawDirectionField();
+          } catch(e) {
+              alert("Could not compute solution curve");
+          }
+      });
+
+      function clearSolutions() {
+          solutions = [];
+          drawDirectionField();
+      }
+
+      function drawGrid(tMin, tMax, yMin, yMax, xScale, yScale) {
+          // Vertical lines (constant t)
+          for (let t = Math.ceil(tMin); t <= Math.floor(tMax); t++) {
+              const x = (t - tMin) * xScale;
+              ctx.beginPath();
+              ctx.moveTo(x, 0);
+              ctx.lineTo(x, canvas.height);
+              ctx.stroke();
+          }
+
+          // Horizontal lines (constant y)
+          for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
+              const yPos = canvas.height - (y - yMin) * yScale;
+              ctx.beginPath();
+              ctx.moveTo(0, yPos);
+              ctx.lineTo(canvas.width, yPos);
+              ctx.stroke();
+          }
+      }
+
+      function drawAxes(tMin, tMax, yMin, yMax, xScale, yScale) {
+          // t-axis (horizontal)
+          if (yMin <= 0 && yMax >= 0) {
+              const y0 = canvas.height - (0 - yMin) * yScale;
+              ctx.beginPath();
+              ctx.moveTo(0, y0);
+              ctx.lineTo(canvas.width, y0);
+              ctx.stroke();
+          }
+
+          // y-axis (vertical)
+          if (tMin <= 0 && tMax >= 0) {
+              const x0 = (0 - tMin) * xScale;
+              ctx.beginPath();
+              ctx.moveTo(x0, 0);
+              ctx.lineTo(x0, canvas.height);
+              ctx.stroke();
+          }
+      }
+
+      // Initial draw
+      drawDirectionField();
+    </script>
   </body>
 </html>
