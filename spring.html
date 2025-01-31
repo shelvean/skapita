@@ -109,25 +109,25 @@
       graphData.push({ t, x });
       if (t > graphMaxTime) isSimulationRunning = false;
     }
+function drawSpring() {
+  const centerX = canvas.width / 2;
+  const springTop = canvas.height * 0.15;
+  const springBottom = springTop + (canvas.height * 0.4) + x;
+  const coilHeight = (springBottom - springTop) / springCoils;
 
-    function drawSpring() {
-      const springTop = 50;
-      const springBottom = springTop + springLength + x;
-      const coilHeight = (springBottom - springTop) / springCoils;
+  ctx.beginPath();
+  ctx.strokeStyle = '#2A4E6D'; // Changed to dark blue
+  ctx.lineWidth = 1;
 
-      ctx.beginPath();
-      ctx.strokeStyle = '#808080';
-      ctx.lineWidth = 1;
-
-      for (let i = 0; i < springCoils; i++) {
-        const yStart = springTop + i * coilHeight;
-        ctx.moveTo(400 - springRadius, yStart);
-        ctx.arc(400, yStart + coilHeight / 4, springRadius, Math.PI, 0, false);
-        ctx.moveTo(400 + springRadius, yStart + coilHeight / 2);
-        ctx.arc(400, yStart + 3 * coilHeight / 4, springRadius, 0, Math.PI, false);
-      }
-      ctx.stroke();
-    }
+  for (let i = 0; i < springCoils; i++) {
+    const yStart = springTop + i * coilHeight;
+    ctx.moveTo(centerX - springRadius, yStart);
+    ctx.arc(centerX, yStart + coilHeight / 4, springRadius, Math.PI, 0, false);
+    ctx.moveTo(centerX + springRadius, yStart + coilHeight / 2);
+    ctx.arc(centerX, yStart + 3 * coilHeight / 4, springRadius, 0, Math.PI, false);
+  }
+  ctx.stroke();
+}
 
     function drawBall() {
     const springBottom = 50 + springLength + x;
