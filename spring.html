@@ -1,70 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-5B8PRB2WZT');
 </script>
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <title>Mass-Spring System Simulator</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <style>
+    :root {
+      --primary: #6c5ce7;
+      --secondary: #4a47a3;
+      --background: #f8f9fa;
+      --surface: #e9ecef;
+      --text: #212529;
+      --accent: #00b4d8;
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', system-ui, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       margin: 0;
+      padding: 30px;
+      background: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      justify-content: center;
+    }
+
+    .main-container {
+      max-width: 1000px;
+      width: 100%;
+      margin: 0 auto;
       padding: 20px;
-      background-color: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      background: linear-gradient(45deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
     canvas {
-      border: 1px solid #000;
-      background-color: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border: 2px solid var(--surface);
+      background: white;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
     }
+
     .controls {
-      margin-top: 20px;
+      width: 100%;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 1.2rem;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
     }
+
     .controls label {
-      margin-right: 10px;
+      color: var(--secondary);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
+
     .controls input {
       width: 100px;
+      padding: 0.6rem;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      font-size: 1rem;
+      transition: all 0.2s ease;
     }
-    .graph-container {
-      margin-top: 20px;
+
+    .controls input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--primary);
+      background: rgba(255,255,255,0.15);
     }
+
+    button {
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--primary);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    button:hover {
+      background: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+    }
+
     #equation {
       font-size: 1.2em;
-      margin: 10px 0;
-      padding: 5px;
+      margin: 1.5rem 0;
+      padding: 1rem 1.5rem;
+      background: rgba(233,236,239,0.6);
+      color: var(--primary);
+      border-radius: 8px;
+      font-family: monospace;
+      text-align: center;
+    }
+
+    .graph-container {
+      width: 100%;
+      max-width: 800px;
+      margin: 20px auto;
+      background: white;
+      border: 1px solid var(--surface);
+      border-radius: 16px;
+      padding: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    .graph-container h2 {
+      color: var(--secondary);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 840px) {
+      canvas, .graph-container {
+        width: 95vw;
+      }
+      
+      .controls {
+        width: 95vw;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
     }
   </style>
 </head>
 <body>
-  <canvas id="simulationCanvas" width="800" height="400"></canvas>
-  <div class="controls">
-    <label for="mass">Mass (m):</label>
-    <input type="number" id="mass" value="1.5" step="0.1">
-    <label for="springConstant">Spring Constant (k):</label>
-    <input type="number" id="springConstant" value="200" step="0.1">
-    <label for="damping">Damping (c):</label>
-    <input type="number" id="damping" value="0.8" step="0.1">
-    <button onclick="resetSimulation()">Reset</button>
-  </div>
-  <p>Equation: <span id="equation"></span></p>
-
-  <div class="graph-container">
-    <h2>Displacement (x) vs Time (t)</h2>
-    <canvas id="graphCanvas" width="800" height="200"></canvas>
+  <div class="main-container">
+    <h1>Mass-Spring System Simulator</h1>
+    <canvas id="simulationCanvas" width="800" height="400"></canvas>
+    <div class="controls">
+      <label for="mass">Mass (m):</label>
+      <input type="number" id="mass" value="1.5" step="0.1">
+      <label for="springConstant">Spring Constant (k):</label>
+      <input type="number" id="springConstant" value="200" step="0.1">
+      <label for="damping">Damping (c):</label>
+      <input type="number" id="damping" value="0.8" step="0.1">
+      <button onclick="resetSimulation()">Reset</button>
+    </div>
+    <p>Equation: <span id="equation"></span></p>
+    <div class="graph-container">
+      <h2>Displacement (x) vs Time (t)</h2>
+      <canvas id="graphCanvas" width="800" height="200"></canvas>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -109,35 +232,35 @@
       graphData.push({ t, x });
       if (t > graphMaxTime) isSimulationRunning = false;
     }
-function drawSpring() {
-  const centerX = canvas.width / 2;
-  const springTop = canvas.height * 0.15;
-  const springBottom = springTop + (canvas.height * 0.4) + x;
-  const coilHeight = (springBottom - springTop) / springCoils;
 
-  ctx.beginPath();
-  ctx.strokeStyle = '#2A4E6D'; // Changed to dark blue
-  ctx.lineWidth = 1;
+    function drawSpring() {
+      const springTop = 50;
+      const springBottom = springTop + springLength + x;
+      const coilHeight = (springBottom - springTop) / springCoils;
 
-  for (let i = 0; i < springCoils; i++) {
-    const yStart = springTop + i * coilHeight;
-    ctx.moveTo(centerX - springRadius, yStart);
-    ctx.arc(centerX, yStart + coilHeight / 4, springRadius, Math.PI, 0, false);
-    ctx.moveTo(centerX + springRadius, yStart + coilHeight / 2);
-    ctx.arc(centerX, yStart + 3 * coilHeight / 4, springRadius, 0, Math.PI, false);
-  }
-  ctx.stroke();
-}
+      ctx.beginPath();
+      ctx.strokeStyle = '#808080';
+      ctx.lineWidth = 1;
+
+      for (let i = 0; i < springCoils; i++) {
+        const yStart = springTop + i * coilHeight;
+        ctx.moveTo(400 - springRadius, yStart);
+        ctx.arc(400, yStart + coilHeight / 4, springRadius, Math.PI, 0, false);
+        ctx.moveTo(400 + springRadius, yStart + coilHeight / 2);
+        ctx.arc(400, yStart + 3 * coilHeight / 4, springRadius, 0, Math.PI, false);
+      }
+      ctx.stroke();
+    }
 
     function drawBall() {
-    const springBottom = 50 + springLength + x;
-    ctx.beginPath();
-    const squareSize = ballRadius * 2;
-    ctx.fillStyle = '#8B4513';  // Brown color
-    ctx.fillRect(400 - ballRadius, springBottom, squareSize, squareSize);
-    ctx.strokeStyle = '#000';
-    ctx.strokeRect(400 - ballRadius, springBottom, squareSize, squareSize);
-  }
+      const springBottom = 50 + springLength + x;
+      ctx.beginPath();
+      const squareSize = ballRadius * 2;
+      ctx.fillStyle = '#8B4513';
+      ctx.fillRect(400 - ballRadius, springBottom, squareSize, squareSize);
+      ctx.strokeStyle = '#000';
+      ctx.strokeRect(400 - ballRadius, springBottom, squareSize, squareSize);
+    }
 
     function drawSimulation() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
