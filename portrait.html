@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-5B8PRB2WZT');
-</script>
-
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-5B8PRB2WZT');
+    </script>
     <title>Linear System Phase Portrait</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <style>
-        body {
+        /* ... (keep existing styles the same) ... */
+		body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 800px;
             margin: 0 auto;
@@ -85,14 +83,225 @@
             margin: 1rem 0;
             min-height: 60px;
         }
+        .click-instruction {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            color: #2c3e50;
+            opacity: 1;
+            transition: opacity 2s ease-out;
+            pointer-events: none; /* Ensure clicks pass through to the canvas */
+        }
+        .fade-out {
+            opacity: 0;
+        }
+        .click-instruction {
+            position: absolute;
+            top: 20px; /* Position near the top */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            color: #2c3e50;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            opacity: 1;
+            transition: opacity 2s ease-out;
+            pointer-events: none; /* Ensure clicks pass through to the canvas */
+        }
+        .fade-out {
+            opacity: 0;
+        }
+        .click-instruction {
+            position: absolute;
+            top: 20px; /* Position near the top */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            color: #2c3e50;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            opacity: 1;
+            transition: opacity 2s ease-out;
+            pointer-events: none; /* Ensure clicks pass through to the canvas */
+        }
+        .fade-out {
+            opacity: 0;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button.clear {
+            background: #e74c3c;
+        }
+        button.clear:hover {
+            background: #c0392b;
+        }
+        .click-instruction {
+            position: absolute;
+            top: 20px; /* Position near the top */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            color: #2c3e50;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            opacity: 1;
+            transition: opacity 2s ease-out;
+            pointer-events: none; /* Ensure clicks pass through to the canvas */
+        }
+        .fade-out {
+            opacity: 0;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button.clear {
+            background: #e74c3c;
+        }
+        button.clear:hover {
+            background: #c0392b;
+        }
+        .scale-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .x-scale, .y-scale {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+        .x-scale {
+            width: 600px;
+            margin-left: 40px; /* Offset for y-axis scale */
+        }
+        .y-scale {
+            flex-direction: column;
+            height: 600px;
+            margin-right: 10px;
+        }
+        .canvas-wrapper {
+            display: flex;
+            align-items: center;
+        }
+        .click-instruction {
+            position: absolute;
+            top: 20px; /* Position near the top */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            color: #2c3e50;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            opacity: 1;
+            transition: opacity 2s ease-out;
+            pointer-events: none; /* Ensure clicks pass through to the canvas */
+        }
+        .fade-out {
+            opacity: 0;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button.clear {
+            background: #e74c3c;
+        }
+        button.clear:hover {
+            background: #c0392b;
+        }
+        .scale-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            margin-top: 10px;
+        }
+        .x-scale {
+            display: flex;
+            justify-content: space-between;
+            width: 600px;
+            font-size: 0.9rem;
+            color: #2c3e50;
+            margin-top: 10px; /* Position below the canvas */
+        }
+        .y-scale {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 600px;
+            font-size: 0.9rem;
+            color: #2c3e50;
+            margin-right: 10px;
+        }
+        .canvas-wrapper {
+            display: flex;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Linear System Phase Portrait</h1>
-        
         <div class="equation" id="equation-display"></div>
-
         <div class="matrix-input">
             <div class="brackets">[</div>
             <div>
@@ -104,13 +313,38 @@
             </div>
             <div class="brackets">]</div>
         </div>
-
-        <button onclick="drawPhasePortrait()">Generate Phase Portrait</button>
-        <canvas id="canvas" width="600" height="600"></canvas>
+        <div class="button-container">
+            <button onclick="drawPhasePortrait()">Generate Phase Portrait</button>
+            <button class="clear" onclick="clearUserPoints()">Clear Trajectories</button>
+        </div>
+        <div class="scale-container">
+            <div class="y-scale">
+                <span>10</span>
+                <span>5</span>
+                <span>0</span>
+                <span>-5</span>
+                <span>-10</span>
+            </div>
+            <div>
+                <div style="position: relative;">
+                    <canvas id="canvas" width="600" height="600"></canvas>
+                    <div id="click-instruction" class="click-instruction">Click anywhere to add trajectories</div>
+                </div>
+                <div class="x-scale">
+                    <span>-10</span>
+                    <span>-5</span>
+                    <span>0</span>
+                    <span>5</span>
+                    <span>10</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script>
+        let userPoints = []; // Store user-clicked points
+
         document.addEventListener('DOMContentLoaded', function() {
             katex.render(
                 `\\begin{cases}
@@ -121,7 +355,35 @@
                 { throwOnError: false, displayMode: true }
             );
             drawPhasePortrait();
+            
+            // Add click listener to canvas
+            const canvas = document.getElementById('canvas');
+            canvas.addEventListener('click', function(event) {
+                const rect = canvas.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+                
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const scale = 30;
+                
+                // Convert click coordinates to system coordinates
+                const systemX = (x - centerX) / scale;
+                const systemY = (centerY - y) / scale;
+                
+                userPoints.push({x: systemX, y: systemY});
+                drawPhasePortrait();
+                
+                // Fade out the instruction after the first click
+                const instruction = document.getElementById('click-instruction');
+                instruction.classList.add('fade-out');
+            });
         });
+
+        function clearUserPoints() {
+            userPoints = []; // Clear stored points
+            drawPhasePortrait(); // Redraw without user-generated trajectories
+        }
 
         function drawPhasePortrait() {
             const canvas = document.getElementById('canvas');
@@ -160,16 +422,23 @@
                 }
             }
 
-            // Draw trajectories (red)
+            // Draw predefined trajectories (red)
             ctx.strokeStyle = '#e74c3c';
             ctx.lineWidth = 2;
-            const trajectories = [
+            const predefinedTrajectories = [
                 {x: 2, y: 2}, {x: -2, y: 2}, 
                 {x: -2, y: -2}, {x: 2, y: -2},
                 {x: 3, y: 0}, {x: -3, y: 0}
             ];
 
-            trajectories.forEach(point => {
+            predefinedTrajectories.forEach(point => {
+                const path = computeTrajectory(point.x, point.y, a, b, c, d, scale, centerX, centerY);
+                drawTrajectory(ctx, path);
+            });
+
+            // Draw user-added trajectories (green)
+            ctx.strokeStyle = '#2ecc71';
+            userPoints.forEach(point => {
                 const path = computeTrajectory(point.x, point.y, a, b, c, d, scale, centerX, centerY);
                 drawTrajectory(ctx, path);
             });
@@ -184,7 +453,8 @@
             ctx.stroke();
         }
 
-        function computeTrajectory(x0, y0, a, b, c, d, scale, cx, cy) {
+        /* ... (keep computeTrajectory, drawTrajectory, and drawArrow functions the same) ... */
+		function computeTrajectory(x0, y0, a, b, c, d, scale, cx, cy) {
             const dt = 0.0012;
             const maxSteps = 400;
             const points = [];
@@ -247,5 +517,3 @@
     </script>
 </body>
 </html>
-
-       
