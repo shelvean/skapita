@@ -296,6 +296,76 @@
             display: flex;
             align-items: center;
         }
+        .click-instruction {
+            position: absolute;
+            top: 20px; /* Position near the top */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            color: #2c3e50;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            opacity: 1;
+            transition: opacity 2s ease-out;
+            pointer-events: none; /* Ensure clicks pass through to the canvas */
+        }
+        .fade-out {
+            opacity: 0;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button.clear {
+            background: #e74c3c;
+        }
+        button.clear:hover {
+            background: #c0392b;
+        }
+        .scale-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            margin-top: 10px;
+        }
+        .x-scale {
+            display: flex;
+            justify-content: space-between;
+            width: 600px;
+            font-size: 0.9rem;
+            color: #2c3e50;
+            margin-top: 10px; /* Position below the canvas */
+        }
+        .y-scale {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 600px;
+            font-size: 0.9rem;
+            color: #2c3e50;
+            margin-right: 10px;
+        }
+        .canvas-wrapper {
+            display: flex;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -383,6 +453,10 @@
         function clearUserPoints() {
             userPoints = []; // Clear stored points
             drawPhasePortrait(); // Redraw without user-generated trajectories
+            
+            // Make the instruction reappear
+            const instruction = document.getElementById('click-instruction');
+            instruction.classList.remove('fade-out');
         }
 
         function drawPhasePortrait() {
