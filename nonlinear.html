@@ -179,13 +179,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             setCanvasResolution();
             // ... (keep KaTeX rendering code unchanged) ...
-			katex.render('f(x,y,t) =', document.getElementById('f-label'));
-            katex.render('g(x,y,t) =', document.getElementById('g-label'));
+			katex.render('f(x,y) =', document.getElementById('f-label'));
+            katex.render('g(x,y) =', document.getElementById('g-label'));
 
             katex.render(
                 `\\begin{cases}
-                \\dot{x} = f(x,y,t) \\\\
-                \\dot{y} = g(x,y,t)
+                \\dot{x} = f(x,y) \\\\
+                \\dot{y} = g(x,y)
                 \\end{cases}`,
                 document.getElementById('equation-display'),
                 { throwOnError: false, displayMode: true }
