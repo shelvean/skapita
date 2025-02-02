@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nonlinear System Phase Plane Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+        <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f0f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1000px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .equation {
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 1rem 0;
+        }
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .input-group {
+            width: 48%; /* Adjust width for two columns */
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 0.3rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        #plot-container {
+            position: relative;
+            margin-top: 1rem;
+        }
+        #canvas {
+            border: 1px solid #ccc;
+            width: 100%;
+            height: 600px;
+            z-index: 1; /* Ensure canvas is on top */
+            position: relative; /* Required for z-index to work */
+        }
+        .scale-label {
+            position: absolute;
+            font-size: 0.8rem;
+            color: #333;
+        }
+        .x-scale {
+            bottom: -25px;
+        }
+        .y-scale {
+            left: -25px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .latex-label {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+        .button-container button {
+            flex: 1;
+        }
+        .button-container button.clear {
+            background-color: #dc3545;
+        }
+        .button-container button.clear:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ... (keep container header and inputs unchanged) ... -->
+		 <h1>Nonlinear System Phase Plane</h1>
+        <div class="equation" id="equation-display"></div>
+        <div class="input-container">
+            <div class="latex-label" id="f-label"></div>
+            <div class="input-group" style="width: 100%;">
+                <input type="text" id="fInput" value="y-0.2*x">
+            </div>
+        </div>
+        <div class="input-container">
+            <div class="latex-label" id="g-label"></div>
+            <div class="input-group" style="width: 100%;">
+                <input type="text" id="gInput" value="-sin(x)">
+            </div>
+        </div>
+        <div class="input-container">
+            <div class="input-group">
+                <label for="xMin">X Min:</label>
+                <input type="number" id="xMin" value="-15">
+            </div>
+            <div class="input-group">
+                <label for="xMax">X Max:</label>
+                <input type="number" id="xMax" value="15">
+            </div>
+        </div>
+        <div class="input-container">
+            <div class="input-group">
+                <label for="yMin">Y Min:</label>
+                <input type="number" id="yMin" value="-5">
+            </div>
+            <div class="input-group">
+                <label for="yMax">Y Max:</label>
+                <input type="number" id="yMax" value="5">
+            </div>
+        </div>
+        <div class="input-container">
+            <div class="input-group" style="width: 100%;">
+                <label for="arrowCount">Number of Arrows per Axis:</label>
+                <input type="number" id="arrowCount" value="25">
+            </div>
+        </div>
+        <div class="button-container">
+            <button onclick="drawPhasePlane()">Generate Phase Plane</button>
+            <button class="clear" onclick="clearTrajectories()">Clear Trajectories</button>
+        </div>
+        <div id="plot-container">
+            <canvas id="canvas" width="600" height="600"></canvas>
+            <div id="click-instruction" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 5px;">Click to add trajectories</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.min.js"></script>
+    <script>
+        let userPoints = [];
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let scaleLabels = [];
+
+        // Fix canvas resolution to match display size
+        function setCanvasResolution() {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setCanvasResolution();
+            // ... (keep KaTeX rendering code unchanged) ...
+			katex.render('f(x,y,t) =', document.getElementById('f-label'));
+            katex.render('g(x,y,t) =', document.getElementById('g-label'));
+
+            katex.render(
+                `\\begin{cases}
+                \\dot{x} = f(x,y,t) \\\\
+                \\dot{y} = g(x,y,t)
+                \\end{cases}`,
+                document.getElementById('equation-display'),
+                { throwOnError: false, displayMode: true }
+            );
+            
+            canvas.addEventListener('click', function(event) {
+                const rect = canvas.getBoundingClientRect();
+                
+                // Get canvas-relative click coordinates
+                const clickX = event.clientX - rect.left;
+                const clickY = event.clientY - rect.top;
+                
+                // Convert to normalized canvas coordinates [0,1]
+                const normX = clickX / canvas.width;
+                const normY = clickY / canvas.height;
+                
+                // Convert to system coordinates
+                const xMin = parseFloat(document.getElementById('xMin').value);
+                const xMax = parseFloat(document.getElementById('xMax').value);
+                const yMin = parseFloat(document.getElementById('yMin').value);
+                const yMax = parseFloat(document.getElementById('yMax').value);
+                
+                const systemX = xMin + normX * (xMax - xMin);
+                const systemY = yMax - normY * (yMax - yMin);
+                
+                userPoints.push({x: systemX, y: systemY});
+                drawPhasePlane();
+            });
+        });
+
+        function drawPhasePlane() {
+            setCanvasResolution(); // Ensure proper scaling
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // ... (keep rest of drawPhasePlane() unchanged) ...
+			scaleLabels.forEach(label => label.remove());
+            scaleLabels = [];
+            
+            const f = document.getElementById('fInput').value;
+            const g = document.getElementById('gInput').value;
+            const xMin = parseFloat(document.getElementById('xMin').value);
+            const xMax = parseFloat(document.getElementById('xMax').value);
+            const yMin = parseFloat(document.getElementById('yMin').value);
+            const yMax = parseFloat(document.getElementById('yMax').value);
+            const arrowCount = parseInt(document.getElementById('arrowCount').value);
+            
+            drawAxes(xMin, xMax, yMin, yMax);
+            drawVectorField(f, g, xMin, xMax, yMin, yMax, arrowCount);
+            
+            ctx.strokeStyle = '#800000';
+            ctx.lineWidth = 2;
+            userPoints.forEach(point => {
+                const path = computeTrajectory(f, g, point.x, point.y, xMin, xMax, yMin, yMax);
+                drawTrajectory(path, xMin, xMax, yMin, yMax);
+            });
+        }
+
+        function drawTrajectory(points, xMin, xMax, yMin, yMax) {
+            ctx.beginPath();
+            points.forEach((point, index) => {
+                // Convert system coordinates to canvas pixels
+                const canvasX = ((point.x - xMin) / (xMax - xMin)) * canvas.width;
+                const canvasY = ((yMax - point.y) / (yMax - yMin)) * canvas.height;
+                
+                if (index === 0) ctx.moveTo(canvasX, canvasY);
+                else ctx.lineTo(canvasX, canvasY);
+            });
+            ctx.stroke();
+        }
+
+        // ... (keep other functions unchanged) ...
+		function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
+            const dt = 0.05;
+            const maxSteps = 2500;  // Increased steps for longer trajectories
+            const points = [{x: x0, y: y0}];  // Start with clicked point
+
+            // Forward integration
+            let x = x0, y = y0;
+            for (let i = 0; i < maxSteps; i++) {
+                try {
+                    const dxVal = math.evaluate(f, {x, y, t: i*dt});
+                    const dyVal = math.evaluate(g, {x, y, t: i*dt});
+                    
+                    x += dxVal * dt;
+                    y += dyVal * dt;
+                    
+                    if (x < xMin || x > xMax || y < yMin || y > yMax) break;
+                    points.push({x, y});
+                } catch (e) {
+                    break;
+                }
+            }
+
+            // Backward integration
+            x = x0;
+            y = y0;
+            for (let i = 0; i < maxSteps; i++) {
+                try {
+                    const dxVal = math.evaluate(f, {x, y, t: i*dt});
+                    const dyVal = math.evaluate(g, {x, y, t: i*dt});
+                    
+                    x -= dxVal * dt;
+                    y -= dyVal * dt;
+                    
+                    if (x < xMin || x > xMax || y < yMin || y > yMax) break;
+                    points.unshift({x, y});  // Add to beginning
+                } catch (e) {
+                    break;
+                }
+            }
+
+            return points;
+        }
+		 function drawArrow(fromX, fromY, toX, toY) {
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+            
+            // Arrowhead
+            const arrowSize = 5;
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - arrowSize * Math.cos(angle - Math.PI/6), toY - arrowSize * Math.sin(angle - Math.PI/6));
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - arrowSize * Math.cos(angle + Math.PI/6), toY - arrowSize * Math.sin(angle + Math.PI/6));
+            ctx.stroke();
+        }
+		function drawVectorField(f, g, xMin, xMax, yMin, yMax, arrowCount) {
+            ctx.strokeStyle = '#007BFF';
+            ctx.lineWidth = 0.5;
+
+            const xStep = (xMax - xMin) / arrowCount;
+            const yStep = (yMax - yMin) / arrowCount;
+
+            for (let x = xMin; x <= xMax; x += xStep) {
+                for (let y = yMin; y <= yMax; y += yStep) {
+                    try {
+                        const dx = math.evaluate(f, {x, y, t: 0});
+                        const dy = math.evaluate(g, {x, y, t: 0});
+                        
+                        const startX = ((x - xMin) / (xMax - xMin)) * canvas.width;
+                        const startY = canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height;
+
+                        // Arrow scaling with maximum length
+                        const maxLength = 30;
+                        const length = Math.sqrt(dx*dx + dy*dy);
+                        const scale = length === 0 ? 0 : Math.min(20, maxLength / length);
+                        
+                        const endX = startX + dx * scale;
+                        const endY = startY - dy * scale;
+
+                        drawArrow(startX, startY, endX, endY);
+                    } catch (e) {
+                        console.error('Error evaluating function:', e);
+                    }
+                }
+            }
+        }
+		
+		function drawAxes(xMin, xMax, yMin, yMax) {
+            ctx.strokeStyle = '#95a5a6';
+            ctx.lineWidth = 1;
+
+            // X-axis (horizontal line at y=0)
+            const yZeroCanvas = (yMax / (yMax - yMin)) * canvas.height;
+            ctx.beginPath();
+            ctx.moveTo(0, yZeroCanvas);
+            ctx.lineTo(canvas.width, yZeroCanvas);
+            ctx.stroke();
+
+            // Y-axis (vertical line at x=0)
+            const xZeroCanvas = (-xMin / (xMax - xMin)) * canvas.width;
+            ctx.beginPath();
+            ctx.moveTo(xZeroCanvas, 0);
+            ctx.lineTo(xZeroCanvas, canvas.height);
+            ctx.stroke();
+
+            // Scale labels
+            const xLabels = [xMin, 0, xMax];
+            xLabels.forEach(label => {
+                const xCanvas = ((label - xMin) / (xMax - xMin)) * canvas.width;
+                const labelEl = document.createElement('div');
+                labelEl.className = 'scale-label x-scale';
+                labelEl.textContent = label.toFixed(1);
+                labelEl.style.left = `${xCanvas}px`;
+                document.getElementById('plot-container').appendChild(labelEl);
+                scaleLabels.push(labelEl);
+            });
+
+            const yLabels = [yMin, 0, yMax];
+            yLabels.forEach(label => {
+                const yCanvas = canvas.height - ((label - yMin) / (yMax - yMin)) * canvas.height;
+                const labelEl = document.createElement('div');
+                labelEl.className = 'scale-label y-scale';
+                labelEl.textContent = label.toFixed(1);
+                labelEl.style.top = `${yCanvas}px`;
+                document.getElementById('plot-container').appendChild(labelEl);
+                scaleLabels.push(labelEl);
+            });
+        }
+		
+		function clearTrajectories() {
+            userPoints = [];
+            drawPhasePlane();
+        }
+    </script>
+</body>
+</html>
