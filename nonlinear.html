@@ -257,48 +257,60 @@
         }
 
         // ... (keep other functions unchanged) ...
-		function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
-            const dt = 0.0125;
-            const maxSteps = 2500;  // Increased steps for longer trajectories
-            const points = [{x: x0, y: y0}];  // Start with clicked point
+	 function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
+        const dt = 0.05; // Larger step size possible with RK4
+        const maxSteps = 2000;
+        const points = [{x: x0, y: y0}];
 
-            // Forward integration
-            let x = x0, y = y0;
-            for (let i = 0; i < maxSteps; i++) {
-                try {
-                    const dxVal = math.evaluate(f, {x, y, t: i*dt});
-                    const dyVal = math.evaluate(g, {x, y, t: i*dt});
-                    
-                    x += dxVal * dt;
-                    y += dyVal * dt;
-                    
-                    if (x < xMin || x > xMax || y < yMin || y > yMax) break;
-                    points.push({x, y});
-                } catch (e) {
-                    break;
-                }
+        // RK4 integration function
+        const rk4Step = (x, y, dt) => {
+            try {
+                const k1x = math.evaluate(f, {x, y, t: 0});
+                const k1y = math.evaluate(g, {x, y, t: 0});
+                
+                const k2x = math.evaluate(f, {x: x + k1x*dt/2, y: y + k1y*dt/2, t: dt/2});
+                const k2y = math.evaluate(g, {x: x + k1x*dt/2, y: y + k1y*dt/2, t: dt/2});
+                
+                const k3x = math.evaluate(f, {x: x + k2x*dt/2, y: y + k2y*dt/2, t: dt/2});
+                const k3y = math.evaluate(g, {x: x + k2x*dt/2, y: y + k2y*dt/2, t: dt/2});
+                
+                const k4x = math.evaluate(f, {x: x + k3x*dt, y: y + k3y*dt, t: dt});
+                const k4y = math.evaluate(g, {x: x + k3x*dt, y: y + k3y*dt, t: dt});
+
+                return {
+                    dx: (k1x + 2*k2x + 2*k3x + k4x)/6 * dt,
+                    dy: (k1y + 2*k2y + 2*k3y + k4y)/6 * dt
+                };
+            } catch (e) {
+                return {dx: 0, dy: 0};
             }
+        };
 
-            // Backward integration
-            x = x0;
-            y = y0;
-            for (let i = 0; i < maxSteps; i++) {
-                try {
-                    const dxVal = math.evaluate(f, {x, y, t: i*dt});
-                    const dyVal = math.evaluate(g, {x, y, t: i*dt});
-                    
-                    x -= dxVal * dt;
-                    y -= dyVal * dt;
-                    
-                    if (x < xMin || x > xMax || y < yMin || y > yMax) break;
-                    points.unshift({x, y});  // Add to beginning
-                } catch (e) {
-                    break;
-                }
-            }
-
-            return points;
+        // Forward integration
+        let x = x0, y = y0;
+        for (let i = 0; i < maxSteps; i++) {
+            const {dx, dy} = rk4Step(x, y, dt);
+            x += dx;
+            y += dy;
+            
+            if (x < xMin || x > xMax || y < yMin || y > yMax) break;
+            points.push({x, y});
         }
+
+        // Backward integration
+        x = x0;
+        y = y0;
+        for (let i = 0; i < maxSteps; i++) {
+            const {dx, dy} = rk4Step(x, y, -dt); // Negative dt for backward
+            x += dx;
+            y += dy;
+            
+            if (x < xMin || x > xMax || y < yMin || y > yMax) break;
+            points.unshift({x, y});
+        }
+
+        return points;
+    }
 		 function drawArrow(fromX, fromY, toX, toY) {
             const angle = Math.atan2(toY - fromY, toX - fromX);
             ctx.beginPath();
