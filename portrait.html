@@ -378,7 +378,7 @@
             }
 
             // Draw predefined trajectories (red)
-            ctx.strokeStyle = '#e74c3c';
+       /*     ctx.strokeStyle = '#e74c3c';
             ctx.lineWidth = 2; // Keep original thickness for trajectories
             const predefinedTrajectories = [
                 {x: 2, y: 2}, {x: -2, y: 2}, 
@@ -389,7 +389,7 @@
             predefinedTrajectories.forEach(point => {
                 const path = computeTrajectory(point.x, point.y, a, b, c, d, scale, centerX, centerY);
                 drawTrajectory(ctx, path);
-            });
+            }); */
 
             // Draw user-added trajectories (green)
             ctx.strokeStyle = '#003161';
