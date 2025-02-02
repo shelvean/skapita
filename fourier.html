@@ -10,6 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
   <style>
+    /* Base Styles */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
@@ -19,7 +20,7 @@
     }
 
     .container {
-      max-width: 800px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
       background-color: #fff;
@@ -32,6 +33,7 @@
       text-align: center;
       color: #2c3e50;
       margin-bottom: 20px;
+      font-size: 2rem;
     }
 
     .input-group {
@@ -73,7 +75,7 @@
 
     #plot {
       width: 100%;
-      height: 500px;
+      height: 400px; /* Default height */
       margin-top: 20px;
       border-radius: 8px;
       overflow: hidden;
@@ -98,11 +100,72 @@
       color: #dc3545;
       padding: 10px;
     }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .container {
+        padding: 15px;
+        margin-top: 10px;
+      }
+
+      #plot {
+        height: 300px; /* Smaller height for tablets */
+      }
+
+      .input-group input, .input-group select {
+        font-size: 14px;
+        padding: 8px;
+      }
+
+      button {
+        padding: 10px;
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.25rem;
+      }
+
+      .container {
+        padding: 10px;
+        margin-top: 5px;
+      }
+
+      #plot {
+        height: 250px; /* Smaller height for smartphones */
+      }
+
+      .input-group input, .input-group select {
+        font-size: 12px;
+        padding: 6px;
+      }
+
+      button {
+        padding: 8px;
+        font-size: 12px;
+      }
+
+      .katex-display {
+        padding: 10px 0;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      #plot {
+        height: 500px; /* Larger height for desktops */
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Fourier Series Approximation</h1>
+    <h1>Fourier Series Animation</h1>
     <div class="input-group">
       <label for="exampleSelect">Example Functions:</label>
       <select id="exampleSelect" onchange="selectExample(this.value)">
@@ -117,11 +180,11 @@
     </div>
     <div class="input-group">
       <label for="functionInput">Function:</label>
-      <input type="text" id="functionInput" value="square(x)">
+      <input type="text" id="functionInput" value="x*sin(5*x)">
     </div>
     <div class="input-group">
       <label for="nInput">Number of Fourier Modes (n):</label>
-      <input type="number" id="nInput" value="10" min="1">
+      <input type="number" id="nInput" value="15" min="1">
     </div>
     <div class="input-group">
       <label for="xMin">Domain of x (Min):</label>
@@ -145,6 +208,7 @@
   </div>
 
   <script>
+    // ... (Keep all JavaScript code the same as in the previous version)
     let animationInterval;
 
     function heaviside(x) {
@@ -344,5 +408,5 @@
       });
     });
   </script>
-</body>
+ </body>
 </html>
