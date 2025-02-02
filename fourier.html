@@ -139,7 +139,7 @@
 
       #plot {
         height: 350px; /* Increased height for smartphones */
-	width: 400px;
+	width: 800px;
       }
 
       .input-group input, .input-group select {
@@ -171,17 +171,17 @@
       <label for="exampleSelect">Example Functions:</label>
       <select id="exampleSelect" onchange="selectExample(this.value)">
         <option value="">Select an example...</option>
-        <option value="x*sin(5*x)">x*sin(5x)</option>
+        <option value="x*sin(5*x) + 2*abs(x-2)*cos(5*x)">x*sin(5x)+ 2*abs(x-2)*cos(5*x)</option>
         <option value="square(x)">square(x)</option>
         <option value="sawtooth(x)">sawtooth(x)</option>
         <option value="heaviside(x)">heaviside(x)</option>
         <option value="x">x</option>
-        <option value="x^2">x²</option>
+        <option value="x^2">x^2</option>
       </select>
     </div>
     <div class="input-group">
       <label for="functionInput">Function:</label>
-      <input type="text" id="functionInput" value="x*sin(5*x)">
+      <input type="text" id="functionInput" value="x*sin(5*x) + 2*abs(x-2)*cos(5*x)">
     </div>
     <div class="input-group">
       <label for="nInput">Number of Fourier Modes (n):</label>
