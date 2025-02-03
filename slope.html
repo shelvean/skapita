@@ -180,7 +180,7 @@
         </div>
       </div>
       <div class="canvas-container">
-        <div class="instruction">
+        <div class="instruction" id="instruction">
           ✨ Click anywhere on the graph to draw solution curves
         </div>
         <canvas id="canvas" width="800" height="500"></canvas>
@@ -189,6 +189,7 @@
     <script>
       const canvas = document.getElementById('canvas');
       const ctx = canvas.getContext('2d');
+      const instruction = document.getElementById('instruction');
       const SEGMENT_LENGTH = 15;
       const GRID_STEP = 20;
       let solutions = [];
@@ -343,6 +344,9 @@
 
               hue = (hue + 60) % 360;
               drawDirectionField();
+
+              // Hide the instruction after clicking
+              instruction.style.display = 'none';
           } catch(e) {
               alert("Could not compute solution curve");
           }
@@ -351,6 +355,9 @@
       function clearSolutions() {
           solutions = [];
           drawDirectionField();
+
+          // Show the instruction after clearing solutions
+          instruction.style.display = 'block';
       }
 
       function drawGrid(tMin, tMax, yMin, yMax, xScale, yScale) {
