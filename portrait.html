@@ -417,34 +417,50 @@
         }
 
         function computeTrajectory(x0, y0, a, b, c, d, scale, cx, cy) {
-            const dt = 0.0003; // Reduced from 0.0012 for finer step
-            const maxSteps = 5000; // Increased to extend trajectory length
-            const points = [];
-            let x = x0, y = y0;
+    const dt = 0.01; // Time step for RK4 (can be adjusted)
+    const maxSteps = 10000; // Increased to extend trajectory length
+    const points = [];
+    let x = x0, y = y0;
 
-            // Forward integration
-            for (let i = 0; i < maxSteps; i++) {
-                points.push({x: cx + x*scale, y: cy - y*scale});
-                const dx = a*x + b*y;
-                const dy = c*x + d*y;
-                x += dx*dt;
-                y += dy*dt;
-                if (Math.abs(x) > 12 || Math.abs(y) > 9) break; // Adjusted for larger canvas
-            }
+    // Function to compute derivatives
+    function derivatives(x, y) {
+        const dx = a * x + b * y;
+        const dy = c * x + d * y;
+        return { dx, dy };
+    }
 
-            // Backward integration
-            x = x0, y = y0;
-            for (let i = 0; i < maxSteps; i++) {
-                const dx = a*x + b*y;
-                const dy = c*x + d*y;
-                x -= dx*dt;
-                y -= dy*dt;
-                if (Math.abs(x) > 12 || Math.abs(y) > 9) break; // Adjusted for larger canvas
-                points.unshift({x: cx + x*scale, y: cy - y*scale});
-            }
+    // Forward integration using RK4
+    for (let i = 0; i < maxSteps; i++) {
+        points.push({ x: cx + x * scale, y: cy - y * scale });
 
-            return points;
-        }
+        const { dx: k1x, dy: k1y } = derivatives(x, y);
+        const { dx: k2x, dy: k2y } = derivatives(x + k1x * dt / 2, y + k1y * dt / 2);
+        const { dx: k3x, dy: k3y } = derivatives(x + k2x * dt / 2, y + k2y * dt / 2);
+        const { dx: k4x, dy: k4y } = derivatives(x + k3x * dt, y + k3y * dt);
+
+        x += (k1x + 2 * k2x + 2 * k3x + k4x) * dt / 6;
+        y += (k1y + 2 * k2y + 2 * k3y + k4y) * dt / 6;
+
+        if (Math.abs(x) > 20 || Math.abs(y) > 20) break; // Stop if trajectory goes out of bounds
+    }
+
+    // Backward integration using RK4
+    x = x0, y = y0;
+    for (let i = 0; i < maxSteps; i++) {
+        const { dx: k1x, dy: k1y } = derivatives(x, y);
+        const { dx: k2x, dy: k2y } = derivatives(x - k1x * dt / 2, y - k1y * dt / 2);
+        const { dx: k3x, dy: k3y } = derivatives(x - k2x * dt / 2, y - k2y * dt / 2);
+        const { dx: k4x, dy: k4y } = derivatives(x - k3x * dt, y - k3y * dt);
+
+        x -= (k1x + 2 * k2x + 2 * k3x + k4x) * dt / 6;
+        y -= (k1y + 2 * k2y + 2 * k3y + k4y) * dt / 6;
+
+        if (Math.abs(x) > 20 || Math.abs(y) > 20) break; // Stop if trajectory goes out of bounds
+        points.unshift({ x: cx + x * scale, y: cy - y * scale });
+    }
+
+    return points;
+}
 
         function drawTrajectory(ctx, points) {
             ctx.beginPath();
