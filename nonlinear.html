@@ -267,7 +267,7 @@
         // ... (keep other functions unchanged) ...
 	 function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
         const dt = 0.0125; // Larger step size possible with RK4
-        const maxSteps = 2000;
+        const maxSteps = 500;
         const points = [{x: x0, y: y0}];
 
         // RK4 integration function
