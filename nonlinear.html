@@ -131,7 +131,7 @@
         <div class="input-container">
             <div class="latex-label" id="g-label"></div>
             <div class="input-group" style="width: 100%;">
-                <input type="text" id="gInput" value="-0.5*y-sin(x)">
+                <input type="text" id="gInput" value="-0.1*y-1.56*sin(x)">
             </div>
         </div>
         <div class="input-container">
@@ -266,8 +266,8 @@
 
         // ... (keep other functions unchanged) ...
 	 function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
-        const dt = 0.0125; // Larger step size possible with RK4
-        const maxSteps = 500;
+        const dt = 0.025; // Larger step size possible with RK4
+        const maxSteps = 1000;
         const points = [{x: x0, y: y0}];
 
         // RK4 integration function
