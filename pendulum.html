@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5B8PRB2WZT');
+</script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Damped Pendulum Simulator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  
+  <style>
+    :root {
+      --primary: #6c5ce7;
+      --secondary: #4a47a3;
+      --background: #f8f9fa;
+      --surface: #e9ecef;
+      --text: #212529;
+      --accent: #00b4d8;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 30px;
+      background: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      justify-content: center;
+    }
+
+    .main-container {
+      max-width: 1000px; 
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: black;
+      margin-bottom: 0.5rem;
+    }
+
+    #equationTitle {
+      margin-bottom: 0.5rem;
+    }
+
+    .content-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 100%; 
+    }
+
+    .controls-wrapper {
+      flex: 1;
+      min-width: 250px;
+      max-width: 350px; 
+    }
+
+    .controls {
+      width: 100%;
+      padding: 0.8rem;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .controls .row1, .controls .row2 {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    canvas {
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border: 2px solid var(--surface);
+      background: white;
+      flex: 0 0 auto; 
+    }
+
+    #simulationCanvas {
+      width: 500px;
+      height: 400px; 
+      max-width: 100%; 
+    }
+
+    .controls input {
+      width: 50px;
+      padding: 0.3rem;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
+    }
+
+    .controls input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--primary);
+      background: rgba(255,255,255,0.15);
+    }
+
+    .controls label {
+      color: var(--secondary);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    button {
+      padding: 0.5rem 0.8rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--primary);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.8rem;
+    }
+
+    button:hover {
+      background: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+    }
+
+    #equation {
+      font-size: 1em;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      background: rgba(233,236,239,0.6);
+      color: var(--primary);
+      border-radius: 8px;
+      font-family: monospace;
+      text-align: center;
+    }
+
+    .graph-container {
+      width: 100%;
+      max-width: 350px; 
+      margin-top: 10px;
+      background: white;
+      border: 1px solid var(--surface);
+      border-radius: 16px;
+      padding: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    .graph-container h2 {
+      color: var(--secondary);
+      margin-bottom: 1rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 840px) {
+      .content-wrapper {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .controls-wrapper, #simulationCanvas {
+        width: 100%;
+      }
+      
+      h1 {
+        font-size: 1.2rem;
+      }
+    }
+
+    /* Custom styles for the alert */
+    .px-8 {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+    
+    .py-6 {
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;
+    }
+    
+    .bg-red-400 {
+      background-color: #f87171;
+    }
+    
+    .text-white {
+      color: white;
+    }
+    
+    .flex {
+      display: flex;
+    }
+    
+    .justify-between {
+      justify-content: space-between;
+    }
+    
+    .rounded {
+      border-radius: 0.25rem;
+    }
+    
+    .items-center {
+      align-items: center;
+    }
+    
+    .mr-6 {
+      margin-right: 1.5rem;
+    }
+    
+    .h-7, .w-7 {
+      height: 1.75rem;
+      width: 1.75rem;
+    }
+    
+    .h-6, .w-6 {
+      height: 1.5rem;
+      width: 1.5rem;
+    }
+    
+    .text-red-100 {
+      color: #fee2e2;
+    }
+    
+    .hover\:text-white:hover {
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <h1 id="equationTitle">Damped Pendulum Oscillator</h1>
+    <p id="equationGeneral"></p>
+    <div class="content-wrapper">
+      <div class="controls-wrapper">
+        <div class="controls">
+          <div class="row1">
+            <label for="length">Length (L) [m]:</label>
+            <input type="number" id="length" value="1" min="0.1" max="10" step="0.1">
+            <label for="initialAngle">Initial Angle (θ₀) [rad]:</label>
+            <input type="number" id="initialAngle" value="0.3" step="0.01" min="-1.57" max="1.57">
+            <label for="initialVelocity">Angular Velocity (ω₀) [rad/s]:</label>
+            <input type="number" id="initialVelocity" value="0" step="0.1">
+          </div>
+          <div class="row2">
+            <label for="mass">Mass (m) [kg]:</label>
+            <input type="number" id="mass" value="1" step="0.1">
+            <label for="damping">Damping (b) [kg/s]:</label>
+            <input type="number" id="damping" value="0.1" step="0.01">
+            <button onclick="resetSimulation()">Reset</button>
+          </div>
+        </div>
+        <p>Equation: <span id="equation"></span></p>
+        <div class="graph-container">
+          <h2>Angular Displacement (θ) vs Time (t)</h2>
+          <canvas id="graphCanvas" width="350" height="200"></canvas> 
+        </div>
+      </div>
+      <canvas id="simulationCanvas" width="500" height="400"></canvas> 
+    </div>
+  </div>
+
+  <!-- Alert container -->
+  <div id="alertContainer" style="display: none;"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script>
+    const canvas = document.getElementById('simulationCanvas');
+    const ctx = canvas.getContext('2d');
+    const graphCanvas = document.getElementById('graphCanvas');
+    const graphCtx = graphCanvas.getContext('2d');
+    const g = 9.81; // m/s^2
+
+    // Simulation parameters with realistic units
+    let L = 1; // meters
+    let theta0 = 0.3; // radians
+    let omega0 = 0; // rad/s
+    let m = 1; // kg
+    let b = 0.1; // kg/s
+
+    // Simulation state
+    let theta = theta0;
+    let omega = omega0;
+    let t = 0;
+    const dt = 0.02; // Smaller time step for more accurate simulation with realistic units
+    const graphMaxTime = 30; // seconds
+    let isSimulationRunning = true;
+    const graphData = [];
+
+    function updatePhysics() {
+      if (!isSimulationRunning) return;
+
+      // Angular acceleration calculation using realistic units
+      const alpha = (-b * omega / m) - (g / L) * Math.sin(theta);
+      omega += alpha * dt;
+      theta += omega * dt;
+      t += dt;
+
+      // Check if theta exceeds the maximum angle
+      if (Math.abs(theta) > Math.abs(parseFloat(document.getElementById('initialAngle').max))) {
+        isSimulationRunning = false;
+        
+        // Create the alert message using the new style
+        const alertContainer = document.getElementById('alertContainer');
+        alertContainer.innerHTML = `
+          <div class="px-8 py-6 bg-red-400 text-white flex justify-between rounded">
+            <div class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mr-6" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+              <p>The pendulum angle has exceeded the maximum allowed angle. Please adjust your parameters.</p>
+            </div>
+            <button class="text-red-100 hover:text-white" onclick="dismissAlert()">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        `;
+        alertContainer.style.display = 'block'; // Show the alert
+
+        return;
+      }
+
+      // Store data for graph
+      graphData.push({ t, theta });
+      if (t > graphMaxTime) isSimulationRunning = false;
+    }
+
+    function drawPendulum() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Move pivot to the top of the canvas
+      const pivotX = canvas.width / 2; 
+      const pivotY = 20; // Near the top, with some padding
+
+      // Scale length for visual representation
+      const scale = 300; // Adjust this to fit the display
+      const visualLength = L * scale;
+
+      // Draw support structure - now at the top
+      ctx.fillStyle = '#333';
+      ctx.fillRect(pivotX - 50, 0, 100, 40); 
+
+      // Calculate bob position based on new pivot
+      const bobX = pivotX + visualLength * Math.sin(theta);
+      const bobY = pivotY + visualLength * Math.cos(theta);
+
+      // Draw pendulum string
+      ctx.beginPath();
+      ctx.moveTo(pivotX, pivotY);
+      ctx.lineTo(bobX, bobY);
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Draw pendulum bob with half the original radius (20/2 = 10)
+      ctx.beginPath();
+      ctx.arc(bobX, bobY, 10, 0, Math.PI * 2); 
+      ctx.fillStyle = '#8B4513';
+      ctx.fill();
+      ctx.strokeStyle = '#000';
+      ctx.stroke();
+    }
+
+    function drawGraph() {
+      graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+
+      // Draw axes
+      graphCtx.beginPath();
+      graphCtx.strokeStyle = '#000';
+      graphCtx.lineWidth = 1;
+      graphCtx.moveTo(50, 20);
+      graphCtx.lineTo(50, graphCanvas.height - 20);
+      graphCtx.lineTo(graphCanvas.width - 20, graphCanvas.height - 20);
+      graphCtx.stroke();
+
+      // Draw labels
+      graphCtx.fillStyle = '#000';
+      graphCtx.font = '12px Arial';
+      graphCtx.fillText('Time (t) [s]', graphCanvas.width - 70, graphCanvas.height - 5);
+      graphCtx.save();
+      graphCtx.translate(20, graphCanvas.height / 2);
+      graphCtx.rotate(-Math.PI / 2);
+      graphCtx.fillText('Angular Displacement (θ) [rad]', 0, 0);
+      graphCtx.restore();
+
+      // Plot data with larger displacement (90% of canvas height)
+      graphCtx.beginPath();
+      graphCtx.strokeStyle = '#007bff';
+      graphCtx.lineWidth = 2;
+      graphCtx.moveTo(50, graphCanvas.height / 2);
+
+      for (const point of graphData) {
+        const tx = 50 + ((point.t / graphMaxTime) * (graphCanvas.width - 70));
+        const ty = graphCanvas.height / 2 - (point.theta / (Math.PI / 2)) * (graphCanvas.height * 0.45);
+        graphCtx.lineTo(tx, ty);
+      }
+      graphCtx.stroke();
+    }
+
+    function updateParameters() {
+      L = parseFloat(document.getElementById('length').value);
+      theta0 = parseFloat(document.getElementById('initialAngle').value);
+      omega0 = parseFloat(document.getElementById('initialVelocity').value);
+      m = parseFloat(document.getElementById('mass').value);
+      b = parseFloat(document.getElementById('damping').value);
+
+      // General equation and initial conditions using symbols
+      const equationGeneralElement = document.getElementById('equationGeneral');
+      const latexStringGeneral = `\\theta'' + \\frac{b}{m} \\theta' + \\frac{g}{L} \\sin(\\theta) = 0, \\quad \\theta(0) = \\theta_0, \\quad \\theta'(0) = \\omega_0`;
+      katex.render(latexStringGeneral, equationGeneralElement, {
+        throwOnError: false,
+        displayMode: true 
+      });
+
+      try {
+        const equationElement = document.getElementById('equation');
+        const latexString = `\\theta'' + \\frac{${b.toFixed(2)}}{${m.toFixed(2)}} \\theta' + \\frac{${g.toFixed(2)}}{${L.toFixed(2)}} \\sin(\\theta) = 0`;
+        katex.render(latexString, equationElement, {
+          throwOnError: false,
+          displayMode: false
+        });
+      } catch (error) {
+        console.error('KaTeX error:', error);
+        document.getElementById('equation').textContent = 
+          `θ'' + (${b.toFixed(2)}/(${m.toFixed(2)})θ' + (${g.toFixed(2)}/${L.toFixed(2)})sin(θ) = 0`;
+      }
+    }
+
+    function resetSimulation() {
+      theta = theta0;
+      omega = omega0;
+      t = 0;
+      graphData.length = 0;
+      isSimulationRunning = true;
+      updateParameters();
+    }
+
+    function animate() {
+      if (isSimulationRunning) {
+        updatePhysics();
+        drawPendulum();
+        drawGraph();
+      }
+      requestAnimationFrame(animate);
+    }
+
+    // Function to dismiss the alert
+    function dismissAlert() {
+      const alertContainer = document.getElementById('alertContainer');
+      alertContainer.style.display = 'none';
+    }
+
+    // Initialize simulation
+    document.addEventListener('DOMContentLoaded', () => {
+      updateParameters();
+      animate();
+    });
+  </script>
+</body>
+</html>
+
