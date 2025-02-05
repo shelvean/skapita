@@ -15,7 +15,8 @@
   <title>Damped Pendulum Simulator</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   
-  <style>
+  <!-- (Keep the same CSS styles as original) -->
+   <style>
     :root {
       --primary: #6c5ce7;
       --secondary: #4a47a3;
@@ -254,6 +255,7 @@
   </style>
 </head>
 <body>
+  <!-- (Keep the same HTML structure as original) -->
   <div class="main-container">
     <h1 id="equationTitle">Damped Pendulum Oscillator</h1>
     <p id="equationGeneral"></p>
@@ -264,29 +266,28 @@
             <label for="length">Length (L) [m]:</label>
             <input type="number" id="length" value="1" min="0.1" max="10" step="0.1">
             <label for="initialAngle">Initial Angle (θ₀) [rad]:</label>
-            <input type="number" id="initialAngle" value="0.6" step="0.01" min="-1.57" max="1.57">
+            <input type="number" id="initialAngle" value="0.5" step="0.01" min="-1.57" max="1.57">
             <label for="initialVelocity">Angular Velocity (ω₀) [rad/s]:</label>
-            <input type="number" id="initialVelocity" value="2.5" step="0.1">
+            <input type="number" id="initialVelocity" value="0" step="0.1">
           </div>
           <div class="row2">
             <label for="mass">Mass (m) [kg]:</label>
             <input type="number" id="mass" value="1" step="0.1">
             <label for="damping">Damping (b) [kg/s]:</label>
-            <input type="number" id="damping" value="0.1" step="0.01">
+            <input type="number" id="damping" value="0.2" step="0.01">
             <button onclick="resetSimulation()">Reset</button>
           </div>
         </div>
         <p>Equation: <span id="equation"></span></p>
         <div class="graph-container">
           <h2>Angular Displacement (θ) vs Time (t)</h2>
-          <canvas id="graphCanvas" width="350" height="200"></canvas> 
+          <canvas id="graphCanvas" width="350" height="200"></canvas>
         </div>
       </div>
-      <canvas id="simulationCanvas" width="500" height="400"></canvas> 
+      <canvas id="simulationCanvas" width="500" height="400"></canvas>
     </div>
   </div>
 
-  <!-- Alert container -->
   <div id="alertContainer" style="display: none;"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -295,132 +296,124 @@
     const ctx = canvas.getContext('2d');
     const graphCanvas = document.getElementById('graphCanvas');
     const graphCtx = graphCanvas.getContext('2d');
-    const g = 9.81; // m/s^2
+    const g = 9.81; // m/s²
 
-    // Simulation parameters with realistic units
-    let L = 1; // meters
-    let theta0 = 0.3; // radians
-    let omega0 = 0; // rad/s
-    let m = 1; // kg
-    let b = 0.1; // kg/s
+    // Simulation parameters
+    let L = 1;         // Length (meters)
+    let theta0 = 0.3;  // Initial angle (radians)
+    let omega0 = 0;    // Initial angular velocity (rad/s)
+    let m = 1;         // Mass (kg)
+    let b = 0.1;       // Damping coefficient (kg/s)
 
     // Simulation state
     let theta = theta0;
     let omega = omega0;
     let t = 0;
-    const dt = 0.02; // Smaller time step for more accurate simulation with realistic units
-    const graphMaxTime = 30; // seconds
+    const dt = 0.03;       // Time step (seconds)
+    const graphMaxTime = 30; // Seconds
     let isSimulationRunning = true;
     const graphData = [];
+
+    function calculateDerivatives(theta, omega) {
+      const alpha = (-b * omega / m) - (g / L) * Math.sin(theta);
+      return {
+        theta: omega,
+        omega: alpha
+      };
+    }
 
     function updatePhysics() {
       if (!isSimulationRunning) return;
 
-      // Angular acceleration calculation using realistic units
-      const alpha = (-b * omega / m) - (g / L) * Math.sin(theta);
-      omega += alpha * dt;
-      theta += omega * dt;
+      // RK4 integration
+      const k1 = calculateDerivatives(theta, omega);
+      const k2 = calculateDerivatives(theta + k1.theta * dt/2, omega + k1.omega * dt/2);
+      const k3 = calculateDerivatives(theta + k2.theta * dt/2, omega + k2.omega * dt/2);
+      const k4 = calculateDerivatives(theta + k3.theta * dt, omega + k3.omega * dt);
+
+      theta += (k1.theta + 2*k2.theta + 2*k3.theta + k4.theta) * dt/6;
+      omega += (k1.omega + 2*k2.omega + 2*k3.omega + k4.omega) * dt/6;
       t += dt;
-
-      // Check if theta exceeds the maximum angle
-      if (Math.abs(theta) > Math.abs(parseFloat(document.getElementById('initialAngle').max))) {
-        isSimulationRunning = false;
-        
-        // Create the alert message using the new style
-        const alertContainer = document.getElementById('alertContainer');
-        alertContainer.innerHTML = `
-          <div class="px-8 py-6 bg-red-400 text-white flex justify-between rounded">
-            <div class="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mr-6" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-              </svg>
-              <p>The pendulum angle has exceeded the maximum allowed angle. Please adjust your parameters.</p>
-            </div>
-            <button class="text-red-100 hover:text-white" onclick="dismissAlert()">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        `;
-        alertContainer.style.display = 'block'; // Show the alert
-
-        return;
-      }
 
       // Store data for graph
       graphData.push({ t, theta });
       if (t > graphMaxTime) isSimulationRunning = false;
     }
 
+
     function drawPendulum() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Move pivot to the top of the canvas
-      const pivotX = canvas.width / 2; 
-      const pivotY = 20; // Near the top, with some padding
+      // Adjusted pivot position and scaling
+      const pivotX = canvas.width/2;
+      const pivotY = 60;  // Lowered pivot position
+      const scale = 120;   // Reduced scaling factor
+      const bobRadius = 18;
 
-      // Scale length for visual representation
-      const scale = 300; // Adjust this to fit the display
-      const visualLength = L * scale;
-
-      // Draw support structure - now at the top
+      // Draw support structure (larger to accommodate bob)
       ctx.fillStyle = '#333';
-      ctx.fillRect(pivotX - 50, 0, 100, 40); 
+      ctx.fillRect(pivotX - 60, 0, 120, 60);  // Taller pivot
 
-      // Calculate bob position based on new pivot
+      // Calculate bob position with new scaling
+      const visualLength = L * scale;
       const bobX = pivotX + visualLength * Math.sin(theta);
       const bobY = pivotY + visualLength * Math.cos(theta);
 
-      // Draw pendulum string
+      // Draw pendulum arm
       ctx.beginPath();
       ctx.moveTo(pivotX, pivotY);
       ctx.lineTo(bobX, bobY);
       ctx.strokeStyle = '#000';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 4;
       ctx.stroke();
 
-      // Draw pendulum bob with half the original radius (20/2 = 10)
+      // Draw pendulum bob (larger to reach pivot)
       ctx.beginPath();
-      ctx.arc(bobX, bobY, 10, 0, Math.PI * 2); 
+      ctx.arc(bobX, bobY, bobRadius, 0, Math.PI * 2);
       ctx.fillStyle = '#8B4513';
       ctx.fill();
       ctx.strokeStyle = '#000';
       ctx.stroke();
+
+      // Ensure bob touches pivot when vertical
+      if (Math.abs(theta) > Math.PI - 0.1) {
+        ctx.beginPath();
+        ctx.moveTo(pivotX - 60, 60);
+        ctx.lineTo(bobX, bobY - bobRadius);
+        ctx.strokeStyle = '#ff000055';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
     }
+
 
     function drawGraph() {
       graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
 
-      // Draw axes
+      // Set up graph axes
       graphCtx.beginPath();
-      graphCtx.strokeStyle = '#000';
-      graphCtx.lineWidth = 1;
       graphCtx.moveTo(50, 20);
       graphCtx.lineTo(50, graphCanvas.height - 20);
       graphCtx.lineTo(graphCanvas.width - 20, graphCanvas.height - 20);
+      graphCtx.strokeStyle = '#000';
       graphCtx.stroke();
 
-      // Draw labels
-      graphCtx.fillStyle = '#000';
-      graphCtx.font = '12px Arial';
-      graphCtx.fillText('Time (t) [s]', graphCanvas.width - 70, graphCanvas.height - 5);
-      graphCtx.save();
-      graphCtx.translate(20, graphCanvas.height / 2);
-      graphCtx.rotate(-Math.PI / 2);
-      graphCtx.fillText('Angular Displacement (θ) [rad]', 0, 0);
-      graphCtx.restore();
-
-      // Plot data with larger displacement (90% of canvas height)
+      // Plot data
+      if (graphData.length === 0) return;
+      
       graphCtx.beginPath();
       graphCtx.strokeStyle = '#007bff';
       graphCtx.lineWidth = 2;
-      graphCtx.moveTo(50, graphCanvas.height / 2);
+      
+      const firstPoint = graphData[0];
+      const x = 50 + (firstPoint.t/graphMaxTime) * (graphCanvas.width - 70);
+      const y = graphCanvas.height/2 - (firstPoint.theta/0.5) * (graphCanvas.height/2 - 30);
+      graphCtx.moveTo(x, y);
 
       for (const point of graphData) {
-        const tx = 50 + ((point.t / graphMaxTime) * (graphCanvas.width - 70));
-        const ty = graphCanvas.height / 2 - (point.theta / (Math.PI / 2)) * (graphCanvas.height * 0.45);
-        graphCtx.lineTo(tx, ty);
+        const x = 50 + (point.t/graphMaxTime) * (graphCanvas.width - 70);
+        const y = graphCanvas.height/2 - (point.theta/0.5) * (graphCanvas.height/2 - 30);
+        graphCtx.lineTo(x, y);
       }
       graphCtx.stroke();
     }
@@ -432,25 +425,15 @@
       m = parseFloat(document.getElementById('mass').value);
       b = parseFloat(document.getElementById('damping').value);
 
-      // General equation and initial conditions using symbols
-      const equationGeneralElement = document.getElementById('equationGeneral');
-      const latexStringGeneral = `\\theta'' + \\frac{b}{m} \\theta' + \\frac{g}{L} \\sin(\\theta) = 0, \\quad \\theta(0) = \\theta_0, \\quad \\theta'(0) = \\omega_0`;
-      katex.render(latexStringGeneral, equationGeneralElement, {
-        throwOnError: false,
-        displayMode: true 
-      });
-
+      // Update KaTeX equations
       try {
-        const equationElement = document.getElementById('equation');
-        const latexString = `\\theta'' + \\frac{${b.toFixed(2)}}{${m.toFixed(2)}} \\theta' + \\frac{${g.toFixed(2)}}{${L.toFixed(2)}} \\sin(\\theta) = 0`;
-        katex.render(latexString, equationElement, {
-          throwOnError: false,
-          displayMode: false
-        });
+        katex.render(
+          `\\theta'' + \\frac{${b.toFixed(2)}}{${m.toFixed(2)}} \\theta' + \\frac{${g.toFixed(2)}}{${L.toFixed(2)}} \\sin(\\theta) = 0`,
+          document.getElementById('equation'),
+          { throwOnError: false }
+        );
       } catch (error) {
         console.error('KaTeX error:', error);
-        document.getElementById('equation').textContent = 
-          `θ'' + (${b.toFixed(2)}/(${m.toFixed(2)})θ' + (${g.toFixed(2)}/${L.toFixed(2)})sin(θ) = 0`;
       }
     }
 
@@ -461,6 +444,8 @@
       graphData.length = 0;
       isSimulationRunning = true;
       updateParameters();
+      drawPendulum();
+      drawGraph();
     }
 
     function animate() {
@@ -472,12 +457,6 @@
       requestAnimationFrame(animate);
     }
 
-    // Function to dismiss the alert
-    function dismissAlert() {
-      const alertContainer = document.getElementById('alertContainer');
-      alertContainer.style.display = 'none';
-    }
-
     // Initialize simulation
     document.addEventListener('DOMContentLoaded', () => {
       updateParameters();
@@ -486,4 +465,3 @@
   </script>
 </body>
 </html>
-
