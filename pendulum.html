@@ -255,11 +255,16 @@
   </style>
 </head>
 <body>
-  <!-- (Keep the same HTML structure as original) -->
   <div class="main-container">
-    <h1 id="equationTitle">Damped Pendulum Oscillator</h1>
-    <p id="equationGeneral"></p>
-    <div class="content-wrapper">
+  <h1 id="equationTitle">Damped Pendulum Oscillator</h1>
+  <div id="equationGeneral">
+    \[
+    \theta'' + \frac{b}{m} \theta' + \frac{g}{L} \sin(\theta) = 0, \quad 
+    \theta(0) = \theta_0, \quad \theta'(0) = \omega_0
+    \]
+  </div>
+  <p id="equation"></p>
+  <div class="content-wrapper">
       <div class="controls-wrapper">
         <div class="controls">
           <div class="row1">
@@ -278,7 +283,6 @@
             <button onclick="resetSimulation()">Reset</button>
           </div>
         </div>
-        <p>Equation: <span id="equation"></span></p>
         <div class="graph-container">
           <h2>Angular Displacement (θ) vs Time (t)</h2>
           <canvas id="graphCanvas" width="350" height="200"></canvas>
@@ -458,10 +462,20 @@
     }
 
     // Initialize simulation
-    document.addEventListener('DOMContentLoaded', () => {
-      updateParameters();
-      animate();
-    });
-  </script>
+   document.addEventListener('DOMContentLoaded', () => {
+  // Render the general equation
+  katex.render(
+    `\\theta'' + \\frac{b}{m} \\theta' + \\frac{g}{L} \\sin(\\theta) = 0, \\quad \\theta(0) = \\theta_0, \\quad \\theta'(0) = \\omega_0`,
+    document.getElementById('equationGeneral'),
+    {
+      throwOnError: false,
+      displayMode: true
+    }
+  );
+  
+  updateParameters();
+  animate();
+});
+</script>
 </body>
 </html>
