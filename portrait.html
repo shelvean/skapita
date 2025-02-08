@@ -322,85 +322,92 @@
             instruction.style.display = 'block';
         }
 
-        function drawPhasePortrait() {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+       function drawPhasePortrait() {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Get matrix coefficients
-            const a = parseFloat(document.getElementById('a').value) || 0;
-            const b = parseFloat(document.getElementById('b').value) || 0;
-            const c = parseFloat(document.getElementById('c').value) || 0;
-            const d = parseFloat(document.getElementById('d').value) || 0;
+    // Get matrix coefficients
+    const a = parseFloat(document.getElementById('a').value) || 0;
+    const b = parseFloat(document.getElementById('b').value) || 0;
+    const c = parseFloat(document.getElementById('c').value) || 0;
+    const d = parseFloat(document.getElementById('d').value) || 0;
 
-            // Get arrow count
-            const arrowCount = parseFloat(document.getElementById('arrow-count').value) || 20;
+    // Get arrow count
+    const arrowCount = parseFloat(document.getElementById('arrow-count').value) || 20;
 
-            // Fixed range for now since inputs are removed
-            const xMin = -10, xMax = 10, yMin = -10, yMax = 10;
+    // Fixed range for now since inputs are removed
+    const xMin = -10, xMax = 10, yMin = -10, yMax = 10;
 
-            // Update axis labels
-            document.getElementById('x-min-label').textContent = xMin;
-            document.getElementById('x-max-label').textContent = xMax;
-            document.getElementById('y-min-label').textContent = yMin;
-            document.getElementById('y-max-label').textContent = yMax;
+    // Update axis labels
+    document.getElementById('x-min-label').textContent = xMin;
+    document.getElementById('x-max-label').textContent = xMax;
+    document.getElementById('y-min-label').textContent = yMin;
+    document.getElementById('y-max-label').textContent = yMax;
 
-            // Canvas setup
-            const scale = 30;  // Adjusted for larger canvas
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
+    // Canvas setup
+    const scale = 30;  // Adjusted for larger canvas
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
 
-            // Adjust arrow density to fill the graph
-            const xStep = (xMax - xMin) / (arrowCount * 1.5); // Reduced step to increase density
-            const yStep = (yMax - yMin) / (arrowCount * 1.5); // Reduced step to increase density
+    // Adjust arrow density to fill the graph
+    const xStep = (xMax - xMin) / (arrowCount * 1.5); // Reduced step to increase density
+    const yStep = (yMax - yMin) / (arrowCount * 1.5); // Reduced step to increase density
 
-            // Draw vector field (light blue and thinner)
-            ctx.strokeStyle = '#ADD8E6'; // Light blue color
-            ctx.lineWidth = 0.7; // Thinner lines
-            for (let x = xMin; x <= xMax; x += xStep) {
-                for (let y = yMin; y <= yMax; y += yStep) {
-                    const dx = a * x + b * y;
-                    const dy = c * x + d * y;
-                    const length = Math.sqrt(dx * dx + dy * dy);
-                    if (length === 0) continue;
+    // Draw vector field
+    for (let x = xMin; x <= xMax; x += xStep) {
+        for (let y = yMin; y <= yMax; y += yStep) {
+            const dx = a * x + b * y;
+            const dy = c * x + d * y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            if (length === 0) continue;
 
-                    // Scale arrow size based on magnitude
-                    const arrowScale = Math.min(1, length / 10); // Normalize to a max size
-                    const dxNorm = (dx / length) * arrowScale;
-                    const dyNorm = (dy / length) * arrowScale;
-                    const startX = centerX + x * scale;
-                    const startY = centerY - y * scale;
-                    drawArrow(ctx, startX, startY, 
-                             startX + dxNorm * scale, 
-                             startY - dyNorm * scale, arrowScale);
-                }
+            // Determine the slope (dy/dx)
+            const slope = dy / dx;
+
+            // Set arrow color based on slope
+            if (slope < 0) {
+                ctx.strokeStyle = '#FF69B4'; // Pink for negative slope
+            } else {
+                ctx.strokeStyle = '#ADD8E6'; // Light blue for non-negative slope
             }
 
-            // Draw user-added trajectories (green)
-            ctx.strokeStyle = '#800000';
-            ctx.lineWidth = 2; // Keep original thickness for user trajectories
-            userPoints.forEach(point => {
-                const path = computeTrajectory(point.x, point.y, a, b, c, d, scale, centerX, centerY);
-                drawTrajectory(ctx, path);
-            });
-
-            // Draw axes
-            ctx.strokeStyle = '#95a5a6';
-            ctx.lineWidth = 1.5; // Keep original thickness for axes
-            ctx.beginPath();
-            ctx.moveTo(centerX, 0);
-            ctx.lineTo(centerX, canvas.height);
-            ctx.moveTo(0, centerY);
-            ctx.lineTo(canvas.width, centerY);
-            ctx.stroke();
-
-            // Label axes
-            ctx.fillStyle = '#2c3e50';
-            ctx.font = '14px Arial';
-            ctx.fillText('x', canvas.width - 10, centerY + 20);
-            ctx.fillText('y', centerX + 10, 10);
+            // Scale arrow size based on magnitude
+            const arrowScale = Math.min(1, length / 10); // Normalize to a max size
+            const dxNorm = (dx / length) * arrowScale;
+            const dyNorm = (dy / length) * arrowScale;
+            const startX = centerX + x * scale;
+            const startY = centerY - y * scale;
+            drawArrow(ctx, startX, startY, 
+                     startX + dxNorm * scale, 
+                     startY - dyNorm * scale, arrowScale);
         }
+    }
 
+    // Draw user-added trajectories (green)
+    ctx.strokeStyle = '#800000';
+    ctx.lineWidth = 2; // Keep original thickness for user trajectories
+    userPoints.forEach(point => {
+        const path = computeTrajectory(point.x, point.y, a, b, c, d, scale, centerX, centerY);
+        drawTrajectory(ctx, path);
+    });
+
+    // Draw axes
+    ctx.strokeStyle = '#95a5a6';
+    ctx.lineWidth = 1.5; // Keep original thickness for axes
+    ctx.beginPath();
+    ctx.moveTo(centerX, 0);
+    ctx.lineTo(centerX, canvas.height);
+    ctx.moveTo(0, centerY);
+    ctx.lineTo(canvas.width, centerY);
+    ctx.stroke();
+
+    // Label axes
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = '14px Arial';
+    ctx.fillText('x', canvas.width - 10, centerY + 20);
+    ctx.fillText('y', centerX + 10, 10);
+}
         function computeTrajectory(x0, y0, a, b, c, d, scale, cx, cy) {
             const dt = 0.01; // Time step for RK4 (can be adjusted)
             const maxSteps = 200; // Increased to extend trajectory length
