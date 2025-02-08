@@ -208,27 +208,34 @@
     ctx.strokeStyle = color;
     ctx.lineWidth = 0.7;
 
-    // Scale arrow size based on slope magnitude
-    const baseArrowSize = 5; // Base size of the arrow
-    const arrowSize = baseArrowSize * (1 + Math.log1p(Math.abs(slopeMagnitude))); // Adjust size based on slope
+    // Scale arrow length based on slope magnitude
+    const baseLength = SEGMENT_LENGTH; // Base length of the arrow
+    const scaledLength = baseLength * (1 + Math.log1p(Math.abs(slopeMagnitude))); // Adjust length based on slope
+
+    // Calculate new end points based on scaled length
+    const dx = scaledLength * Math.cos(angle);
+    const dy = scaledLength * Math.sin(angle);
+    const newToX = fromX + dx;
+    const newToY = fromY + dy;
 
     // Draw the main line
     ctx.beginPath();
     ctx.moveTo(fromX, fromY);
-    ctx.lineTo(toX, toY);
+    ctx.lineTo(newToX, newToY);
     ctx.stroke();
 
-    // Draw the arrowhead
+    // Draw the arrowhead (small and constant size)
+    const arrowSize = 5; // Constant size for the arrowhead
     ctx.beginPath();
-    ctx.moveTo(toX, toY);
+    ctx.moveTo(newToX, newToY);
     ctx.lineTo(
-        toX - arrowSize * Math.cos(angle - Math.PI / 6),
-        toY - arrowSize * Math.sin(angle - Math.PI / 6)
+        newToX - arrowSize * Math.cos(angle - Math.PI / 6),
+        newToY - arrowSize * Math.sin(angle - Math.PI / 6)
     );
-    ctx.moveTo(toX, toY);
+    ctx.moveTo(newToX, newToY);
     ctx.lineTo(
-        toX - arrowSize * Math.cos(angle + Math.PI / 6),
-        toY - arrowSize * Math.sin(angle + Math.PI / 6)
+        newToX - arrowSize * Math.cos(angle + Math.PI / 6),
+        newToY - arrowSize * Math.sin(angle + Math.PI / 6)
     );
     ctx.stroke();
 }
