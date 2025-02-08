@@ -280,8 +280,8 @@
         }
 
         function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
-            const dt = 0.2;
-            const maxSteps = 1000;
+            const dt = 0.1;
+            const maxSteps = 500;
             const points = [{x: x0, y: y0}];
 
             const rk4Step = (x, y, dt) => {
