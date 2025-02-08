@@ -203,7 +203,7 @@
               .replace(/(?<!\w)e(?!\w)/g, 'Math.E');
       }
 
-     function drawDirectionField() {
+    function drawDirectionField() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const equation = document.getElementById('equation').value;
@@ -243,8 +243,9 @@
                     const endX = px + dx / 2;
                     const endY = py + dy / 2;
 
-                    // Draw the arrow in light blue
-                    drawArrow(ctx, startX, startY, endX, endY, 1); // Scale = 1 for consistent arrow size
+                    // Set arrow color based on slope
+                    const arrowColor = slope < 0 ? '#FFA500' : '#ADD8E6'; // Orange for negative slope, light blue otherwise
+                    drawArrow(ctx, startX, startY, endX, endY, 1, arrowColor); // Pass arrow color to drawArrow
                 } catch (e) {}
             }
         }
@@ -264,10 +265,10 @@
     }
 }
 
-// Function to draw arrows (same as in the previous example)
-function drawArrow(ctx, fromX, fromY, toX, toY, scale) {
+// Updated drawArrow function to accept color as a parameter
+function drawArrow(ctx, fromX, fromY, toX, toY, scale, color) {
     const angle = Math.atan2(toY - fromY, toX - fromX); // Calculate the angle of the arrow
-    ctx.strokeStyle = '#ADD8E6'; // Light blue color
+    ctx.strokeStyle = color; // Use the provided color
     ctx.lineWidth = 0.7; // Thin lines
 
     // Draw the main line
