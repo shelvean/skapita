@@ -13,7 +13,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nonlinear System Phase Plane Diagram</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-        <style>
+    <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f0f5;
@@ -47,7 +47,7 @@
             margin-bottom: 1rem;
         }
         .input-group {
-            width: 48%; /* Adjust width for two columns */
+            width: 48%;
         }
         .input-group label {
             display: block;
@@ -69,8 +69,8 @@
             border: 1px solid #ccc;
             width: 100%;
             height: 600px;
-            z-index: 1; /* Ensure canvas is on top */
-            position: relative; /* Required for z-index to work */
+            z-index: 1;
+            position: relative;
         }
         .scale-label {
             position: absolute;
@@ -114,6 +114,27 @@
         }
         .button-container button.clear:hover {
             background-color: #c82333;
+        }
+        /* New instruction styles */
+        .instruction {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            color: #4361ee;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            animation: float 3s ease-in-out infinite;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        @keyframes float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-5px); }
         }
     </style>
 </head>
@@ -165,7 +186,9 @@
         </div>
         <div id="plot-container">
             <canvas id="canvas" width="600" height="600"></canvas>
-            <div id="click-instruction" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 5px;">Click to add trajectories</div>
+            <div class="instruction" id="instruction">
+                ✨ Click anywhere on the graph to draw trajectories
+            </div>
         </div>
     </div>
 
@@ -176,8 +199,8 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         let scaleLabels = [];
+        const instruction = document.getElementById('instruction');
 
-        // Fix canvas resolution to match display size
         function setCanvasResolution() {
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
@@ -199,36 +222,26 @@
             
             canvas.addEventListener('click', function(event) {
                 const rect = canvas.getBoundingClientRect();
-                
-                // Get canvas-relative click coordinates
                 const clickX = event.clientX - rect.left;
                 const clickY = event.clientY - rect.top;
-                
-                // Convert to normalized canvas coordinates [0,1]
                 const normX = clickX / canvas.width;
                 const normY = clickY / canvas.height;
-                
-                // Convert to system coordinates
                 const xMin = parseFloat(document.getElementById('xMin').value);
                 const xMax = parseFloat(document.getElementById('xMax').value);
                 const yMin = parseFloat(document.getElementById('yMin').value);
                 const yMax = parseFloat(document.getElementById('yMax').value);
-                
                 const systemX = xMin + normX * (xMax - xMin);
                 const systemY = yMax - normY * (yMax - yMin);
                 
                 userPoints.push({x: systemX, y: systemY});
                 drawPhasePlane();
-                
-                // Hide the click instruction
-                document.getElementById('click-instruction').style.display = 'none';
+                instruction.style.display = 'none';
             });
         });
 
         function drawPhasePlane() {
-            setCanvasResolution(); // Ensure proper scaling
+            setCanvasResolution();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
             scaleLabels.forEach(label => label.remove());
             scaleLabels = [];
             
@@ -250,19 +263,16 @@
                 drawTrajectory(path, xMin, xMax, yMin, yMax);
             });
 
-            // Show click instruction if no trajectories are present
             if (userPoints.length === 0) {
-                document.getElementById('click-instruction').style.display = 'block';
+                instruction.style.display = 'block';
             }
         }
 
         function drawTrajectory(points, xMin, xMax, yMin, yMax) {
             ctx.beginPath();
             points.forEach((point, index) => {
-                // Convert system coordinates to canvas pixels
                 const canvasX = ((point.x - xMin) / (xMax - xMin)) * canvas.width;
                 const canvasY = ((yMax - point.y) / (yMax - yMin)) * canvas.height;
-                
                 if (index === 0) ctx.moveTo(canvasX, canvasY);
                 else ctx.lineTo(canvasX, canvasY);
             });
@@ -270,22 +280,18 @@
         }
 
         function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
-            const dt = 0.1; // Larger step size possible with RK4
+            const dt = 0.1;
             const maxSteps = 2500;
             const points = [{x: x0, y: y0}];
 
-            // RK4 integration function
             const rk4Step = (x, y, dt) => {
                 try {
                     const k1x = math.evaluate(f, {x, y, t: 0});
                     const k1y = math.evaluate(g, {x, y, t: 0});
-                    
                     const k2x = math.evaluate(f, {x: x + k1x*dt/2, y: y + k1y*dt/2, t: dt/2});
                     const k2y = math.evaluate(g, {x: x + k1x*dt/2, y: y + k1y*dt/2, t: dt/2});
-                    
                     const k3x = math.evaluate(f, {x: x + k2x*dt/2, y: y + k2y*dt/2, t: dt/2});
                     const k3y = math.evaluate(g, {x: x + k2x*dt/2, y: y + k2y*dt/2, t: dt/2});
-                    
                     const k4x = math.evaluate(f, {x: x + k3x*dt, y: y + k3y*dt, t: dt});
                     const k4y = math.evaluate(g, {x: x + k3x*dt, y: y + k3y*dt, t: dt});
 
@@ -298,25 +304,21 @@
                 }
             };
 
-            // Forward integration
             let x = x0, y = y0;
             for (let i = 0; i < maxSteps; i++) {
                 const {dx, dy} = rk4Step(x, y, dt);
                 x += dx;
                 y += dy;
-                
                 if (x < xMin || x > xMax || y < yMin || y > yMax) break;
                 points.push({x, y});
             }
 
-            // Backward integration
             x = x0;
             y = y0;
             for (let i = 0; i < maxSteps; i++) {
-                const {dx, dy} = rk4Step(x, y, -dt); // Negative dt for backward
+                const {dx, dy} = rk4Step(x, y, -dt);
                 x += dx;
                 y += dy;
-                
                 if (x < xMin || x > xMax || y < yMin || y > yMax) break;
                 points.unshift({x, y});
             }
@@ -330,8 +332,6 @@
             ctx.moveTo(fromX, fromY);
             ctx.lineTo(toX, toY);
             ctx.stroke();
-            
-            // Arrowhead
             const arrowSize = 5;
             ctx.beginPath();
             ctx.moveTo(toX, toY);
@@ -344,7 +344,6 @@
         function drawVectorField(f, g, xMin, xMax, yMin, yMax, arrowCount) {
             ctx.strokeStyle = '#007BFF';
             ctx.lineWidth = 0.5;
-
             const xStep = (xMax - xMin) / arrowCount;
             const yStep = (yMax - yMin) / arrowCount;
 
@@ -353,18 +352,13 @@
                     try {
                         const dx = math.evaluate(f, {x, y, t: 0});
                         const dy = math.evaluate(g, {x, y, t: 0});
-                        
                         const startX = ((x - xMin) / (xMax - xMin)) * canvas.width;
                         const startY = canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height;
-
-                        // Arrow scaling with maximum length
                         const maxLength = 30;
                         const length = Math.sqrt(dx*dx + dy*dy);
                         const scale = length === 0 ? 0 : Math.min(20, maxLength / length);
-                        
                         const endX = startX + dx * scale;
                         const endY = startY - dy * scale;
-
                         drawArrow(startX, startY, endX, endY);
                     } catch (e) {
                         console.error('Error evaluating function:', e);
@@ -376,22 +370,17 @@
         function drawAxes(xMin, xMax, yMin, yMax) {
             ctx.strokeStyle = '#95a5a6';
             ctx.lineWidth = 1;
-
-            // X-axis (horizontal line at y=0)
             const yZeroCanvas = (yMax / (yMax - yMin)) * canvas.height;
             ctx.beginPath();
             ctx.moveTo(0, yZeroCanvas);
             ctx.lineTo(canvas.width, yZeroCanvas);
             ctx.stroke();
-
-            // Y-axis (vertical line at x=0)
             const xZeroCanvas = (-xMin / (xMax - xMin)) * canvas.width;
             ctx.beginPath();
             ctx.moveTo(xZeroCanvas, 0);
             ctx.lineTo(xZeroCanvas, canvas.height);
             ctx.stroke();
 
-            // Scale labels
             const xLabels = [xMin, 0, xMax];
             xLabels.forEach(label => {
                 const xCanvas = ((label - xMin) / (xMax - xMin)) * canvas.width;
@@ -418,8 +407,7 @@
         function clearTrajectories() {
             userPoints = [];
             drawPhasePlane();
-            // Show click instruction again after clearing
-            document.getElementById('click-instruction').style.display = 'block';
+            instruction.style.display = 'block';
         }
     </script>
 </body>
