@@ -206,7 +206,7 @@
     function drawArrow(ctx, fromX, fromY, toX, toY, slopeMagnitude, color) {
     const angle = Math.atan2(toY - fromY, toX - fromX);
     ctx.strokeStyle = color;
-    ctx.lineWidth = 0.7;
+    ctx.lineWidth = 0.7; // Thin line width for arrows
 
     // Scale arrow length based on slope magnitude
     const baseLength = SEGMENT_LENGTH; // Base length of the arrow
@@ -239,7 +239,6 @@
     );
     ctx.stroke();
 }
-
 function drawDirectionField() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -282,7 +281,7 @@ function drawDirectionField() {
 
                     // Set arrow color based on slope
                     const arrowColor = slope < 0 ? '#FFA500' : '#ADD8E6'; // Orange for negative slope, light blue otherwise
-                    drawArrow(ctx, startX, startY, endX, endY, Math.abs(slope), arrowColor); // Pass slope magnitude to drawArrow
+                    drawArrow(ctx, startX, startY, endX, endY, Math.abs(slope), arrowColor); // Pass slope magnitude and color
                 } catch (e) {}
             }
         }
