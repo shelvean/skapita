@@ -203,64 +203,94 @@
               .replace(/(?<!\w)e(?!\w)/g, 'Math.E');
       }
 
-      function drawDirectionField() {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+     function drawDirectionField() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-          const equation = document.getElementById('equation').value;
-          const tMin = parseFloat(document.getElementById('tMin').value);
-          const tMax = parseFloat(document.getElementById('tMax').value);
-          const yMin = parseFloat(document.getElementById('yMin').value);
-          const yMax = parseFloat(document.getElementById('yMax').value);
+    const equation = document.getElementById('equation').value;
+    const tMin = parseFloat(document.getElementById('tMin').value);
+    const tMax = parseFloat(document.getElementById('tMax').value);
+    const yMin = parseFloat(document.getElementById('yMin').value);
+    const yMax = parseFloat(document.getElementById('yMax').value);
 
-          try {
-              const processedEquation = preprocessEquation(equation);
-              const slopeFunc = new Function('t', 'y', `return ${processedEquation};`);
-              const xScale = canvas.width / (tMax - tMin);
-              const yScale = canvas.height / (yMax - yMin);
-              const aspectRatio = yScale / xScale;
+    try {
+        const processedEquation = preprocessEquation(equation);
+        const slopeFunc = new Function('t', 'y', `return ${processedEquation};`);
+        const xScale = canvas.width / (tMax - tMin);
+        const yScale = canvas.height / (yMax - yMin);
+        const aspectRatio = yScale / xScale;
 
-              // Draw grid
-              ctx.strokeStyle = '#ddd';
-              ctx.lineWidth = 0.5;
-              drawGrid(tMin, tMax, yMin, yMax, xScale, yScale);
+        // Draw grid
+        ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = 0.5;
+        drawGrid(tMin, tMax, yMin, yMax, xScale, yScale);
 
-              // Draw direction field
-              for (let px = GRID_STEP/2; px < canvas.width; px += GRID_STEP) {
-                  for (let py = GRID_STEP/2; py < canvas.height; py += GRID_STEP) {
-                      const t = tMin + px / xScale;
-                      const y = yMin + (canvas.height - py) / yScale;
+        // Draw direction field
+        for (let px = GRID_STEP / 2; px < canvas.width; px += GRID_STEP) {
+            for (let py = GRID_STEP / 2; py < canvas.height; py += GRID_STEP) {
+                const t = tMin + px / xScale;
+                const y = yMin + (canvas.height - py) / yScale;
 
-                      try {
-                          if (y === 0) continue;
-                          const slope = slopeFunc(t, y);
-                          const angle = Math.atan(-slope * aspectRatio);
-                          const dx = SEGMENT_LENGTH * Math.cos(angle);
-                          const dy = SEGMENT_LENGTH * Math.sin(angle);
+                try {
+                    if (y === 0) continue;
+                    const slope = slopeFunc(t, y);
+                    const angle = Math.atan(-slope * aspectRatio);
 
-                          ctx.strokeStyle = slope > 0 ? '#2196F3' : '#e91e63';
-                          ctx.beginPath();
-                          ctx.moveTo(px - dx/2, py - dy/2);
-                          ctx.lineTo(px + dx/2, py + dy/2);
-                          ctx.stroke();
-                      } catch(e) {}
-                  }
-              }
+                    // Calculate the start and end points of the arrow
+                    const dx = SEGMENT_LENGTH * Math.cos(angle);
+                    const dy = SEGMENT_LENGTH * Math.sin(angle);
+                    const startX = px - dx / 2;
+                    const startY = py - dy / 2;
+                    const endX = px + dx / 2;
+                    const endY = py + dy / 2;
 
-              // Draw axes
-              ctx.strokeStyle = '#000';
-              ctx.lineWidth = 2;
-              drawAxes(tMin, tMax, yMin, yMax, xScale, yScale);
+                    // Draw the arrow in light blue
+                    drawArrow(ctx, startX, startY, endX, endY, 1); // Scale = 1 for consistent arrow size
+                } catch (e) {}
+            }
+        }
 
-              // Draw solutions
-              solutions.forEach(solution => {
-                  drawSolutionCurve(solution, xScale, yScale, tMin, yMin);
-              });
+        // Draw axes
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        drawAxes(tMin, tMax, yMin, yMax, xScale, yScale);
 
-          } catch (e) {
-              alert(`Error in equation: ${e.message}`);
-          }
-      }
+        // Draw solutions
+        solutions.forEach(solution => {
+            drawSolutionCurve(solution, xScale, yScale, tMin, yMin);
+        });
 
+    } catch (e) {
+        alert(`Error in equation: ${e.message}`);
+    }
+}
+
+// Function to draw arrows (same as in the previous example)
+function drawArrow(ctx, fromX, fromY, toX, toY, scale) {
+    const angle = Math.atan2(toY - fromY, toX - fromX); // Calculate the angle of the arrow
+    ctx.strokeStyle = '#ADD8E6'; // Light blue color
+    ctx.lineWidth = 0.7; // Thin lines
+
+    // Draw the main line
+    ctx.beginPath();
+    ctx.moveTo(fromX, fromY);
+    ctx.lineTo(toX, toY);
+    ctx.stroke();
+
+    // Draw the arrowhead
+    const arrowSize = 5 * scale; // Scale arrowhead size
+    ctx.beginPath();
+    ctx.moveTo(toX, toY);
+    ctx.lineTo(
+        toX - arrowSize * Math.cos(angle - Math.PI / 6), // First arrowhead line
+        toY - arrowSize * Math.sin(angle - Math.PI / 6)
+    );
+    ctx.moveTo(toX, toY);
+    ctx.lineTo(
+        toX - arrowSize * Math.cos(angle + Math.PI / 6), // Second arrowhead line
+        toY - arrowSize * Math.sin(angle + Math.PI / 6)
+    );
+    ctx.stroke();
+}
       function drawSolutionCurve(solution, xScale, yScale, tMin, yMin) {
           ctx.beginPath();
           ctx.strokeStyle = solution.color;
