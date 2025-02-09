@@ -101,13 +101,13 @@
     }
 
     #simulationCanvas {
-      width: 500px;
+      width: calc(500px*1.0);
       height: 400px; 
       max-width: 100%; 
     }
 
     .controls input {
-      width: 50px;
+      width: 40px;
       padding: 0.3rem;
       border: 1px solid #dee2e6;
       border-radius: 8px;
@@ -342,6 +342,13 @@
 
     function updatePhysics() {
       if (!isSimulationRunning) return;
+	  
+	   // Check angle limits
+        if (Math.abs(theta) > Math.PI/2) {
+            isSimulationRunning = false;
+            showAlert("Pendulum angle exceeded π/2 radians! Simulation stopped.");
+            return;
+        }
 
       // RK4 integration
       const k1 = calculateDerivatives(theta, omega);
@@ -442,11 +449,11 @@
 }
 
     function updateParameters() {
-      L = parseFloat(document.getElementById('length').value);
-      theta0 = parseFloat(document.getElementById('initialAngle').value);
-      omega0 = parseFloat(document.getElementById('initialVelocity').value);
-      m = parseFloat(document.getElementById('mass').value);
-      b = parseFloat(document.getElementById('damping').value);
+        L = parseFloat(document.getElementById('length').value);
+        theta0 = parseFloat(document.getElementById('initialAngle').value);
+        omega0 = parseFloat(document.getElementById('initialVelocity').value);
+        m = parseFloat(document.getElementById('mass').value);
+        b = parseFloat(document.getElementById('damping').value);
 
       // Update KaTeX equations
       try {
@@ -461,16 +468,66 @@
     }
 
     function resetSimulation() {
-      theta = theta0;
-      omega = omega0;
-      t = 0;
-      graphData.length = 0;
-      isSimulationRunning = true;
-      updateParameters();
-      drawPendulum();
-      drawGraph();
+        // Reset all variables to user input values
+        L = parseFloat(document.getElementById('length').value);
+        theta0 = parseFloat(document.getElementById('initialAngle').value);
+        omega0 = parseFloat(document.getElementById('initialVelocity').value);
+        m = parseFloat(document.getElementById('mass').value);
+        b = parseFloat(document.getElementById('damping').value);
+        // Reset simulation state
+        theta = theta0;
+        omega = omega0;
+        t = 0;
+        // Clear the graph data
+        graphData.length = 0;
+        // Restart simulation
+        isSimulationRunning = true;
+        // Redraw everything with new parameters
+        updateParameters();  // This will also update the equation display
+        drawPendulum();
+        drawGraph();
+        // Clear any alert if it's displayed
+        removeAlert();
     }
-
+	
+function showAlert(message) {
+        const alertContainer = document.getElementById('alertContainer');
+        alertContainer.innerHTML = `
+            <div class="bg-red-400 text-white px-8 py-6 rounded flex justify-between items-center">
+                <div class="flex items-center">
+                    <svg class="h-7 w-7 mr-6 text-red-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <span>${message}</span>
+                </div>
+                <button onclick="removeAlert()" class="hover:text-white text-red-100">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        `;
+        alertContainer.style.display = 'block';
+    }
+	
+	function removeAlert() {
+        const alertContainer = document.getElementById('alertContainer');
+        alertContainer.style.display = 'none';
+        alertContainer.innerHTML = ''; // Clear the content
+    }
+	
+	function checkParameters() {
+        // Define allowed limits for parameters (example values)
+        const minLength = 0.1, maxLength = 2.5;
+        const minAngle = -1.57, maxAngle = 1.57;
+        // Add more checks for other parameters if needed
+        if (L >= minLength && L <= maxLength && 
+            theta0 >= minAngle && theta0 <= maxAngle &&
+            Math.abs(theta) <= Math.PI/2) {
+            removeAlert();
+            isSimulationRunning = true;
+        }
+    }
     function animate() {
       if (isSimulationRunning) {
         updatePhysics();
