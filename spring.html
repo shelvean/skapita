@@ -204,15 +204,15 @@
       <div class="controls-wrapper">
         <div class="controls">
           <label for="mass">Mass (m) [kg]:</label>
-          <input type="number" id="mass" value="4" step="0.1" min="0.1">
+          <input type="number" id="mass" value="3" step="0.1" min="0.1">
           <label for="springConstant">Spring Constant (k) [N/m]:</label>
-          <input type="number" id="springConstant" value="100" step="10">
+          <input type="number" id="springConstant" value="20" step="10">
           <label for="damping">Damping (c) [N·s/m]:</label>
-          <input type="number" id="damping" value="0.8" step="0.5">
+          <input type="number" id="damping" value="0.5" step="0.5">
           <label for="initialDisplacement">Initial Displacement (y₀) [m]:</label>
-          <input type="number" id="initialDisplacement" value="2.5" step="0.05">
+          <input type="number" id="initialDisplacement" value="1.5" step="0.05">
           <label for="initialVelocity">Initial Velocity (v₀) [m/s]:</label>
-          <input type="number" id="initialVelocity" value="0" step="0.1">
+          <input type="number" id="initialVelocity" value="-1.0" step="0.1">
           <button onclick="resetSimulation()">Reset</button>
         </div>
         <div class="graph-container">
@@ -255,6 +255,7 @@
 
     // Center of the canvas width
     const canvasCenterX = canvas.width / 2;
+    let alertBox = null;
 
     function calculateDerivatives(y, v) {
       const a = (-c * v - k * y) / m;
@@ -277,9 +278,18 @@
       v += (k1.v + 2*k2.v + 2*k3.v + k4.v) * dt/6;
       t += dt;
 
-      // Store data for graph
-      graphData.push({ t, y });
-      if (t > graphMaxTime) isSimulationRunning = false;
+      // Check if displacement is less than -2.7 after t=2 seconds
+      if (t > 2 && y < -2.7) {
+        isSimulationRunning = false; // Stop the simulation
+        showAlert("Adjust parameters! Displacement has exceeded the maximum.");
+      }
+
+      // Start storing data for graph only after 3 seconds
+      if (t >= 3) {
+        graphData.push({ t: t - 3, y }); // Adjust time to start from 0 after 3 seconds
+      }
+      
+      if (t > graphMaxTime + 3) isSimulationRunning = false; // Add 3 seconds delay
     }
 
     function drawSpringMass() {
@@ -314,7 +324,7 @@
         ctx.moveTo(canvasCenterX - springRadius, i);
         ctx.arc(canvasCenterX, i + n / 4, springRadius, Math.PI, 0, false);
         ctx.moveTo(canvasCenterX + springRadius, i + n / 2);
-        ctx.arc(canvasCenterX, i + (3 * n) / 4, springRadius, 0, Math.PI, false);
+            ctx.arc(canvasCenterX, i + (3 * n) / 4, springRadius, 0, Math.PI, false);
       }
       ctx.stroke();
     }
@@ -349,14 +359,14 @@
       const yRange = maxY - minY;  // The actual range of displacement values
       const scaleY = (graphCanvas.height - 60) / Math.max(yRange, 0.1); // 60 for margin
 
-      // Plot data
+      // Plot data, but now starting from t = 0 after 3 seconds
       graphCtx.beginPath();
       graphCtx.strokeStyle = '#007bff';
       graphCtx.lineWidth = 2;
 
       for (let i = 0; i < graphData.length; i++) {
         const point = graphData[i];
-        const x = 50 + (point.t / graphMaxTime) * (graphCanvas.width - 70);
+        const x = 50 + (point.t / (graphMaxTime - 3)) * (graphCanvas.width - 70); // Adjust for 3 second delay
         const y = graphCanvas.height - 40 - (point.y - minY) * scaleY; // Adjust for bottom margin and scale
         if (i === 0) {
           graphCtx.moveTo(x, y);
@@ -369,7 +379,7 @@
       // Add dynamic displacement scale to the left of the graph
       drawDisplacementScaleOnGraph(scaleY, maxY, minY);
 
-      // Add time scale to the bottom of the graph
+      // Add time scale to the bottom of the graph, adjusting for the 3-second delay
       drawTimeScaleOnGraph();
     }
 
@@ -407,7 +417,7 @@
       const step = (graphCanvas.width - 70) / (marks - 1);
       for (let i = 0; i < marks; i++) {
         const xPos = 50 + i * step;
-        const value = (i * graphMaxTime) / (marks - 1);
+        const value = (i * (graphMaxTime - 3)) / (marks - 1); // Adjust time range for the 3-second delay
 
         graphCtx.beginPath();
         graphCtx.moveTo(xPos, graphCanvas.height - 20);
@@ -415,6 +425,45 @@
         graphCtx.stroke();
 
         graphCtx.fillText(value.toFixed(1), xPos, graphCanvas.height - 8);
+      }
+    }
+
+    function showAlert(message) {
+      if (!alertBox) {
+        alertBox = document.createElement('div');
+        alertBox.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background-color: #f8d7da;
+          border: 2px solid #f5c6cb;
+          color: #721c24;
+          padding: 10px 20px;
+          border-radius: 5px;
+          z-index: 1000;
+        `;
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'X';
+        closeButton.style.cssText = `
+          float: right;
+          background: transparent;
+          border: none;
+          font-size: 16px;
+          cursor: pointer;
+          color: #721c24;
+        `;
+        closeButton.onclick = hideAlert;
+        alertBox.appendChild(closeButton);
+        alertBox.appendChild(document.createTextNode(message));
+        document.body.appendChild(alertBox);
+      }
+    }
+
+    function hideAlert() {
+      if (alertBox) {
+        document.body.removeChild(alertBox);
+        alertBox = null;
       }
     }
 
@@ -452,6 +501,7 @@
       updateParameters();
       drawSpringMass();
       drawGraph();
+      hideAlert(); // Hide any existing alert when resetting
     }
 
     function animate() {
