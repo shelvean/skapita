@@ -1,350 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-5B8PRB2WZT');
-</script>
-
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mass-Spring System Simulator</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <style>
-    :root {
-      --primary: #6c5ce7;
-      --secondary: #4a47a3;
-      --background: #f8f9fa;
-      --surface: #e9ecef;
-      --text: #212529;
-      --accent: #00b4d8;
-    }
-
-    body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-      padding: 30px;
-      background: var(--background);
-      color: var(--text);
-      min-height: 100vh;
-      justify-content: center;
-    }
-
-    .main-container {
-      max-width: 1000px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1.5rem;
-      text-align: center;
-      background: linear-gradient(45deg, var(--primary), var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    canvas {
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      border: 2px solid var(--surface);
-      background: white;
-      width: 100%;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .controls {
-      width: 100%;
-      max-width: 800px;
-      margin: 20px auto;
-      padding: 1.2rem;
-      background: rgba(255,255,255,0.9);
-      border: 1px solid rgba(0,0,0,0.1);
-      border-radius: 14px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .controls label {
-      color: var(--secondary);
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .controls input {
-      width: 100px;
-      padding: 0.6rem;
-      border: 1px solid #dee2e6;
-      border-radius: 8px;
-      background: white;
-      color: var(--text);
-      font-size: 1rem;
-      transition: all 0.2s ease;
-    }
-
-    .controls input:focus {
-      outline: none;
-      box-shadow: 0 0 0 2px var(--primary);
-      background: rgba(255,255,255,0.15);
-    }
-
-    button {
-      padding: 0.8rem 1.5rem;
-      border: none;
-      border-radius: 8px;
-      background: var(--primary);
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    button:hover {
-      background: var(--accent);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
-    }
-
-    #equation {
-      font-size: 1.2em;
-      margin: 1.5rem 0;
-      padding: 1rem 1.5rem;
-      background: rgba(233,236,239,0.6);
-      color: var(--primary);
-      border-radius: 8px;
-      font-family: monospace;
-      text-align: center;
-    }
-
-    .graph-container {
-      width: 100%;
-      max-width: 800px;
-      margin: 20px auto;
-      background: white;
-      border: 1px solid var(--surface);
-      border-radius: 16px;
-      padding: 1rem;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    }
-
-    .graph-container h2 {
-      color: var(--secondary);
-      margin-bottom: 1rem;
-      font-weight: 600;
-    }
-
-    @media (max-width: 840px) {
-      canvas, .graph-container {
-        width: 95vw;
-      }
-      
-      .controls {
-        width: 95vw;
-        flex-direction: column;
-        align-items: stretch;
-      }
-      
-      h1 {
-        font-size: 2rem;
-      }
-    }
-  </style>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-5B8PRB2WZT');</script>
+<title>Mass-Spring System Simulator</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<style>:root{--primary:#6c5ce7;--secondary:#4a47a3;--background:#f8f9fa;--surface:#e9ecef;--text:#212529;--accent:#00b4d8}body{font-family:'Segoe UI',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;margin:0;padding:30px;background:var(--background);color:var(--text);min-height:100vh;justify-content:center}.main-container{max-width:1000px;width:100%;margin:0 auto;padding:20px;display:flex;flex-direction:column;align-items:center}h1{font-size:2.5rem;margin-bottom:1.5rem;text-align:center;background:linear-gradient(45deg,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}canvas{border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.08);border:2px solid var(--surface);background:white;width:100%;max-width:800px;margin:0 auto}.controls{width:100%;max-width:800px;margin:20px auto;padding:1.2rem;background:rgba(255,255,255,.9);border:1px solid rgba(0,0,0,.1);border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.06);display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}.controls label{color:var(--secondary);font-weight:500;display:flex;align-items:center;gap:.5rem}.controls input{width:100px;padding:.6rem;border:1px solid #dee2e6;border-radius:8px;background:white;color:var(--text);font-size:1rem;transition:all .2s ease}.controls input:focus{outline:none;box-shadow:0 0 0 2px var(--primary);background:rgba(255,255,255,.15)}button{padding:.8rem 1.5rem;border:none;border-radius:8px;background:var(--primary);color:white;font-weight:700;cursor:pointer;transition:all .3s ease;text-transform:uppercase;letter-spacing:.5px}button:hover{background:var(--accent);transform:translateY(-1px);box-shadow:0 4px 12px rgba(108,92,231,.3)}#equation{font-size:1.2em;margin:1.5rem 0;padding:1rem 1.5rem;background:rgba(233,236,239,.6);color:var(--primary);border-radius:8px;font-family:monospace;text-align:center}.graph-container{width:100%;max-width:800px;margin:20px auto;background:white;border:1px solid var(--surface);border-radius:16px;padding:1rem;box-shadow:0 4px 20px rgba(0,0,0,.06)}.graph-container h2{color:var(--secondary);margin-bottom:1rem;font-weight:600}@media (max-width:840px){canvas,.graph-container{width:95vw}.controls{width:95vw;flex-direction:column;align-items:stretch}h1{font-size:2rem}}</style>
 </head>
 <body>
-  <div class="main-container">
-    <canvas id="simulationCanvas" width="800" height="400"></canvas>
-    <div class="controls">
-      <label for="mass">Mass (m):</label>
-      <input type="number" id="mass" value="1" step="0.1">
-      <label for="springConstant">Spring Constant (k):</label>
-      <input type="number" id="springConstant" value="10" step="0.1">
-      <label for="damping">Damping (c):</label>
-      <input type="number" id="damping" value="0.2" step="0.1">
-      <button onclick="resetSimulation()">Reset</button>
-    </div>
-    <p>Equation: <span id="equation"></span></p>
-    <div class="graph-container">
-      <h2>Displacement (x) vs Time (t)</h2>
-      <canvas id="graphCanvas" width="800" height="200"></canvas>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-  <script>
-    const canvas = document.getElementById('simulationCanvas');
-    const ctx = canvas.getContext('2d');
-    const graphCanvas = document.getElementById('graphCanvas');
-    const graphCtx = graphCanvas.getContext('2d');
-
-    // Simulation parameters
-    let m = 1.0;
-    let k = 10.0;
-    let c = 0.5;
-    let x0 = 100;
-    let v0 = 0;
-
-    // Simulation state
-    let x = x0;
-    let v = v0;
-    let t = 0;
-    const dt = 0.04;
-
-    // Visual elements
-    const springLength = 200;
-    const ballRadius = 20;
-    const springCoils = 20;
-    const springRadius = 15;
-
-    // Graph data
-    const graphData = [];
-    const graphMaxTime = 20;
-    let isSimulationRunning = true;
-
-    function updatePhysics() {
-      if (!isSimulationRunning) return;
-
-      const a = (-c * v - k * x) / m;
-      v += a * dt;
-      x += v * dt;
-      t += dt;
-
-      graphData.push({ t, x });
-      if (t > graphMaxTime) isSimulationRunning = false;
-    }
-
-    function drawSpring() {
-      const springTop = 50;
-      const springBottom = springTop + springLength + x;
-      const coilHeight = (springBottom - springTop) / springCoils;
-
-      ctx.beginPath();
-      ctx.strokeStyle = '#181b59';
-      ctx.lineWidth = 1;
-
-      for (let i = 0; i < springCoils; i++) {
-        const yStart = springTop + i * coilHeight;
-        ctx.moveTo(400 - springRadius, yStart);
-        ctx.arc(400, yStart + coilHeight / 4, springRadius, Math.PI, 0, false);
-        ctx.moveTo(400 + springRadius, yStart + coilHeight / 2);
-        ctx.arc(400, yStart + 3 * coilHeight / 4, springRadius, 0, Math.PI, false);
-      }
-      ctx.stroke();
-    }
-
-    function drawBall() {
-      const springBottom = 50 + springLength + x;
-		      ctx.beginPath();
-      const squareSize = ballRadius * 2;
-      ctx.fillStyle = '#8B4513';
-      ctx.fillRect(400 - ballRadius, springBottom, squareSize, squareSize);
-      ctx.strokeStyle = '#000';
-      ctx.strokeRect(400 - ballRadius, springBottom, squareSize, squareSize);
-    }
-
-    function drawSimulation() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawSpring();
-      drawBall();
-    }
-
-    function drawGraph() {
-      graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
-
-      // Axes
-      graphCtx.beginPath();
-      graphCtx.strokeStyle = '#000';
-      graphCtx.lineWidth = 1;
-      graphCtx.moveTo(50, 20);
-      graphCtx.lineTo(50, graphCanvas.height - 20);
-      graphCtx.lineTo(graphCanvas.width - 20, graphCanvas.height - 20);
-      graphCtx.stroke();
-
-      // Labels
-      graphCtx.fillStyle = '#000';
-      graphCtx.font = '12px Arial';
-      graphCtx.fillText('Time (t)', graphCanvas.width - 60, graphCanvas.height - 5);
-      graphCtx.save();
-      graphCtx.translate(20, graphCanvas.height / 2);
-      graphCtx.rotate(-Math.PI / 2);
-      graphCtx.fillText('Displacement (x)', 0, 0);
-      graphCtx.restore();
-
-      // Plot data
-      graphCtx.beginPath();
-      graphCtx.strokeStyle = '#007bff';
-      graphCtx.lineWidth = 2;
-      graphCtx.moveTo(50, graphCanvas.height / 2);
-
-      for (let point of graphData) {
-        const tx = 50 + ((point.t / graphMaxTime) * (graphCanvas.width - 70));
-        const ty = graphCanvas.height / 2 - (point.x / x0) * (graphCanvas.height / 2 - 20);
-        graphCtx.lineTo(tx, ty);
-      }
-      graphCtx.stroke();
-    }
-
-    function updateParameters() {
-      m = parseFloat(document.getElementById('mass').value);
-      k = parseFloat(document.getElementById('springConstant').value);
-      c = parseFloat(document.getElementById('damping').value);
-      
-      try {
-        const equationElement = document.getElementById('equation');
-        const latexString = `${m}\\frac{d^2x}{dt^2} + ${c}\\frac{dx}{dt} + ${k}x = 0`;
-        katex.render(latexString, equationElement, {
-          throwOnError: true,
-          displayMode: false
-        });
-      } catch (error) {
-        console.error('KaTeX error:', error);
-        document.getElementById('equation').textContent = 
-          `${m} d²x/dt² + ${c} dx/dt + ${k}x = 0`;
-      }
-    }
-
-    function resetSimulation() {
-      x = x0;
-      v = v0;
-      t = 0;
-      graphData.length = 0;
-      isSimulationRunning = true;
-      updateParameters();
-    }
-
-    function animate() {
-      if (isSimulationRunning) {
-        updatePhysics();
-        drawSimulation();
-        drawGraph();
-      }
-      requestAnimationFrame(animate);
-    }
-
-    // Initialize after DOM loads
-    document.addEventListener('DOMContentLoaded', () => {
-      updateParameters();
-      animate();
-    });
-  </script>
+<div class="main-container">
+<canvas id="simulationCanvas" width="800" height="400"></canvas>
+<div class="controls">
+<label for="mass">Mass (m):</label><input type="number" id="mass" value="1" step="0.1">
+<label for="springConstant">Spring Constant (k):</label><input type="number" id="springConstant" value="10" step="0.1">
+<label for="damping">Damping (c):</label><input type="number" id="damping" value="0.2" step="0.1">
+<button onclick="resetSimulation()">Reset</button>
+</div>
+<p>Equation: <span id="equation"></span></p>
+<div class="graph-container">
+<h2>Displacement (x) vs Time (t)</h2>
+<canvas id="graphCanvas" width="800" height="200"></canvas>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script>
+const canvas=document.getElementById('simulationCanvas'),ctx=canvas.getContext('2d'),graphCanvas=document.getElementById('graphCanvas'),graphCtx=graphCanvas.getContext('2d');
+let m=1,k=10,c=.5,x0=100,v0=0,x=x0,v=v0,t=0,dt=.04;
+const springLength=200,ballRadius=20,springCoils=20,springRadius=15,graphData=[],graphMaxTime=20;
+let isSimulationRunning=!0;
+function updatePhysics(){if(isSimulationRunning){const a=(-c*v-k*x)/m;v+=a*dt;x+=v*dt;t+=dt;graphData.push({t,x});t>graphMaxTime&&(isSimulationRunning=!1)}}
+function drawSpring(){const e=50,t=e+springLength+x,n=(t-e)/springCoils;ctx.beginPath(),ctx.strokeStyle='#181b59',ctx.lineWidth=1;for(let r=0;r<springCoils;r++){const i=e+r*n;ctx.moveTo(400-springRadius,i),ctx.arc(400,i+n/4,springRadius,Math.PI,0,!1),ctx.moveTo(400+springRadius,i+n/2),ctx.arc(400,i+3*n/4,springRadius,0,Math.PI,!1)}ctx.stroke()}
+function drawBall(){const e=50+springLength+x;ctx.beginPath();const t=2*ballRadius;ctx.fillStyle='#8B4513',ctx.fillRect(400-ballRadius,e,t,t),ctx.strokeStyle='#000',ctx.strokeRect(400-ballRadius,e,t,t)}
+function drawSimulation(){ctx.clearRect(0,0,canvas.width,canvas.height),drawSpring(),drawBall()}
+function drawGraph(){graphCtx.clearRect(0,0,graphCanvas.width,graphCanvas.height),graphCtx.beginPath(),graphCtx.strokeStyle='#000',graphCtx.lineWidth=1,graphCtx.moveTo(50,20),graphCtx.lineTo(50,graphCanvas.height-20),graphCtx.lineTo(graphCanvas.width-20,graphCanvas.height-20),graphCtx.stroke(),graphCtx.fillStyle='#000',graphCtx.font='12px Arial',graphCtx.fillText('Time (t)',graphCanvas.width-60,graphCanvas.height-5),graphCtx.save(),graphCtx.translate(20,graphCanvas.height/2),graphCtx.rotate(-Math.PI/2),graphCtx.fillText('Displacement (x)',0,0),graphCtx.restore(),graphCtx.beginPath(),graphCtx.strokeStyle='#007bff',graphCtx.lineWidth=2,graphCtx.moveTo(50,graphCanvas.height/2);for(let e of graphData){const t=50+(e.t/graphMaxTime)*(graphCanvas.width-70),n=graphCanvas.height/2-(e.x/x0)*(graphCanvas.height/2-20);graphCtx.lineTo(t,n)}graphCtx.stroke()}
+function updateParameters(){m=parseFloat(document.getElementById('mass').value),k=parseFloat(document.getElementById('springConstant').value),c=parseFloat(document.getElementById('damping').value);try{const e=document.getElementById('equation'),t=`${m}\\frac{d^2x}{dt^2} + ${c}\\frac{dx}{dt} + ${k}x = 0`;katex.render(t,e,{throwOnError:!0,displayMode:!1})}catch(e){console.error('KaTeX error:',e);document.getElementById('equation').textContent=`${m} d²x/dt² + ${c} dx/dt + ${k}x = 0`}}
+function resetSimulation(){x=x0,v=v0,t=0,graphData.length=0,isSimulationRunning=!0,updateParameters()}
+function animate(){isSimulationRunning&&(updatePhysics(),drawSimulation(),drawGraph()),requestAnimationFrame(animate)}
+document.addEventListener('DOMContentLoaded',()=>{updateParameters(),animate()});
+</script>
 </body>
 </html>
