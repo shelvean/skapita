@@ -415,7 +415,7 @@
     function drawGraph() {
   graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
 
-  // Set up graph axes
+  // Set up graph axes (optional, if you want to keep them)
   graphCtx.beginPath();
   graphCtx.moveTo(50, 20);
   graphCtx.lineTo(50, graphCanvas.height - 20);
@@ -425,29 +425,59 @@
 
   if (graphData.length === 0) return;
 
-  // Find maximum absolute theta for scaling
-  let maxTheta = Math.max(...graphData.map(d => Math.abs(d.theta)));
-  if (maxTheta === 0) maxTheta = 0.01; // Prevent division by zero
+  // Find maximum and minimum theta for scaling
+  const maxTheta = Math.max(...graphData.map(d => d.theta));
+  const minTheta = Math.min(...graphData.map(d => d.theta));
+  const maxAbsTheta = Math.max(Math.abs(maxTheta), Math.abs(minTheta));
+
+  // Time range
+  const maxTime = graphMaxTime;
+
+  // Draw angular displacement scale (on the left side)
+  graphCtx.fillStyle = '#000';
+  graphCtx.font = '10px Arial';
+  graphCtx.textAlign = 'right';
+  graphCtx.textBaseline = 'middle';
+
+  // Draw positive theta labels
+  for (let thetaVal = 0; thetaVal <= maxAbsTheta; thetaVal += maxAbsTheta / 4) {
+    const y = graphCanvas.height / 2 - (thetaVal / maxAbsTheta) * (graphCanvas.height / 2 - 30);
+    graphCtx.fillText(thetaVal.toFixed(2), 45, y);
+  }
+
+  // Draw negative theta labels
+  for (let thetaVal = 0; thetaVal >= -maxAbsTheta; thetaVal -= maxAbsTheta / 4) {
+    const y = graphCanvas.height / 2 - (thetaVal / maxAbsTheta) * (graphCanvas.height / 2 - 30);
+    graphCtx.fillText(thetaVal.toFixed(2), 45, y);
+  }
+
+  // Draw time scale (on the bottom)
+  graphCtx.textAlign = 'center';
+  graphCtx.textBaseline = 'top';
+
+  for (let tVal = 0; tVal <= maxTime; tVal += maxTime / 5) {
+    const x = 50 + (tVal / maxTime) * (graphCanvas.width - 70);
+    graphCtx.fillText(tVal.toFixed(1), x, graphCanvas.height - 15);
+  }
 
   // Plot data
   graphCtx.beginPath();
   graphCtx.strokeStyle = '#007bff';
   graphCtx.lineWidth = 2;
 
-  const verticalRange = graphCanvas.height/2 - 30;
+  const verticalRange = graphCanvas.height / 2 - 30;
   const firstPoint = graphData[0];
-  const x = 50 + (firstPoint.t/graphMaxTime) * (graphCanvas.width - 70);
-  const y = graphCanvas.height/2 - (firstPoint.theta/maxTheta) * verticalRange;
+  const x = 50 + (firstPoint.t / maxTime) * (graphCanvas.width - 70);
+  const y = graphCanvas.height / 2 - (firstPoint.theta / maxAbsTheta) * verticalRange;
   graphCtx.moveTo(x, y);
 
   for (const point of graphData) {
-    const x = 50 + (point.t/graphMaxTime) * (graphCanvas.width - 70);
-    const y = graphCanvas.height/2 - (point.theta/maxTheta) * verticalRange;
+    const x = 50 + (point.t / maxTime) * (graphCanvas.width - 70);
+    const y = graphCanvas.height / 2 - (point.theta / maxAbsTheta) * verticalRange;
     graphCtx.lineTo(x, y);
   }
   graphCtx.stroke();
 }
-
     function updateParameters() {
         L = parseFloat(document.getElementById('length').value);
         theta0 = parseFloat(document.getElementById('initialAngle').value);
