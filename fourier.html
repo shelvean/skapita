@@ -1,17 +1,283 @@
-<!DOCTYPE html><html lang="en"><head><script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-5B8PRB2WZT');</script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fourier Series Animation</title><script src="https://cdn.plot.ly/plotly-latest.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script><style>body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;margin:0;padding:0;background-color:#f4f4f9;color:#333}.container{max-width:1200px;margin:0 auto;padding:20px;background-color:#fff;box-shadow:0 4px 6px rgba(0,0,0,.1);border-radius:8px;margin-top:20px}h1{text-align:center;color:#2c3e50;margin-bottom:20px;font-size:2rem}.input-group{margin-bottom:20px}.input-group label{display:block;font-weight:700;margin-bottom:5px;color:#555}.input-group input,.input-group select{width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-size:16px;box-sizing:border-box}button{display:block;width:100%;padding:12px;background-color:#3498db;color:#fff;border:none;border-radius:4px;font-size:16px;cursor:pointer;transition:background-color .3s ease}button:hover{background-color:#2980b9}#plot{width:100%;height:400px;margin-top:20px;border-radius:8px;overflow:hidden}.footer{text-align:center;margin-top:20px;font-size:14px;color:#777}.katex-display{margin:0;padding:20px 0;text-align:center;background-color:#f8f9fa;border-radius:4px}.katex-error{color:#dc3545;padding:10px}@media (max-width:768px){h1{font-size:1.5rem}.container{padding:15px;margin-top:10px}#plot{height:450px}.input-group input,.input-group select{font-size:14px;padding:8px}button{padding:10px;font-size:14px}}@media (max-width:480px){h1{font-size:1.25rem}.container{padding:10px;margin-top:5px}#plot{height:350px;width:800px}.input-group input,.input-group select{font-size:12px;padding:6px}button{padding:8px;font-size:12px}.katex-display{padding:10px 0}}@media (min-width:1200px){#plot{height:500px}}</style></head><body><div class="container"><h1>Fourier Series Animation</h1><div class="input-group"><label for="exampleSelect">Example Functions:</label><select id="exampleSelect" onchange="selectExample(this.value)"><option value="">Select an example...</option><option value="x*sin(5*x) + 2*abs(x-2)*cos(5*x)">x*sin(5x)+ 2*abs(x-2)*cos(5*x)</option><option value="square(x)">square(x)</option><option value="sawtooth(x)">sawtooth(x)</option><option value="heaviside(x)">heaviside(x)</option><option value="x">x</option><option value="x^2">x^2</option></select></div><div class="input-group"><label for="functionInput">Function:</label><input type="text" id="functionInput" value="x*sin(5*x) + 2*abs(x-2)*cos(5*x)"></div><div class="input-group"><label for="nInput">Number of Fourier Modes (n):</label><input type="number" id="nInput" value="15" min="1"></div><div class="input-group"><label for="xMin">Domain of x (Min):</label><input type="number" id="xMin" value="-6"></div><div class="input-group"><label for="xMax">Domain of x (Max):</label><input type="number" id="xMax" value="6"></div><div class="input-group"><label for="speedInput">Animation Speed (ms per frame):</label><input type="number" id="speedInput" value="250" min="50" max="2000" step="50"></div><button onclick="startAnimation()">Start Animation</button><button onclick="stopAnimation()" style="margin-top:10px">Stop Animation</button><div id="katex-render"></div><div id="plot"></div><div class="footer"><p>Created with ❤️ using <a href="https://plotly.com/javascript/" target="_blank">Plotly.js</a>, <a href="https://mathjs.org/" target="_blank">Math.js</a>, and <a href="https://katex.org/" target="_blank">KaTeX</a></p></div></div><script>let animationInterval;function heaviside(x){return x>=0?1:0}
-function sawtooth(x){return 2*(x/(2*Math.PI)-Math.floor(.5+x/(2*Math.PI)))}
-function square(x){return Math.sin(x)>=0?1:-1}
-function evaluateFunction(func,x){try{if(func.includes('heaviside')){return heaviside(x)}else if(func.includes('sawtooth')){return sawtooth(x)}else if(func.includes('square')){return square(x)}else{return math.evaluate(func,{x})}}catch(e){return NaN}}
-function toLaTeX(func){return func.replace(/(\w+)\^\(([^)]+)\)/g,'$1^{($2)}').replace(/(\w+)\^(\d+)/g,'$1^{$2}').replace(/sin/g,'\\sin').replace(/cos/g,'\\cos').replace(/exp\(([^)]+)\)/g,'e^{$1}').replace(/abs\(([^)]+)\)/g,'\\left| $1 \\right|').replace(/(\d)(?=[a-zA-Z(])/g,'$1\\cdot ').replace(/\*/g,'\\cdot ').replace(/heaviside/g,'H').replace(/sawtooth/g,'\\text{sawtooth}').replace(/square/g,'\\text{square}').replace(/\\left\| ([^ ]+) \\right\|/g,'\\left| $1 \\right|')}
-function renderKaTeX(){const functionInput=document.getElementById('functionInput').value;const n=document.getElementById('nInput').value;const xMin=document.getElementById('xMin').value;const xMax=document.getElementById('xMax').value;const container=document.getElementById('katex-render');container.innerHTML=`<div class="katex-display"><p>Function: <span id="katex-function"></span></p><p>Fourier Modes: <span id="katex-n"></span></p><p>Domain: <span id="katex-domain"></span></p></div>`;try{katex.render(`f(x) = ${toLaTeX(functionInput)}`,document.getElementById('katex-function'));katex.render(`n = ${n}`,document.getElementById('katex-n'));katex.render(`x \\in [${xMin}, ${xMax}]`,document.getElementById('katex-domain'));}catch(e){container.innerHTML=`<div class="katex-error">Error rendering formula: ${e.message}</div>`;}}
-function startAnimation(){const functionInput=document.getElementById('functionInput').value;const n=parseInt(document.getElementById('nInput').value);const xMin=parseFloat(document.getElementById('xMin').value);const xMax=parseFloat(document.getElementById('xMax').value);const speed=parseInt(document.getElementById('speedInput').value);if(isNaN(n)||n<=0){alert('Number of modes must be a positive integer.');return}
-if(isNaN(xMin)||isNaN(xMax)||xMin>=xMax){alert('Invalid domain. Ensure xMin < xMax.');return}
-const L=(xMax-xMin)/2;const xValues=math.range(xMin,xMax,.01).toArray();const originalYValues=xValues.map(x=>evaluateFunction(functionInput,x));if(originalYValues.some(y=>isNaN(y))){alert('Error evaluating function. Check syntax.');return}
-if(animationInterval)clearInterval(animationInterval);renderKaTeX();let k=1;animationInterval=setInterval(()=>{if(k>n){clearInterval(animationInterval);return}
-const fourierYValues=fourierSeries(functionInput,k,xValues,xMin,xMax);plotGraph(xValues,originalYValues,fourierYValues,k);k++},speed);}
-function stopAnimation(){clearInterval(animationInterval)}
-function fourierSeries(func,n,xValues,xMin,xMax){const L=(xMax-xMin)/2;const dx=xValues[1]-xValues[0];const a0=(1/L)*math.sum(xValues.map(x=>evaluateFunction(func,x)))*dx;let series=xValues.map(()=>a0/2);for(let k=1;k<=n;k++){const ak=(1/L)*math.sum(xValues.map(x=>evaluateFunction(func,x)*Math.cos((k*Math.PI*x)/L)))*dx;const bk=(1/L)*math.sum(xValues.map(x=>evaluateFunction(func,x)*Math.sin((k*Math.PI*x)/L)))*dx;series=series.map((s,i)=>s+ak*Math.cos((k*Math.PI*xValues[i])/L)+bk*Math.sin((k*Math.PI*xValues[i])/L));}
-return series}
-function plotGraph(xValues,originalYValues,fourierYValues,k){const trace1={x:xValues,y:originalYValues,mode:'lines',name:'Original Function',line:{color:'#3498db'}};const trace2={x:xValues,y:fourierYValues,mode:'lines',name:`Fourier Approximation (k = ${k})`,line:{color:'#e74c3c'}};const layout={title:`Fourier Series Approximation (k = ${k})`,xaxis:{title:'x'},yaxis:{title:'f(x)'},plot_bgcolor:'#f4f4f9',paper_bgcolor:'#fff',font:{color:'#333'}};Plotly.newPlot('plot',[trace1,trace2],layout);}
-function selectExample(value){if(value)document.getElementById('functionInput').value=value;renderKaTeX()}
-document.addEventListener('DOMContentLoaded',()=>{renderKaTeX();document.getElementById('functionInput').addEventListener('input',renderKaTeX);document.getElementById('nInput').addEventListener('input',renderKaTeX);document.getElementById('xMin').addEventListener('input',renderKaTeX);document.getElementById('xMax').addEventListener('input',renderKaTeX);});document.addEventListener('DOMContentLoaded',()=>{renderKaTeX();['functionInput','nInput','xMin','xMax'].forEach(id=>{document.getElementById(id).addEventListener('input',renderKaTeX);});});</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-5B8PRB2WZT');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fourier Series Animation</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        body {font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f4f9; color: #333}
+        .container {max-width: 1200px; margin: 0 auto; padding: 20px; background-color: #fff; box-shadow: 0 4px 6px rgba(0,0,0,.1); border-radius: 8px; margin-top: 20px}
+        h1 {text-align: center; color: #2c3e50; margin-bottom: 20px; font-size: 2rem}
+        .input-group {margin-bottom: 20px}
+        .input-group label {display: block; font-weight: 700; margin-bottom: 5px; color: #555}
+        .input-group input, .input-group select {width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; box-sizing: border-box}
+        button {display: block; width: 100%; padding: 12px; background-color: #3498db; color: #fff; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; transition: background-color .3s ease}
+        button:hover {background-color: #2980b9}
+        #plot {width: 100%; height: 400px; margin-top: 20px; border-radius: 8px; overflow: hidden}
+        .footer {text-align: center; margin-top: 20px; font-size: 14px; color: #777}
+        .katex-display {margin: 0; padding: 20px 0; text-align: center; background-color: #f8f9fa; border-radius: 4px}
+        .katex-error {color: #dc3545; padding: 10px}
+        @media (max-width: 768px) {
+            h1 {font-size: 1.5rem}
+            .container {padding: 15px; margin-top: 10px}
+            #plot {height: 450px}
+            .input-group input, .input-group select {font-size: 14px; padding: 8px}
+            button {padding: 10px; font-size: 14px}
+        }
+        @media (max-width: 480px) {
+            h1 {font-size: 1.25rem}
+            .container {padding: 10px; margin-top: 5px}
+            #plot {height: 350px; width: 800px}
+            .input-group input, .input-group select {font-size: 12px; padding: 6px}
+            button {padding: 8px; font-size: 12px}
+            .katex-display {padding: 10px 0}
+        }
+        @media (min-width: 1200px) {
+            #plot {height: 500px}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fourier Series Animation</h1>
+        <div class="input-group">
+            <label for="exampleSelect">Example Functions:</label>
+            <select id="exampleSelect" onchange="selectExample(this.value)">
+                <option value="">Select an example...</option>
+                <option value="piecewise">periodic discontinuous</option>
+                <option value="x*sin(5*x) + 2*abs(x-2)*cos(5*x)">x*sin(5x)+ 2*abs(x-2)*cos(5*x)</option>
+                <option value="square(x)">square(x)</option>
+                <option value="sawtooth(x)">sawtooth(x)</option>
+                <option value="heaviside(x)">heaviside(x)</option>
+                <option value="x">x</option>
+                <option value="x^2">x^2</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="functionInput">Function:</label>
+            <input type="text" id="functionInput" value="periodic discontinuous">
+        </div>
+        <div class="input-group">
+            <label for="nInput">Number of Fourier Modes (n):</label>
+            <input type="number" id="nInput" value="15" min="1">
+        </div>
+        <div class="input-group">
+            <label for="xMin">Domain of x (Min):</label>
+            <input type="number" id="xMin" value="-6">
+        </div>
+        <div class="input-group">
+            <label for="xMax">Domain of x (Max):</label>
+            <input type="number" id="xMax" value="6">
+        </div>
+        <div class="input-group">
+            <label for="speedInput">Animation Speed (ms per frame):</label>
+            <input type="number" id="speedInput" value="250" min="50" max="2000" step="50">
+        </div>
+        <button onclick="startAnimation()">Start Animation</button>
+        <button onclick="stopAnimation()" style="margin-top:10px">Stop Animation</button>
+        <div id="katex-render"></div>
+        <div id="plot"></div>
+        <div class="footer">
+            <p>Created with ❤️ using <a href="https://plotly.com/javascript/" target="_blank">Plotly.js</a>, <a href="https://mathjs.org/" target="_blank">Math.js</a>, and <a href="https://katex.org/" target="_blank">KaTeX</a></p>
+        </div>
+    </div>
+
+    <script>
+        let animationInterval;
+        
+        // Custom functions
+        function heaviside(x) { return x >= 0 ? 1 : 0 }
+        function sawtooth(x) { return 2*(x/(2*Math.PI) - Math.floor(0.5 + x/(2*Math.PI))) }
+        function square(x) { return Math.sin(x) >= 0 ? 1 : -1 }
+        
+        // New piecewise periodic function
+        function piecewiseExample(x) {
+            const period = 2 * Math.PI;
+            x = ((x + Math.PI) % period + period) % period - Math.PI;
+            
+            if(x < 0) {
+                return x**2 + Math.sin(2*x);
+            } else {
+                return Math.exp(-x) + Math.cos(3*x);
+            }
+        }
+
+        function evaluateFunction(func, x) {
+            try {
+                if(func === 'piecewise') {
+                    return piecewiseExample(x);
+                }
+                if(func.includes('heaviside')) {
+                    return heaviside(x);
+                }
+                else if(func.includes('sawtooth')) {
+                    return sawtooth(x);
+                }
+                else if(func.includes('square')) {
+                    return square(x);
+                }
+                else {
+                    return math.evaluate(func, {x});
+                }
+            } catch(e) {
+                return NaN;
+            }
+        }
+
+        function toLaTeX(func) {
+            if(func === 'piecewise') {
+                return `\\begin{cases} 
+                    t^2 + \\sin(2t), & -\\pi \\leq t < 0 \\\\
+                    e^{-t} + \\cos(3t), & 0 \\leq t \\leq \\pi 
+                    \\end{cases} \\text{ (periodically extended)}`;
+            }
+            return func
+                .replace(/(\w+)\^\(([^)]+)\)/g, '$1^{($2)}')
+                .replace(/(\w+)\^(\d+)/g, '$1^{$2}')
+                .replace(/sin/g, '\\sin')
+                .replace(/cos/g, '\\cos')
+                .replace(/exp\(([^)]+)\)/g, 'e^{$1}')
+                .replace(/abs\(([^)]+)\)/g, '\\left| $1 \\right|')
+                .replace(/(\d)(?=[a-zA-Z(])/g, '$1\\cdot ')
+                .replace(/\*/g, '\\cdot ')
+                .replace(/heaviside/g, 'H')
+                .replace(/sawtooth/g, '\\text{sawtooth}')
+                .replace(/square/g, '\\text{square}')
+                .replace(/\\left\| ([^ ]+) \\right\|/g, '\\left| $1 \\right|');
+        }
+
+        function renderKaTeX() {
+            const functionInput = document.getElementById('functionInput').value;
+            const n = document.getElementById('nInput').value;
+            const xMin = document.getElementById('xMin').value;
+            const xMax = document.getElementById('xMax').value;
+            const container = document.getElementById('katex-render');
+            container.innerHTML = `<div class="katex-display">
+                <p>Function: <span id="katex-function"></span></p>
+                <p>Fourier Modes: <span id="katex-n"></span></p>
+                <p>Domain: <span id="katex-domain"></span></p>
+            </div>`;
+            try {
+                katex.render(`f(x) = ${toLaTeX(functionInput)}`, document.getElementById('katex-function'));
+                katex.render(`n = ${n}`, document.getElementById('katex-n'));
+                katex.render(`x \\in [${xMin}, ${xMax}]`, document.getElementById('katex-domain'));
+            } catch(e) {
+                container.innerHTML = `<div class="katex-error">Error rendering formula: ${e.message}</div>`;
+            }
+        }
+
+        function startAnimation() {
+            const functionInput = document.getElementById('functionInput').value;
+            const n = parseInt(document.getElementById('nInput').value);
+            const xMin = parseFloat(document.getElementById('xMin').value);
+            const xMax = parseFloat(document.getElementById('xMax').value);
+            const speed = parseInt(document.getElementById('speedInput').value);
+
+            if(isNaN(n) || n <= 0) {
+                alert('Number of modes must be a positive integer.');
+                return;
+            }
+            if(isNaN(xMin) || isNaN(xMax) || xMin >= xMax) {
+                alert('Invalid domain. Ensure xMin < xMax.');
+                return;
+            }
+
+            const L = (xMax - xMin)/2;
+            const xValues = math.range(xMin, xMax, 0.01).toArray();
+            const originalYValues = xValues.map(x => evaluateFunction(functionInput, x));
+
+            if(originalYValues.some(y => isNaN(y))) {
+                alert('Error evaluating function. Check syntax.');
+                return;
+            }
+
+            if(animationInterval) clearInterval(animationInterval);
+            renderKaTeX();
+            
+            let k = 1;
+            animationInterval = setInterval(() => {
+                if(k > n) {
+                    clearInterval(animationInterval);
+                    return;
+                }
+                const fourierYValues = fourierSeries(functionInput, k, xValues, xMin, xMax);
+                plotGraph(xValues, originalYValues, fourierYValues, k);
+                k++;
+            }, speed);
+        }
+
+        function stopAnimation() {
+            clearInterval(animationInterval);
+        }
+
+        function fourierSeries(func, n, xValues, xMin, xMax) {
+            const L = (xMax - xMin)/2;
+            const dx = xValues[1] - xValues[0];
+            const a0 = (1/L) * math.sum(xValues.map(x => evaluateFunction(func, x))) * dx;
+            let series = xValues.map(() => a0/2);
+            
+            for(let k = 1; k <= n; k++) {
+                const ak = (1/L) * math.sum(xValues.map(x => 
+                    evaluateFunction(func, x) * Math.cos((k * Math.PI * x)/L)
+                )) * dx;
+                const bk = (1/L) * math.sum(xValues.map(x => 
+                    evaluateFunction(func, x) * Math.sin((k * Math.PI * x)/L)
+                )) * dx;
+                series = series.map((s, i) => s + ak * Math.cos((k * Math.PI * xValues[i])/L) + bk * Math.sin((k * Math.PI * xValues[i])/L));
+            }
+            return series;
+        }
+
+        function plotGraph(xValues, originalYValues, fourierYValues, k) {
+            const trace1 = {
+                x: xValues,
+                y: originalYValues,
+                mode: 'lines',
+                name: 'Original Function',
+                line: {color: '#3498db'}
+            };
+            const trace2 = {
+                x: xValues,
+                y: fourierYValues,
+                mode: 'lines',
+                name: `Fourier Approximation (k = ${k})`,
+                line: {color: '#e74c3c'}
+            };
+            const layout = {
+                title: `Fourier Series Approximation (k = ${k})`,
+                xaxis: {title: 'x'},
+                yaxis: {title: 'f(x)'},
+                plot_bgcolor: '#f4f4f9',
+                paper_bgcolor: '#fff',
+                font: {color: '#333'}
+            };
+            Plotly.newPlot('plot', [trace1, trace2], layout);
+        }
+
+        function selectExample(value) {
+            if(value) document.getElementById('functionInput').value = value;
+            renderKaTeX();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderKaTeX();
+            document.getElementById('functionInput').addEventListener('input', renderKaTeX);
+            document.getElementById('nInput').addEventListener('input', renderKaTeX);
+            document.getElementById('xMin').addEventListener('input', renderKaTeX);
+            document.getElementById('xMax').addEventListener('input', renderKaTeX);
+        });
+    </script>
+</body>
+</html>
