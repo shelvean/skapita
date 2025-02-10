@@ -285,12 +285,7 @@
       }
 
       // Start storing data for graph only after 3 seconds
-      if (t >= 3) {
-        graphData.push({ t: t - 3, y }); // Adjust time to start from 0 after 3 seconds
-      }
-      
-      if (t > graphMaxTime + 3) isSimulationRunning = false; // Add 3 seconds delay
-    }
+     graphData.push({ t, y }); 
 
     function drawSpringMass() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -366,7 +361,7 @@
 
       for (let i = 0; i < graphData.length; i++) {
         const point = graphData[i];
-        const x = 50 + (point.t / (graphMaxTime - 3)) * (graphCanvas.width - 70); // Adjust for 3 second delay
+        const x = 50 + (point.t / 30) * (graphCanvas.width - 70);
         const y = graphCanvas.height - 40 - (point.y - minY) * scaleY; // Adjust for bottom margin and scale
         if (i === 0) {
           graphCtx.moveTo(x, y);
@@ -417,7 +412,7 @@
       const step = (graphCanvas.width - 70) / (marks - 1);
       for (let i = 0; i < marks; i++) {
         const xPos = 50 + i * step;
-        const value = (i * (graphMaxTime - 3)) / (marks - 1); // Adjust time range for the 3-second delay
+        const value = (i * 30) / (marks - 1); 
 
         graphCtx.beginPath();
         graphCtx.moveTo(xPos, graphCanvas.height - 20);
@@ -505,6 +500,7 @@
     }
 
     function animate() {
+      if (t > 30) isSimulationRunning = false;
       if (isSimulationRunning) {
         updatePhysics();
         drawSpringMass();
