@@ -50,8 +50,8 @@ function evaluateForcingFunction(y, t) {
     let safeFunc = func
       .replace(/delta\(t-([\d.-]+)\)/g, (match, a) => {
         const deltaTime = parseFloat(a);
-        if (t - deltaTime > -1* dt && t - deltaTime < 1 * dt) {
-          return "6.25"; // Delta function value
+        if (t - deltaTime > -1* dt/2 && t - deltaTime < 1 * dt/2) {
+          return "20"; // Delta function value
         } else {
           return "0"; // Delta function is 0 outside the interval
         }
