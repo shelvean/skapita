@@ -57,7 +57,7 @@ function evaluateForcingFunction(y, t) {
       .replace(/delta\(t-([\d.-]+)\)/gi, (match, a) => {
         const deltaTime = parseFloat(a);
         if (t - deltaTime > -1 * dt / 2 && t - deltaTime < 1 * dt / 2) {
-          return "10"; // Delta function approximation
+          return "20"; // Delta function approximation
         } else {
           return "0";
         }
