@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html><html lang="en"><head><script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script><script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-5B8PRB2WZT")</script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spring-Mass-Damper System with Forcing</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"><style>:root{--primary:#6c5ce7;--secondary:#4a47a3;--background:#f8f9fa;--surface:#e9ecef;--text:#212529;--accent:#00b4d8}body{font-family:'Segoe UI',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;margin:0;padding:30px;background:var(--background);color:var(--text);min-height:1 0;justify-content:center}.main-container{max-width:1000px;width:100%;margin:0 auto;padding:20px;display:flex;flex-direction:column;align-items:center}h1{font-size:1.5rem;color:#000;margin-bottom:.5rem}#equationTitle{margin-bottom:.5rem}.content-wrapper{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;width:100%;max-width:100%}.controls-wrapper{flex:1;min-width:250px;max-width:350px}.controls{width:100%;padding:.8rem;background:rgba(255,255,255,.9);border:1px solid rgba(0,0,0,.1);border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.06);display:flex;flex-direction:column;gap:.5rem}canvas{border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.08);border:2px solid var(--surface);background:#fff;flex:0 0 auto}#simulationCanvas{width:calc(500px*1);height:600px;max-width:100%}.controls input{width:40px;padding:.3rem;border:1px solid #dee2e6;border-radius:8px;background:#fff;color:var(--text);font-size:.8rem;transition:all .2s ease}.controls input:focus{outline:0;box-shadow:0 0 0 2px var(--primary);background:rgba(255,255,255,.15)}.controls label{color:var(--secondary);font-weight:500;display:flex;align-items:center;gap:.5rem;font-size:.8rem}button{padding:.5rem .8rem;border:none;border-radius:8px;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;transition:all .3s ease;text-transform:uppercase;letter-spacing:.5px;font-size:.8rem}button:hover{background:var(--accent);transform:translateY(-1px);box-shadow:0 4px 12px rgba(108,92,231,.3)}#equation{font-size:1em;margin:.5rem 0;padding:.5rem;background:rgba(233,236,239,.6);color:var(--primary);border-radius:8px;font-family:monospace;text-align:center}.graph-container{width:100%;max-width:350px;margin-top:10px;background:#fff;border:1px solid var(--surface);border-radius:16px;padding:1rem;box-shadow:0 4px 20px rgba(0,0,0,.06)}.graph-container h2{color:var(--secondary);margin-bottom:1rem;font-weight:600;font-size:.9rem}@media (max-width:840px){.content-wrapper{flex-direction:column;align-items:center}#simulationCanvas,.controls-wrapper{width:100%}h1{font-size:1.2rem}}#forcingFunction{width:100%;padding:.5rem;margin-top:.5rem;font-size:.9rem}</style></head><body><div class="main-container"><h1 id="equationTitle">Spring-Mass-Damper System with Forcing</h1><div id="equationGeneral">\[ my'' + cy' + ky = F(t) \]</div><p id="equation"></p><div class="content-wrapper"><div class="controls-wrapper"><div class="controls"><label for="mass">Mass (m) [kg]:</label><input type="number" id="mass" value="1" step="0.1" min="0.1"><label for="springConstant">Spring Constant (k) [N/m]:</label><input type="number" id="springConstant" value="4" step="10"><label for="damping">Damping (c) [N·s/m]:</label><input type="number" id="damping" value="0.2" step="0.5"><label for="initialDisplacement">Initial Displacement (y₀) [m]:</label><input type="number" id="initialDisplacement" value="0" step="0.05"><label for="initialVelocity">Initial Velocity (v₀) [m/s]:</label><input type="number" id="initialVelocity" value="0" step="0.1"><label for="forcingFunction">Forcing Function F(t):</label><input type="text" id="forcingFunction" value="delta(t-10)+heaviside(t-25)*cos(2*(t-25))" placeholder="e.g., 3*cos(3*t) or delta(t-10)"><button onclick="resetSimulation()">Reset</button></div><div class="graph-container"><h2>Displacement (y) vs Time (t)</h2><canvas id="graphCanvas" width="350" height="200"></canvas></div></div><canvas id="simulationCanvas" width="500" height="600"></canvas></div></div><script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script><script>const canvas = document.getElementById('simulationCanvas');
     const ctx = canvas.getContext('2d');
     const graphCanvas = document.getElementById('graphCanvas');
@@ -53,7 +54,7 @@ function evaluateForcingFunction(y, t) {
       .replace(/delta\(t\)/g, 'delta(t-0)')
       .replace(/heaviside\(t\)/g, 'heaviside(t-0)')
       // Existing replacements for delta and heaviside with offset
-      .replace(/delta\(t-([\d.-]+)\)/g, (match, a) => {
+      .replace(/delta\(t-([\d.-]+)\)/gi, (match, a) => {
         const deltaTime = parseFloat(a);
         if (t - deltaTime > -1 * dt / 2 && t - deltaTime < 1 * dt / 2) {
           return "10"; // Delta function approximation
@@ -61,7 +62,7 @@ function evaluateForcingFunction(y, t) {
           return "0";
         }
       })
-      .replace(/heaviside\(t-([\d.-]+)\)/g, (match, a) => {
+      .replace(/heaviside\(t-([\d.-]+)\)/gi, (match, a) => {
         const heavisideTime = parseFloat(a);
         return t >= heavisideTime ? "1" : "0";
       })
@@ -344,8 +345,8 @@ function updatePhysics() {
 
   // Process forcing function for display
   let displayForcing = forcingFunction
-    .replace(/heaviside/g, 'H')
-    .replace(/delta/g, '\\delta')
+    .replace(/heaviside/gi, 'H')
+    .replace(/delta/gi, '\\delta')
     .replace(/\*/g, ' \\cdot ')
     .replace(/(cos|sin|tan|exp|log|sqrt)/g, '\\$1');
 
