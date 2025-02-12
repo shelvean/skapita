@@ -64,12 +64,33 @@
         th {
             background-color: #f8f9fa;
         }
+		.classification-circle {
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+		.classification-circle {
+			display: inline-block;
+			  width: 12px;
+			  height: 12px;
+			  border-radius: 50%;
+			  margin-right: 8px;
+}
+
+.stable-circle { background-color: #28a745; }
+.unstable-circle { background-color: #dc3545; }
+.semistable-circle {
+  background: linear-gradient(90deg, #28a745 50%, #dc3545 50%);
+}
+}
     </style>
 </head>
 <body>
     <div class="container">
         <div id="equation"></div>
-        <input type="text" id="functionInput" placeholder="Enter f(y) e.g., -y*sin(y)">
+<input type="text" id="functionInput" 
+       placeholder="Enter f(y) e.g., -(y+1)*(y-2)^2" 
+       value="-(y+1)*(y-2)^2">
         <button id="resetButton">Update Plot</button>
         <div class="canvas-container">
             <canvas id="plotCanvas" width="800" height="400"></canvas>
@@ -83,7 +104,7 @@
         const canvas = document.getElementById('plotCanvas');
         const ctx = canvas.getContext('2d');
         const parser = new exprEval.Parser();
-        const yMin = -10, yMax = 10;
+        const yMin = -6, yMax = 6;
         const leftMargin = 30, rightMargin = 30;
         const graphWidth = canvas.width - leftMargin - rightMargin;
 
@@ -268,15 +289,20 @@
 
             // Generate table
             const tableHTML = `<table>
-                <tr><th>Label</th><th>Value</th><th>Classification</th></tr>
-                ${roots.map((y, i) => `
-                    <tr>
-                        <td>${String.fromCharCode(97 + i)}</td>
-                        <td>${y.toFixed(2)}</td>
-                        <td>${classifyEquilibrium(f, y).replace(/-right|-left/g, '')}</td>
-                    </tr>
-                `).join('')}
-            </table>`;
+  <tr><th>Label</th><th>Value</th><th>Classification</th></tr>
+  ${roots.map((y, i) => `
+    <tr>
+      <td>${String.fromCharCode(97 + i)}</td>
+      <td>${y.toFixed(2)}</td>
+      <td style="display: flex; align-items: center;">
+        <span class="classification-circle ${classifyEquilibrium(f, y).includes('semistable') ? 'semistable-circle' : classifyEquilibrium(f, y).replace(' ', '-') + '-circle'}"></span>
+        ${classifyEquilibrium(f, y).replace(/-right|-left/g, '')}
+      </td>
+    </tr>
+  `).join('')}
+</table>`;
+
+
             document.getElementById('equilibriumTable').innerHTML = tableHTML;
         }
 
@@ -293,6 +319,10 @@
             }
             drawPlot(f);
         });
+		// Add after existing event listener
+window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('resetButton').click();
+});
     </script>
 </body>
 </html>
