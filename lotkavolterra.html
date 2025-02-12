@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lotka-Volterra Model</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --background: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--background);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .equations {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 1.2rem;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+            -webkit-appearance: none;
+            height: 7px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--secondary);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .plots-container {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .plot-container {
+            flex: 1;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-width: 0;
+        }
+
+        @media (max-width: 768px) {
+            .plots-container {
+                flex-direction: column;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Lotka-Volterra Model</h1>
+    
+    <div class="equations">
+        \[
+        \begin{aligned}
+        \frac{dx}{dt} &= \alpha x - \beta xy \\
+        \frac{dy}{dt} &= -\gamma y + \delta xy
+        \end{aligned}
+        \]
+    </div>
+
+    <div class="controls"></div>
+
+    <div class="plots-container">
+        <div class="plot-container" id="phasePlot"></div>
+        <div class="plot-container" id="timePlot"></div>
+    </div>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+        const params = [
+            {id: 'alpha', label: 'α (Prey Growth)', min: 0.001, max: 0.5, step: 0.001, value: 0.15},
+            {id: 'beta', label: 'β (Predation Rate)', min: 0.001, max: 0.5, step: 0.001, value: 0.02},
+            {id: 'gamma', label: 'γ (Predator Mortality)', min: 0.001, max: 0.5, step: 0.001, value: 0.3},
+            {id: 'delta', label: 'δ (Predator Growth)', min: 0.001, max: 0.5, step: 0.001, value: 0.01},
+            {id: 'x0', label: 'Initial Prey Population(x₀)', min: 1, max: 100, step: 1, value: 55},
+            {id: 'y0', label: 'Initial Predator Population (y₀)', min: 1, max: 100, step: 1, value: 15}
+        ];
+
+        function solveLV(α, β, γ, δ, x0, y0) {
+            const dt = 0.1;
+            const steps = 2000;
+            let x = x0, y = y0;
+            const trajectory = [{x, y, t: 0}];
+
+            for(let i = 1; i < steps; i++) {
+                const k1x = dt * (α * x - β * x * y);
+                const k1y = dt * (-γ * y + δ * x * y);
+
+                const k2x = dt * (α * (x + k1x/2) - β * (x + k1x/2) * (y + k1y/2));
+                const k2y = dt * (-γ * (y + k1y/2) + δ * (x + k1x/2) * (y + k1y/2));
+
+                const k3x = dt * (α * (x + k2x/2) - β * (x + k2x/2) * (y + k2y/2));
+                const k3y = dt * (-γ * (y + k2y/2) + δ * (x + k2x/2) * (y + k2y/2));
+
+                const k4x = dt * (α * (x + k3x) - β * (x + k3x) * (y + k3y));
+                const k4y = dt * (-γ * (y + k3y) + δ * (x + k3x) * (y + k3y));
+
+                x += (k1x + 2*k2x + 2*k3x + k4x)/6;
+                y += (k1y + 2*k2y + 2*k3y + k4y)/6;
+
+                trajectory.push({x, y, t: i*dt});
+            }
+            return trajectory;
+        }
+
+        function createSliders() {
+            const container = document.querySelector('.controls');
+            params.forEach(param => {
+                const div = document.createElement('div');
+                div.className = 'slider-container';
+                div.innerHTML = `
+                    <label>${param.label}: <span id="${param.id}Value">${param.value}</span></label>
+                    <input type="range" id="${param.id}" 
+                           min="${param.min}" max="${param.max}" 
+                           step="${param.step}" value="${param.value}">
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        const updatePlots = () => {
+            const values = params.reduce((acc, param) => {
+                acc[param.id] = parseFloat(document.getElementById(param.id).value);
+                return acc;
+            }, {});
+
+            const trajectory = solveLV(
+                values.alpha, 
+                values.beta, 
+                values.gamma, 
+                values.delta,
+                values.x0, 
+                values.y0
+            );
+
+            // Phase plot
+            Plotly.react('phasePlot', [{
+                x: trajectory.map(p => p.x),
+                y: trajectory.map(p => p.y),
+                mode: 'lines',
+                line: {color: '#3498db'},
+                name: 'Trajectory'
+            }], {
+                title: 'Phase Space Diagram',
+                xaxis: {title: 'Prey Population (x)', range: [0, Math.max(...trajectory.map(p => p.x)) + 10]},
+                yaxis: {title: 'Predator Population (y)', range: [0, Math.max(...trajectory.map(p => p.y)) + 10]}
+            });
+
+            // Time plot
+            Plotly.react('timePlot', [{
+                x: trajectory.map(p => p.t),
+                y: trajectory.map(p => p.x),
+                name: 'Prey Population (x)',
+                line: {color: '#2ecc71'}
+            }, {
+                x: trajectory.map(p => p.t),
+                y: trajectory.map(p => p.y),
+                name: 'Predator Population (y)',
+                line: {color: '#e74c3c'}
+            }], {
+                title: 'Population Dynamics Over Time',
+                xaxis: {title: 'Time'},
+                yaxis: {title: 'Population'},
+                showlegend: true
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+
+            createSliders();
+            params.forEach(param => {
+                document.getElementById(param.id).addEventListener('input', function() {
+                    document.getElementById(`${param.id}Value`).textContent = this.value;
+                    updatePlots();
+                });
+            });
+            updatePlots();
+        });
+    </script>
+</body>
+</html>
