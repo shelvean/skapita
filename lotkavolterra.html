@@ -137,8 +137,8 @@
         ];
 
         function solveLV(α, β, γ, δ, x0, y0) {
-            const dt = 0.1;
-            const steps = 2000;
+            const dt = 0.01;
+            const steps = 8000;
             let x = x0, y = y0;
             const trajectory = [{x, y, t: 0}];
 
@@ -178,52 +178,97 @@
             });
         }
 
-        const updatePlots = () => {
-            const values = params.reduce((acc, param) => {
-                acc[param.id] = parseFloat(document.getElementById(param.id).value);
-                return acc;
-            }, {});
+        function updatePlots() {
+    const values = params.reduce((acc, param) => {
+        acc[param.id] = parseFloat(document.getElementById(param.id).value);
+        return acc;
+    }, {});
 
-            const trajectory = solveLV(
-                values.alpha, 
-                values.beta, 
-                values.gamma, 
-                values.delta,
-                values.x0, 
-                values.y0
-            );
+    const trajectory = solveLV(
+        values.alpha, 
+        values.beta, 
+        values.gamma, 
+        values.delta,
+        values.x0, 
+        values.y0
+    );
 
-            // Phase plot
-            Plotly.react('phasePlot', [{
-                x: trajectory.map(p => p.x),
-                y: trajectory.map(p => p.y),
-                mode: 'lines',
-                line: {color: '#3498db'},
-                name: 'Trajectory'
-            }], {
-                title: 'Phase Space Diagram',
-                xaxis: {title: 'Prey Population (x)', range: [0, Math.max(...trajectory.map(p => p.x)) + 10]},
-                yaxis: {title: 'Predator Population (y)', range: [0, Math.max(...trajectory.map(p => p.y)) + 10]}
-            });
+    // Calculate equilibrium point coordinates
+    const xEq = values.gamma / values.delta;
+    const yEq = values.alpha / values.beta;
 
-            // Time plot
-            Plotly.react('timePlot', [{
-                x: trajectory.map(p => p.t),
-                y: trajectory.map(p => p.x),
-                name: 'Prey Population (x)',
-                line: {color: '#2ecc71'}
-            }, {
-                x: trajectory.map(p => p.t),
-                y: trajectory.map(p => p.y),
-                name: 'Predator Population (y)',
-                line: {color: '#e74c3c'}
-            }], {
-                title: 'Population Dynamics Over Time',
-                xaxis: {title: 'Time'},
-                yaxis: {title: 'Population'},
-                showlegend: true
-            });
-        };
+    // Phase space plot configuration
+    Plotly.react('phasePlot', [
+        {
+            x: trajectory.map(p => p.x),
+            y: trajectory.map(p => p.y),
+            mode: 'lines',
+            line: {color: '#3498db'},
+            name: 'Trajectory'
+        },
+        {
+            x: [xEq],
+            y: [yEq],
+            mode: 'markers',
+            marker: {
+                color: 'purple',
+                size: 12,
+                symbol: 'circle'
+            },
+            name: 'Equilibrium'
+        }
+    ], {
+        title: 'Phase Space Diagram',
+        xaxis: {
+            title: 'Prey Population (x)', 
+            range: [0, Math.max(...trajectory.map(p => p.x)) + 10],
+            gridcolor: '#eee'
+        },
+        yaxis: {
+            title: 'Predator Population (y)', 
+            range: [0, Math.max(...trajectory.map(p => p.y)) + 10],
+            gridcolor: '#eee'
+        },
+        plot_bgcolor: 'white',
+        showlegend: true
+    });
+
+    // Time domain plot configuration
+    Plotly.react('timePlot', [
+        {
+            x: trajectory.map(p => p.t),
+            y: trajectory.map(p => p.x),
+            name: 'Prey Population (x)',
+            line: {color: '#2ecc71'}
+        },
+        {
+            x: trajectory.map(p => p.t),
+            y: trajectory.map(p => p.y),
+            name: 'Predator Population (y)',
+            line: {color: '#e74c3c'}
+        }
+    ], {
+        title: 'Population Dynamics Over Time',
+        xaxis: {
+            title: 'Time',
+            gridcolor: '#eee'
+        },
+        yaxis: {
+            title: 'Population',
+            gridcolor: '#eee'
+        },
+        plot_bgcolor: 'white',
+        showlegend: true,
+        legend: {
+            orientation: 'h',
+            yanchor: 'bottom',
+            y: 1.02,
+            xanchor: 'right',
+            x: 1
+        }
+    });
+}
+
 
         document.addEventListener('DOMContentLoaded', () => {
             renderMathInElement(document.body, {
