@@ -69,14 +69,14 @@
             padding: 0.3rem 0.8rem;
             border-radius: 8px;
             font-weight: 600;
-            min-wih: 60px;
+            min-width: 60px;
             text-align: center;
             transition: var(--transition);
         }
 
         input[type="range"] {
             -webkit-appearance: none;
-            wih: 100%;
+            width: 100%;
             height: var(--track-height);
             background: #e0e7ed;
             border-radius: 10px;
@@ -92,7 +92,7 @@
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            wih: var(--thumb-size);
+            width: var(--thumb-size);
             height: var(--thumb-size);
             border-radius: 50%;
             background: white;
@@ -130,9 +130,9 @@
     <div class="equations">
         \[
         \begin{cases}
-        \frac{dx}{} = \sigma(y - x) \\
-        \frac{dy}{} = x(\rho - z) - y \\
-        \frac{dz}{} = xy - \beta z
+        \frac{dx}{dt} = \sigma(y - x) \\
+        \frac{dy}{dt} = x(\rho - z) - y \\
+        \frac{dz}{dt} = xy - \beta z
         \end{cases}
         \]
     </div>
@@ -188,7 +188,10 @@
                 const div = document.createElement('div');
                 div.className = 'slider-container';
                 div.innerHTML = `
-                    <label>${param.label}: <span id="${param.id}Value">${param.value}</span></label>
+                    <div class="slider-label">
+                        <span>${param.label}</span>
+                        <span class="slider-value" id="${param.id}Value">${param.value}</span>
+                    </div>
                     <input type="range" id="${param.id}" 
                            min="${param.min}" max="${param.max}" 
                            step="${param.step}" value="${param.value}">
@@ -204,36 +207,35 @@
             }, {});
 
             const trajectory = solveLorenz(
-                values.sigma, values.rho, values.beta,
-                values.x0, values.y0, values.z0
+                values.sigma, 
+                values.rho, 
+                values.beta,
+                values.x0, 
+                values.y0, 
+                values.z0
             );
 
-            // Modified Plotly configuration to disable hover coordinates
             Plotly.react('plot', [{
                 x: trajectory.x,
                 y: trajectory.y,
                 z: trajectory.z,
                 type: 'scatter3d',
                 mode: 'lines',
-                hoverinfo: 'none',
-                hovertemplate: null,
                 line: {
                     color: '#5D8AA8',
                     width: 2
-                },
-                name: 'Trajectory'
+                }
             }], {
                 title: 'Lorenz Attractor 3D Visualization',
                 scene: {
-                    xaxis: {title: 'X Axis', gridcolor: '#eee', backgroundcolor: 'rgba(255,255,255,0.8)'},
-                    yaxis: {title: 'Y Axis', gridcolor: '#eee', backgroundcolor: 'rgba(255,255,255,0.8)'},
-                    zaxis: {title: 'Z Axis', gridcolor: '#eee', backgroundcolor: 'rgba(255,255,255,0.8)'},
+                    xaxis: {title: 'X Axis'},
+                    yaxis: {title: 'Y Axis'},
+                    zaxis: {title: 'Z Axis'},
                     camera: {
                         eye: {x: 1.5, y: 1.5, z: 0.5}
                     }
                 },
                 margin: {t: 40, b: 20, l: 0, r: 0},
-                showlegend: false,
                 paper_bgcolor: 'white',
             });
         }
@@ -249,7 +251,8 @@
 
             createSliders();
             params.forEach(param => {
-                document.getElementById(param.id).addEventListener('input', function() {
+                const slider = document.getElementById(param.id);
+                slider.addEventListener('input', function() {
                     document.getElementById(`${param.id}Value`).textContent = this.value;
                     updatePlot();
                 });
