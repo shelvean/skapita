@@ -160,27 +160,82 @@
             ];
         }
 
-        function solveLorenz(σ, ρ, β, x0, y0, z0) {
-            const dt = 0.005;
-            let x = x0, y = y0, z = z0;
-            const trajectory = {x: [], y: [], z: []};
+       function solveLorenz(σ, ρ, β, x0, y0, z0) {
+    const dt = 0.005;
+    let x = x0, y = y0, z = z0;
+    const trajectory = {x: [], y: [], z: [], t: []};
+    const maxSteps = 10000;
 
-            for(let i = 0; i < 10000; i++) {
-                const [k1x, k1y, k1z] = lorenz(x, y, z, σ, ρ, β);
-                const [k2x, k2y, k2z] = lorenz(x + k1x*dt/2, y + k1y*dt/2, z + k1z*dt/2, σ, ρ, β);
-                const [k3x, k3y, k3z] = lorenz(x + k2x*dt/2, y + k2y*dt/2, z + k2z*dt/2, σ, ρ, β);
-                const [k4x, k4y, k4z] = lorenz(x + k3x*dt, y + k3y*dt, z + k3z*dt, σ, ρ, β);
+    for(let i = 0; i < maxSteps; i++) {
+        const [k1x, k1y, k1z] = lorenz(x, y, z, σ, ρ, β);
+        const [k2x, k2y, k2z] = lorenz(x + k1x*dt/2, y + k1y*dt/2, z + k1z*dt/2, σ, ρ, β);
+        const [k3x, k3y, k3z] = lorenz(x + k2x*dt/2, y + k2y*dt/2, z + k2z*dt/2, σ, ρ, β);
+        const [k4x, k4y, k4z] = lorenz(x + k3x*dt, y + k3y*dt, z + k3z*dt, σ, ρ, β);
 
-                x += (k1x + 2*k2x + 2*k3x + k4x) * dt / 6;
-                y += (k1y + 2*k2y + 2*k3y + k4y) * dt / 6;
-                z += (k1z + 2*k2z + 2*k3z + k4z) * dt / 6;
+        x += (k1x + 2*k2x + 2*k3x + k4x) * dt / 6;
+        y += (k1y + 2*k2y + 2*k3y + k4y) * dt / 6;
+        z += (k1z + 2*k2z + 2*k3z + k4z) * dt / 6;
 
-                trajectory.x.push(x);
-                trajectory.y.push(y);
-                trajectory.z.push(z);
+        trajectory.x.push(x);
+        trajectory.y.push(y);
+        trajectory.z.push(z);
+        trajectory.t.push(i/maxSteps); // Normalized time value
+    }
+    return trajectory;
+}
+
+function updatePlot() {
+    const values = params.reduce((acc, param) => {
+        acc[param.id] = parseFloat(document.getElementById(param.id).value);
+        return acc;
+    }, {});
+
+    const trajectory = solveLorenz(
+        values.sigma, 
+        values.rho, 
+        values.beta,
+        values.x0, 
+        values.y0, 
+        values.z0
+    );
+
+    Plotly.react('plot', [{
+        x: trajectory.x,
+        y: trajectory.y,
+        z: trajectory.z,
+        type: 'scatter3d',
+        mode: 'lines',
+        line: {
+            color: trajectory.t,
+            colorscale: 'Jet',
+            width: 2,
+            showscale: true,
+            cmin: 0,
+            cmax: 1,
+            colorbar: {
+                title: 'Time Progression',
+                thickness: 15,
+                tickvals: [0, 0.5, 1],
+                ticktext: ['Start', 'Mid', 'End']
             }
-            return trajectory;
         }
+    }], {
+        title: 'Lorenz Attractor ',
+        scene: {
+            xaxis: {title: 'X Axis', gridcolor: 'rgba(200,200,200,0.2)'},
+            yaxis: {title: 'Y Axis', gridcolor: 'rgba(200,200,200,0.2)'},
+            zaxis: {title: 'Z Axis', gridcolor: 'rgba(200,200,200,0.2)'},
+            camera: {
+                eye: {x: 1.5, y: 1.5, z: 0.5}
+            },
+            bgcolor: '#1f1f1f'
+        },
+        margin: {t: 40, b: 20, l: 0, r: 0},
+        paper_bgcolor: '#1f1f1f',
+        font: {color: 'white'}
+    });
+}
+
 
         function createSliders() {
             const container = document.querySelector('.controls');
@@ -200,45 +255,7 @@
             });
         }
 
-        function updatePlot() {
-            const values = params.reduce((acc, param) => {
-                acc[param.id] = parseFloat(document.getElementById(param.id).value);
-                return acc;
-            }, {});
-
-            const trajectory = solveLorenz(
-                values.sigma, 
-                values.rho, 
-                values.beta,
-                values.x0, 
-                values.y0, 
-                values.z0
-            );
-
-            Plotly.react('plot', [{
-                x: trajectory.x,
-                y: trajectory.y,
-                z: trajectory.z,
-                type: 'scatter3d',
-                mode: 'lines',
-                line: {
-                    color: '#5D8AA8',
-                    width: 2
-                }
-            }], {
-                title: 'Lorenz Attractor 3D Visualization',
-                scene: {
-                    xaxis: {title: 'X Axis'},
-                    yaxis: {title: 'Y Axis'},
-                    zaxis: {title: 'Z Axis'},
-                    camera: {
-                        eye: {x: 1.5, y: 1.5, z: 0.5}
-                    }
-                },
-                margin: {t: 40, b: 20, l: 0, r: 0},
-                paper_bgcolor: 'white',
-            });
-        }
+        
 
         document.addEventListener('DOMContentLoaded', () => {
             renderMathInElement(document.body, {
