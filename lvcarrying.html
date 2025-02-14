@@ -127,13 +127,13 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <script>
         const params = [
-            {id: 'alpha', label: 'α (Prey Growth)', min: 0.001, max: 0.5, step: 0.001, value: 0.15},
-            {id: 'beta', label: 'β (Predation Rate)', min: 0.001, max: 0.5, step: 0.001, value: 0.03},
-            {id: 'gamma', label: 'γ (Predator Mortality)', min: 0.001, max: 0.5, step: 0.001, value: 0.3},
-            {id: 'delta', label: 'δ (Predator Growth)', min: 0.001, max: 0.5, step: 0.001, value: 0.01},
-            {id: 'K', label: 'K (Carrying Capacity)', min: 50, max: 500, step: 10, value: 100},
-            {id: 'x0', label: 'Initial Prey (x₀)', min: 1, max: 100, step: 1, value: 50},
-            {id: 'y0', label: 'Initial Predator (y₀)', min: 1, max: 100, step: 1, value: 10}
+            {id: 'alpha', label: 'α (Prey Growth)', min: 0.001, max: 0.5, step: 0.001, value: 0.306},
+            {id: 'beta', label: 'β (Predation Rate)', min: 0.001, max: 0.5, step: 0.001, value: 0.024},
+            {id: 'gamma', label: 'γ (Predator Mortality)', min: 0.001, max: 0.5, step: 0.001, value: 0.052},
+            {id: 'delta', label: 'δ (Predator Growth)', min: 0.001, max: 0.5, step: 0.001, value: 0.003},
+            {id: 'K', label: 'K (Carrying Capacity)', min: 50, max: 500, step: 10, value: 200},
+            {id: 'x0', label: 'Initial Prey (x₀)', min: 1, max: 100, step: 1, value: 37},
+            {id: 'y0', label: 'Initial Predator (y₀)', min: 1, max: 100, step: 1, value: 14}
         ];
 
         function solveLV(α, β, γ, δ, K, x0, y0) {
