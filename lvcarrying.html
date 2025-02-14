@@ -58,24 +58,36 @@
             flex-direction: column;
         }
 
+        /* Updated Slider Styles */
         input[type="range"] {
-            width: 100%;
-            margin: 10px 0;
             -webkit-appearance: none;
-            height: 7px;
-            border-radius: 5px;
-            background: #ddd;
-            outline: none;
+            width: 100%;
+            height: 1.0rem;
+            background: linear-gradient(180deg, #8f813d, #706048, #7A702A);
+            border-radius: 0.5rem;
+            outline: 1px ridge #8C7853;
+            outline-offset: 0.125rem;
+            box-shadow: 0 3px 2px -1px rgba(255,255,255,0.25) inset,
+                        0 0 10px 2px rgba(0,0,0,0.25);
+            margin: 1rem 0;
         }
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: radial-gradient(#444 45%, #555 50%, #222 55%, #8C7853 57.5%);
             border-radius: 50%;
-            background: var(--secondary);
-            cursor: pointer;
-            transition: background 0.3s;
+            box-shadow: 0 0 2px 2px rgba(0,0,0,0.15),
+                        0 3px 2px 1px rgba(0,0,0,0.25);
+            transform: translateY(-0.7rem);
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #222;
+            height: 0.25rem;
+            border-radius: 0.125rem;
+            margin: 0 0.5rem;
         }
 
         .plots-container {
@@ -143,7 +155,6 @@
             const trajectory = [{x, y, t: 0}];
 
             for(let i = 1; i < steps; i++) {
-                // RK4 integration with carrying capacity
                 const k1x = dt * (α * x * (1 - x/K) - β * x * y);
                 const k1y = dt * (-γ * y + δ * x * y);
 
@@ -165,7 +176,6 @@
                 x += (k1x + 2*k2x + 2*k3x + k4x)/6;
                 y += (k1y + 2*k2y + 2*k3y + k4y)/6;
 
-                // Extinction threshold
                 if(x < 0.01) x = 0;
                 if(y < 0.01) y = 0;
                 
@@ -195,7 +205,6 @@
                 return acc;
             }, {});
 
-            // Parameter validation
             if(values.beta <= values.alpha/values.y0) {
                 alert('Predation rate β must exceed α/y₀ for population control');
                 return;
@@ -211,11 +220,9 @@
                 values.y0
             );
 
-            // Calculate equilibrium point
             const xEq = values.gamma / values.delta;
             const yEq = (values.alpha/values.beta) * (1 - xEq/values.K);
 
-            // Configure phase plot
             const phaseTraces = [{
                 x: trajectory.map(p => p.x),
                 y: trajectory.map(p => p.y),
@@ -254,7 +261,6 @@
                 showlegend: true
             });
 
-            // Configure time plot
             Plotly.react('timePlot', [
                 {
                     x: trajectory.map(p => p.t),
