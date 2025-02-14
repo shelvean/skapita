@@ -161,11 +161,11 @@
         }
 
         function solveLorenz(σ, ρ, β, x0, y0, z0) {
-            const dt = 0.02;
+            const dt = 0.005;
             let x = x0, y = y0, z = z0;
             const trajectory = {x: [], y: [], z: []};
 
-            for(let i = 0; i < 15000; i++) {
+            for(let i = 0; i < 10000; i++) {
                 const [k1x, k1y, k1z] = lorenz(x, y, z, σ, ρ, β);
                 const [k2x, k2y, k2z] = lorenz(x + k1x*dt/2, y + k1y*dt/2, z + k1z*dt/2, σ, ρ, β);
                 const [k3x, k3y, k3z] = lorenz(x + k2x*dt/2, y + k2y*dt/2, z + k2z*dt/2, σ, ρ, β);
