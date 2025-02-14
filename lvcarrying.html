@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5B8PRB2WZT');
+    </script>
+    <title>Lotka-Volterra Model with Carrying Capacity</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --background: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--background);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .equations {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 1.2rem;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+            -webkit-appearance: none;
+            height: 7px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--secondary);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .plots-container {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .plot-container {
+            flex: 1;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-width: 0;
+        }
+
+        @media (max-width: 768px) {
+            .plots-container {
+                flex-direction: column;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Lotka-Volterra Model with Carrying Capacity</h1>
+    
+    <div class="equations">
+        \[
+        \begin{aligned}
+        \frac{dx}{dt} &= \alpha x\left(1 - \frac{x}{K}\right) - \beta xy \\
+        \frac{dy}{dt} &= -\gamma y + \delta xy
+        \end{aligned}
+        \]
+    </div>
+
+    <div class="controls"></div>
+
+    <div class="plots-container">
+        <div class="plot-container" id="phasePlot"></div>
+        <div class="plot-container" id="timePlot"></div>
+    </div>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+        const params = [
+            {id: 'alpha', label: 'α (Prey Growth)', min: 0.001, max: 0.5, step: 0.001, value: 0.15},
+            {id: 'beta', label: 'β (Predation Rate)', min: 0.001, max: 0.5, step: 0.001, value: 0.01},
+            {id: 'gamma', label: 'γ (Predator Mortality)', min: 0.001, max: 0.5, step: 0.001, value: 0.3},
+            {id: 'delta', label: 'δ (Predator Growth)', min: 0.001, max: 0.5, step: 0.001, value: 0.01},
+            {id: 'K', label: 'K (Carrying Capacity)', min: 50, max: 500, step: 10, value: 100},
+            {id: 'x0', label: 'Initial Prey (x₀)', min: 1, max: 100, step: 1, value: 50},
+            {id: 'y0', label: 'Initial Predator (y₀)', min: 1, max: 100, step: 1, value: 10}
+        ];
+
+        function solveLV(α, β, γ, δ, K, x0, y0) {
+            const dt = 0.05;
+            const steps = 15000;
+            let x = x0, y = y0;
+            const trajectory = [{x, y, t: 0}];
+
+            for(let i = 1; i < steps; i++) {
+                // RK4 integration with carrying capacity
+                const k1x = dt * (α * x * (1 - x/K) - β * x * y);
+                const k1y = dt * (-γ * y + δ * x * y);
+
+                const x2 = x + k1x/2;
+                const y2 = y + k1y/2;
+                const k2x = dt * (α * x2 * (1 - x2/K) - β * x2 * y2);
+                const k2y = dt * (-γ * y2 + δ * x2 * y2);
+
+                const x3 = x + k2x/2;
+                const y3 = y + k2y/2;
+                const k3x = dt * (α * x3 * (1 - x3/K) - β * x3 * y3);
+                const k3y = dt * (-γ * y3 + δ * x3 * y3);
+
+                const x4 = x + k3x;
+                const y4 = y + k3y;
+                const k4x = dt * (α * x4 * (1 - x4/K) - β * x4 * y4);
+                const k4y = dt * (-γ * y4 + δ * x4 * y4);
+
+                x += (k1x + 2*k2x + 2*k3x + k4x)/6;
+                y += (k1y + 2*k2y + 2*k3y + k4y)/6;
+
+                // Extinction threshold
+                if(x < 0.01) x = 0;
+                if(y < 0.01) y = 0;
+                
+                trajectory.push({x, y, t: i*dt});
+            }
+            return trajectory;
+        }
+
+        function createSliders() {
+            const container = document.querySelector('.controls');
+            params.forEach(param => {
+                const div = document.createElement('div');
+                div.className = 'slider-container';
+                div.innerHTML = `
+                    <label>${param.label}: <span id="${param.id}Value">${param.value}</span></label>
+                    <input type="range" id="${param.id}" 
+                           min="${param.min}" max="${param.max}" 
+                           step="${param.step}" value="${param.value}">
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        const updatePlots = () => {
+            const values = params.reduce((acc, param) => {
+                acc[param.id] = parseFloat(document.getElementById(param.id).value);
+                return acc;
+            }, {});
+
+            // Parameter validation
+            if(values.beta <= values.alpha/values.y0) {
+                alert('Predation rate β must exceed α/y₀ for population control');
+                return;
+            }
+
+            const trajectory = solveLV(
+                values.alpha, 
+                values.beta, 
+                values.gamma, 
+                values.delta,
+                values.K,
+                values.x0, 
+                values.y0
+            );
+
+            // Calculate equilibrium point
+            const xEq = values.gamma / values.delta;
+            const yEq = (values.alpha/values.beta) * (1 - xEq/values.K);
+
+            // Configure phase plot
+            const phaseTraces = [{
+                x: trajectory.map(p => p.x),
+                y: trajectory.map(p => p.y),
+                mode: 'lines',
+                line: {color: '#3498db'},
+                name: 'Trajectory'
+            }];
+
+            if(yEq > 0 && xEq < values.K) {
+                phaseTraces.push({
+                    x: [xEq],
+                    y: [yEq],
+                    mode: 'markers',
+                    marker: {
+                        color: 'red',
+                        size: 6,
+                        symbol: 'circle'
+                    },
+                    name: 'Stable Equilibrium'
+                });
+            }
+
+            Plotly.react('phasePlot', phaseTraces, {
+                title: 'Phase Space Diagram',
+                xaxis: {
+                    title: 'Prey Population (x)', 
+                    range: [0, Math.max(...trajectory.map(p => p.x)) + 10],
+                    gridcolor: '#eee'
+                },
+                yaxis: {
+                    title: 'Predator Population (y)', 
+                    range: [0, Math.max(...trajectory.map(p => p.y)) + 10],
+                    gridcolor: '#eee'
+                },
+                plot_bgcolor: 'white',
+                showlegend: true
+            });
+
+            // Configure time plot
+            Plotly.react('timePlot', [
+                {
+                    x: trajectory.map(p => p.t),
+                    y: trajectory.map(p => p.x),
+                    name: 'Prey Population (x)',
+                    line: {color: '#2ecc71'}
+                },
+                {
+                    x: trajectory.map(p => p.t),
+                    y: trajectory.map(p => p.y),
+                    name: 'Predator Population (y)',
+                    line: {color: '#e74c3c'}
+                }
+            ], {
+                title: 'Population Dynamics Over Time',
+                xaxis: {
+                    title: 'Time',
+                    range: [0, 300],
+                    gridcolor: '#eee'
+                },
+                yaxis: {
+                    title: 'Population',
+                    gridcolor: '#eee'
+                },
+                plot_bgcolor: 'white',
+                showlegend: true,
+                legend: {
+                    orientation: 'h',
+                    yanchor: 'bottom',
+                    y: 1.02,
+                    xanchor: 'right',
+                    x: 1
+                }
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+
+            createSliders();
+            params.forEach(param => {
+                document.getElementById(param.id).addEventListener('input', function() {
+                    document.getElementById(`${param.id}Value`).textContent = this.value;
+                    updatePlots();
+                });
+            });
+            updatePlots();
+        });
+    </script>
+</body>
+</html>
