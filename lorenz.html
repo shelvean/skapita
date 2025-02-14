@@ -5,124 +5,123 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <style>
-:root {
-    --primary: #2c3e50;
-    --secondary: #4a90e2;
-    --accent: #7ed321;
-    --background: #f8f9fa;
-    --track-height: 6px;
-    --thumb-size: 20px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+        :root {
+            --primary: #2c3e50;
+            --secondary: #4a90e2;
+            --accent: #7ed321;
+            --background: #f8f9fa;
+            --track-height: 6px;
+            --thumb-size: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-body {
-    font-family: 'Segoe UI', sans-serif;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    background: var(--background);
-}
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--background);
+        }
 
-h1 {
-    text-align: center;
-    color: var(--primary);
-    margin-bottom: 1rem;
-}
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
 
-.equations {
-    text-align: center;
-    margin: 1rem 0;
-    padding: 1rem;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    font-size: 1.2rem;
-}
+        .equations {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 1.2rem;
+        }
 
-.controls {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    margin: 2rem 0;
-    background: white;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
-.slider-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
 
-.slider-label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 500;
-    color: var(--primary);
-}
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            color: var(--primary);
+        }
 
-.slider-value {
-    background: #f0f4f8;
-    padding: 0.3rem 0.8rem;
-    border-radius: 8px;
-    font-weight: 600;
-    min-width: 60px;
-    text-align: center;
-    transition: var(--transition);
-}
+        .slider-value {
+            background: #f0f4f8;
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            min-width: 60px;
+            text-align: center;
+            transition: var(--transition);
+        }
 
-input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: var(--track-height);
-    background: #e0e7ed;
-    border-radius: 10px;
-    background-image: linear-gradient(
-        to right,
-        var(--secondary) 0%,
-        var(--secondary) var(--progress),
-        #e0e7ed var(--progress),
-        #e0e7ed 100%
-    );
-    transition: var(--transition);
-}
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: var(--track-height);
+            background: #e0e7ed;
+            border-radius: 10px;
+            background-image: linear-gradient(
+                to right,
+                var(--secondary) 0%,
+                var(--secondary) var(--progress),
+                #e0e7ed var(--progress),
+                #e0e7ed 100%
+            );
+            transition: var(--transition);
+        }
 
-input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: var(--thumb-size);
-    height: var(--thumb-size);
-    border-radius: 50%;
-    background: white;
-    border: 3px solid var(--secondary);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: var(--transition);
-}
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: var(--thumb-size);
+            height: var(--thumb-size);
+            border-radius: 50%;
+            background: white;
+            border: 3px solid var(--secondary);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: var(--transition);
+        }
 
-input[type="range"]:hover::-webkit-slider-thumb {
-    transform: scale(1.1);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
+        input[type="range"]:hover::-webkit-slider-thumb {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
 
-input[type="range"]:focus {
-    outline: none;
-}
+        input[type="range"]:focus {
+            outline: none;
+        }
 
-input[type="range"]:focus::-webkit-slider-thumb {
-    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
-}
+        input[type="range"]:focus::-webkit-slider-thumb {
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
 
-#plot {
-    background: white;
-    padding: 1rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    height: 700px;
-}
-
+        #plot {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: 700px;
+        }
     </style>
 </head>
 <body>
@@ -209,14 +208,17 @@ input[type="range"]:focus::-webkit-slider-thumb {
                 values.x0, values.y0, values.z0
             );
 
+            // Modified Plotly configuration to disable hover coordinates
             Plotly.react('plot', [{
                 x: trajectory.x,
                 y: trajectory.y,
                 z: trajectory.z,
                 type: 'scatter3d',
                 mode: 'lines',
+                hoverinfo: 'none',
+                hovertemplate: null,
                 line: {
-                    color: '# #5D8AA8',
+                    color: '#5D8AA8',
                     width: 2
                 },
                 name: 'Trajectory'
