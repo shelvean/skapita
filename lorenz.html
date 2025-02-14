@@ -10,9 +10,6 @@
             --secondary: #4a90e2;
             --accent: #7ed321;
             --background: #f8f9fa;
-            --track-height: 6px;
-            --thumb-size: 20px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
@@ -56,6 +53,38 @@
             gap: 0.8rem;
         }
 
+        /* Updated Slider Styles */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 1.0rem;
+            background: linear-gradient(180deg, #8f813d, #706048, #7A702A);
+            border-radius: 0.5rem;
+            outline: 1px ridge #8C7853;
+            outline-offset: 0.25rem;
+            box-shadow: 0 3px 2px -1px rgba(255,255,255,0.25) inset,
+                        0 0 10px 2px rgba(0,0,0,0.25);
+            margin: 1rem 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: radial-gradient(#444 45%, #555 50%, #222 55%, #8C7853 57.5%);
+            border-radius: 50%;
+            box-shadow: 0 0 2px 2px rgba(0,0,0,0.15),
+                        0 3px 2px 1px rgba(0,0,0,0.25);
+            transform: translateY(-0.7rem);
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #222;
+            height: 0.25rem;
+            border-radius: 0.125rem;
+            margin: 0 0.5rem;
+        }
+
         .slider-label {
             display: flex;
             justify-content: space-between;
@@ -71,48 +100,6 @@
             font-weight: 600;
             min-width: 60px;
             text-align: center;
-            transition: var(--transition);
-        }
-
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: var(--track-height);
-            background: #e0e7ed;
-            border-radius: 10px;
-            background-image: linear-gradient(
-                to right,
-                var(--secondary) 0%,
-                var(--secondary) var(--progress),
-                #e0e7ed var(--progress),
-                #e0e7ed 100%
-            );
-            transition: var(--transition);
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: var(--thumb-size);
-            height: var(--thumb-size);
-            border-radius: 50%;
-            background: white;
-            border: 3px solid var(--secondary);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        input[type="range"]:hover::-webkit-slider-thumb {
-            transform: scale(1.1);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        input[type="range"]:focus {
-            outline: none;
-        }
-
-        input[type="range"]:focus::-webkit-slider-thumb {
-            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
         }
 
         #plot {
@@ -121,6 +108,12 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             height: 700px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -160,82 +153,81 @@
             ];
         }
 
-       function solveLorenz(σ, ρ, β, x0, y0, z0) {
-    const dt = 0.005;
-    let x = x0, y = y0, z = z0;
-    const trajectory = {x: [], y: [], z: [], t: []};
-    const maxSteps = 10000;
+        function solveLorenz(σ, ρ, β, x0, y0, z0) {
+            const dt = 0.005;
+            let x = x0, y = y0, z = z0;
+            const trajectory = {x: [], y: [], z: [], t: []};
+            const maxSteps = 10000;
 
-    for(let i = 0; i < maxSteps; i++) {
-        const [k1x, k1y, k1z] = lorenz(x, y, z, σ, ρ, β);
-        const [k2x, k2y, k2z] = lorenz(x + k1x*dt/2, y + k1y*dt/2, z + k1z*dt/2, σ, ρ, β);
-        const [k3x, k3y, k3z] = lorenz(x + k2x*dt/2, y + k2y*dt/2, z + k2z*dt/2, σ, ρ, β);
-        const [k4x, k4y, k4z] = lorenz(x + k3x*dt, y + k3y*dt, z + k3z*dt, σ, ρ, β);
+            for(let i = 0; i < maxSteps; i++) {
+                const [k1x, k1y, k1z] = lorenz(x, y, z, σ, ρ, β);
+                const [k2x, k2y, k2z] = lorenz(x + k1x*dt/2, y + k1y*dt/2, z + k1z*dt/2, σ, ρ, β);
+                const [k3x, k3y, k3z] = lorenz(x + k2x*dt/2, y + k2y*dt/2, z + k2z*dt/2, σ, ρ, β);
+                const [k4x, k4y, k4z] = lorenz(x + k3x*dt, y + k3y*dt, z + k3z*dt, σ, ρ, β);
 
-        x += (k1x + 2*k2x + 2*k3x + k4x) * dt / 6;
-        y += (k1y + 2*k2y + 2*k3y + k4y) * dt / 6;
-        z += (k1z + 2*k2z + 2*k3z + k4z) * dt / 6;
+                x += (k1x + 2*k2x + 2*k3x + k4x) * dt / 6;
+                y += (k1y + 2*k2y + 2*k3y + k4y) * dt / 6;
+                z += (k1z + 2*k2z + 2*k3z + k4z) * dt / 6;
 
-        trajectory.x.push(x);
-        trajectory.y.push(y);
-        trajectory.z.push(z);
-        trajectory.t.push(i/maxSteps); // Normalized time value
-    }
-    return trajectory;
-}
-
-function updatePlot() {
-    const values = params.reduce((acc, param) => {
-        acc[param.id] = parseFloat(document.getElementById(param.id).value);
-        return acc;
-    }, {});
-
-    const trajectory = solveLorenz(
-        values.sigma, 
-        values.rho, 
-        values.beta,
-        values.x0, 
-        values.y0, 
-        values.z0
-    );
-
-    Plotly.react('plot', [{
-        x: trajectory.x,
-        y: trajectory.y,
-        z: trajectory.z,
-        type: 'scatter3d',
-        mode: 'lines',
-        line: {
-            color: trajectory.t,
-            colorscale: 'Jet',
-            width: 2,
-            showscale: true,
-            cmin: 0,
-            cmax: 1,
-            colorbar: {
-                title: 'Time Progression',
-                thickness: 15,
-                tickvals: [0, 0.5, 1],
-                ticktext: ['Start', 'Mid', 'End']
+                trajectory.x.push(x);
+                trajectory.y.push(y);
+                trajectory.z.push(z);
+                trajectory.t.push(i/maxSteps);
             }
+            return trajectory;
         }
-    }], {
-        title: 'Lorenz Attractor ',
-        scene: {
-            xaxis: {title: 'X Axis', gridcolor: 'rgba(200,200,200,0.2)'},
-            yaxis: {title: 'Y Axis', gridcolor: 'rgba(200,200,200,0.2)'},
-            zaxis: {title: 'Z Axis', gridcolor: 'rgba(200,200,200,0.2)'},
-            camera: {
-                eye: {x: 1.5, y: 1.5, z: 0.5}
-            },
-            bgcolor: '#1f1f1f'
-        },
-        margin: {t: 40, b: 20, l: 0, r: 0},
-        paper_bgcolor: '#1f1f1f',
-        font: {color: 'white'}
-    });
-}
 
+        function updatePlot() {
+            const values = params.reduce((acc, param) => {
+                acc[param.id] = parseFloat(document.getElementById(param.id).value);
+                return acc;
+            }, {});
+
+            const trajectory = solveLorenz(
+                values.sigma, 
+                values.rho, 
+                values.beta,
+                values.x0, 
+                values.y0, 
+                values.z0
+            );
+
+            Plotly.react('plot', [{
+                x: trajectory.x,
+                y: trajectory.y,
+                z: trajectory.z,
+                type: 'scatter3d',
+                mode: 'lines',
+                line: {
+                    color: trajectory.t,
+                    colorscale: 'Jet',
+                    width: 2,
+                    showscale: true,
+                    cmin: 0,
+                    cmax: 1,
+                    colorbar: {
+                        title: 'Time Progression',
+                        thickness: 15,
+                        tickvals: [0, 0.5, 1],
+                        ticktext: ['Start', 'Mid', 'End']
+                    }
+                }
+            }], {
+                title: 'Lorenz Attractor',
+                scene: {
+                    xaxis: {title: 'X Axis', gridcolor: 'rgba(200,200,200,0.2)'},
+                    yaxis: {title: 'Y Axis', gridcolor: 'rgba(200,200,200,0.2)'},
+                    zaxis: {title: 'Z Axis', gridcolor: 'rgba(200,200,200,0.2)'},
+                    camera: {
+                        eye: {x: 1.5, y: 1.5, z: 0.5}
+                    },
+                    bgcolor: '#1f1f1f'
+                },
+                margin: {t: 40, b: 20, l: 0, r: 0},
+                paper_bgcolor: '#1f1f1f',
+                font: {color: 'white'}
+            });
+        }
 
         function createSliders() {
             const container = document.querySelector('.controls');
@@ -254,8 +246,6 @@ function updatePlot() {
                 container.appendChild(div);
             });
         }
-
-        
 
         document.addEventListener('DOMContentLoaded', () => {
             renderMathInElement(document.body, {
