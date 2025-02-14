@@ -1,14 +1,13 @@
-
 <!DOCTYPE html>
 <html>
 <head>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-5B8PRB2WZT');
-</script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5B8PRB2WZT');
+    </script>
     <title>Lotka-Volterra Model</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -59,24 +58,36 @@
             flex-direction: column;
         }
 
+        /* Updated Slider Styles */
         input[type="range"] {
-            width: 100%;
-            margin: 10px 0;
             -webkit-appearance: none;
-            height: 7px;
-            border-radius: 5px;
-            background: #ddd;
-            outline: none;
+            width: 100%;
+            height: 1.0rem;
+            background: linear-gradient(180deg, #8f813d, #706048, #7A702A);
+            border-radius: 0.5rem;
+            outline: 1px ridge #8C7853;
+            outline-offset: 0.125rem;
+            box-shadow: 0 3px 2px -1px rgba(255,255,255,0.25) inset,
+                        0 0 10px 2px rgba(0,0,0,0.25);
+            margin: 1rem 0;
         }
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: radial-gradient(#444 45%, #555 50%, #222 55%, #8C7853 57.5%);
             border-radius: 50%;
-            background: var(--secondary);
-            cursor: pointer;
-            transition: background 0.3s;
+            box-shadow: 0 0 2px 2px rgba(0,0,0,0.15),
+                        0 3px 2px 1px rgba(0,0,0,0.25);
+            transform: translateY(-0.7rem);
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #222;
+            height: 0.25rem;
+            border-radius: 0.125rem;
+            margin: 0 0.5rem;
         }
 
         .plots-container {
@@ -179,96 +190,92 @@
         }
 
         function updatePlots() {
-    const values = params.reduce((acc, param) => {
-        acc[param.id] = parseFloat(document.getElementById(param.id).value);
-        return acc;
-    }, {});
+            const values = params.reduce((acc, param) => {
+                acc[param.id] = parseFloat(document.getElementById(param.id).value);
+                return acc;
+            }, {});
 
-    const trajectory = solveLV(
-        values.alpha, 
-        values.beta, 
-        values.gamma, 
-        values.delta,
-        values.x0, 
-        values.y0
-    );
+            const trajectory = solveLV(
+                values.alpha, 
+                values.beta, 
+                values.gamma, 
+                values.delta,
+                values.x0, 
+                values.y0
+            );
 
-    // Calculate equilibrium point coordinates
-    const xEq = values.gamma / values.delta;
-    const yEq = values.alpha / values.beta;
+            const xEq = values.gamma / values.delta;
+            const yEq = values.alpha / values.beta;
 
-    // Phase space plot configuration
-    Plotly.react('phasePlot', [
-        {
-            x: trajectory.map(p => p.x),
-            y: trajectory.map(p => p.y),
-            mode: 'lines',
-            line: {color: '#3498db'},
-            name: 'Trajectory'
-        },
-        {
-            x: [xEq],
-            y: [yEq],
-            mode: 'markers',
-            marker: {
-                color: 'purple',
-                size: 12,
-                symbol: 'circle'
-            },
-            name: 'Equilibrium'
+            Plotly.react('phasePlot', [
+                {
+                    x: trajectory.map(p => p.x),
+                    y: trajectory.map(p => p.y),
+                    mode: 'lines',
+                    line: {color: '#3498db'},
+                    name: 'Trajectory'
+                },
+                {
+                    x: [xEq],
+                    y: [yEq],
+                    mode: 'markers',
+                    marker: {
+                        color: 'purple',
+                        size: 12,
+                        symbol: 'circle'
+                    },
+                    name: 'Equilibrium'
+                }
+            ], {
+                title: 'Phase Space Diagram',
+                xaxis: {
+                    title: 'Prey Population (x)', 
+                    range: [0, Math.max(...trajectory.map(p => p.x)) + 10],
+                    gridcolor: '#eee'
+                },
+                yaxis: {
+                    title: 'Predator Population (y)', 
+                    range: [0, Math.max(...trajectory.map(p => p.y)) + 10],
+                    gridcolor: '#eee'
+                },
+                plot_bgcolor: 'white',
+                showlegend: true
+            });
+
+            Plotly.react('timePlot', [
+                {
+                    x: trajectory.map(p => p.t),
+                    y: trajectory.map(p => p.x),
+                    name: 'Prey Population (x)',
+                    line: {color: '#2ecc71'}
+                },
+                {
+                    x: trajectory.map(p => p.t),
+                    y: trajectory.map(p => p.y),
+                    name: 'Predator Population (y)',
+                    line: {color: '#e74c3c'}
+                }
+            ], {
+                title: 'Population Dynamics Over Time',
+                xaxis: {
+                    title: 'Time',
+                    gridcolor: '#eee'
+                },
+                yaxis: {
+                    title: 'Population',
+                    gridcolor: '#eee'
+                },
+                plot_bgcolor: 'white',
+                showlegend: true,
+                legend: {
+                    orientation: 'h',
+                    yanchor: 'bottom',
+                    y: 1.02,
+                    xanchor: 'right',
+                    x: 1
+                }
+            });
         }
-    ], {
-        title: 'Phase Space Diagram',
-        xaxis: {
-            title: 'Prey Population (x)', 
-            range: [0, Math.max(...trajectory.map(p => p.x)) + 10],
-            gridcolor: '#eee'
-        },
-        yaxis: {
-            title: 'Predator Population (y)', 
-            range: [0, Math.max(...trajectory.map(p => p.y)) + 10],
-            gridcolor: '#eee'
-        },
-        plot_bgcolor: 'white',
-        showlegend: true
-    });
-
-    // Time domain plot configuration
-    Plotly.react('timePlot', [
-        {
-            x: trajectory.map(p => p.t),
-            y: trajectory.map(p => p.x),
-            name: 'Prey Population (x)',
-            line: {color: '#2ecc71'}
-        },
-        {
-            x: trajectory.map(p => p.t),
-            y: trajectory.map(p => p.y),
-            name: 'Predator Population (y)',
-            line: {color: '#e74c3c'}
-        }
-    ], {
-        title: 'Population Dynamics Over Time',
-        xaxis: {
-            title: 'Time',
-            gridcolor: '#eee'
-        },
-        yaxis: {
-            title: 'Population',
-            gridcolor: '#eee'
-        },
-        plot_bgcolor: 'white',
-        showlegend: true,
-        legend: {
-            orientation: 'h',
-            yanchor: 'bottom',
-            y: 1.02,
-            xanchor: 'right',
-            x: 1
-        }
-    });
-}
-
 
         document.addEventListener('DOMContentLoaded', () => {
             renderMathInElement(document.body, {
