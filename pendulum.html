@@ -505,6 +505,15 @@
         m = parseFloat(document.getElementById('mass').value);
         b = parseFloat(document.getElementById('damping').value);
         // Reset simulation state
+	if (theta0 === 0 && omega0 === 0) {
+        isSimulationRunning = false;
+        theta = 0;
+        omega = 0;
+        graphData.length = 0;  // Clear graph data
+        drawPendulum();        // Draw stationary pendulum
+        drawGraph();           // Draw empty graph
+        return;                // Exit early
+    }
         theta = theta0;
         omega = omega0;
         t = 0;
