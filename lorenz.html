@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lorenz System</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --background: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--background);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .equations {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 1.2rem;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+            -webkit-appearance: none;
+            height: 7px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--secondary);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #plot {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: 700px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lorenz System</h1>
+    
+    <div class="equations">
+        \[
+        \begin{cases}
+        \frac{dx}{dt} = \sigma(y - x) \\
+        \frac{dy}{dt} = x(\rho - z) - y \\
+        \frac{dz}{dt} = xy - \beta z
+        \end{cases}
+        \]
+    </div>
+
+    <div class="controls"></div>
+    <div id="plot"></div>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+        const params = [
+            {id: 'sigma', label: 'σ', min: 1, max: 20, step: 0.1, value: 10},
+            {id: 'rho', label: 'ρ', min: 1, max: 50, step: 0.1, value: 28},
+            {id: 'beta', label: 'β', min: 0.1, max: 5, step: 0.1, value: 2.6},
+            {id: 'x0', label: 'x₀', min: -20, max: 20, step: 0.1, value: 1},
+            {id: 'y0', label: 'y₀', min: -20, max: 20, step: 0.1, value: 1},
+            {id: 'z0', label: 'z₀', min: 0, max: 50, step: 0.1, value: 20}
+        ];
+
+        function lorenz(x, y, z, σ, ρ, β) {
+            return [
+                σ * (y - x),
+                x * (ρ - z) - y,
+                x * y - β * z
+            ];
+        }
+
+        function solveLorenz(σ, ρ, β, x0, y0, z0) {
+            const dt = 0.01;
+            let x = x0, y = y0, z = z0;
+            const trajectory = {x: [], y: [], z: []};
+
+            for(let i = 0; i < 5000; i++) {
+                const [k1x, k1y, k1z] = lorenz(x, y, z, σ, ρ, β);
+                const [k2x, k2y, k2z] = lorenz(x + k1x*dt/2, y + k1y*dt/2, z + k1z*dt/2, σ, ρ, β);
+                const [k3x, k3y, k3z] = lorenz(x + k2x*dt/2, y + k2y*dt/2, z + k2z*dt/2, σ, ρ, β);
+                const [k4x, k4y, k4z] = lorenz(x + k3x*dt, y + k3y*dt, z + k3z*dt, σ, ρ, β);
+
+                x += (k1x + 2*k2x + 2*k3x + k4x) * dt / 6;
+                y += (k1y + 2*k2y + 2*k3y + k4y) * dt / 6;
+                z += (k1z + 2*k2z + 2*k3z + k4z) * dt / 6;
+
+                trajectory.x.push(x);
+                trajectory.y.push(y);
+                trajectory.z.push(z);
+            }
+            return trajectory;
+        }
+
+        function createSliders() {
+            const container = document.querySelector('.controls');
+            params.forEach(param => {
+                const div = document.createElement('div');
+                div.className = 'slider-container';
+                div.innerHTML = `
+                    <label>${param.label}: <span id="${param.id}Value">${param.value}</span></label>
+                    <input type="range" id="${param.id}" 
+                           min="${param.min}" max="${param.max}" 
+                           step="${param.step}" value="${param.value}">
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function updatePlot() {
+            const values = params.reduce((acc, param) => {
+                acc[param.id] = parseFloat(document.getElementById(param.id).value);
+                return acc;
+            }, {});
+
+            const trajectory = solveLorenz(
+                values.sigma, values.rho, values.beta,
+                values.x0, values.y0, values.z0
+            );
+
+            Plotly.react('plot', [{
+                x: trajectory.x,
+                y: trajectory.y,
+                z: trajectory.z,
+                type: 'scatter3d',
+                mode: 'lines',
+                line: {
+                    color: '# #5D8AA8',
+                    width: 2
+                },
+                name: 'Trajectory'
+            }], {
+                title: 'Lorenz Attractor 3D Visualization',
+                scene: {
+                    xaxis: {title: 'X Axis', gridcolor: '#eee', backgroundcolor: 'rgba(255,255,255,0.8)'},
+                    yaxis: {title: 'Y Axis', gridcolor: '#eee', backgroundcolor: 'rgba(255,255,255,0.8)'},
+                    zaxis: {title: 'Z Axis', gridcolor: '#eee', backgroundcolor: 'rgba(255,255,255,0.8)'},
+                    camera: {
+                        eye: {x: 1.5, y: 1.5, z: 0.5}
+                    }
+                },
+                margin: {t: 40, b: 20, l: 0, r: 0},
+                showlegend: false,
+                paper_bgcolor: 'white',
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false
+            });
+
+            createSliders();
+            params.forEach(param => {
+                document.getElementById(param.id).addEventListener('input', function() {
+                    document.getElementById(`${param.id}Value`).textContent = this.value;
+                    updatePlot();
+                });
+            });
+            updatePlot();
+        });
+    </script>
+</body>
+</html>
