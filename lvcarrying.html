@@ -116,7 +116,16 @@
                 grid-template-columns: 1fr;
             }
         }
-    </style>
+        #pageCounter {
+    display: block !important;
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    padding: 5px;
+    background: #fff;
+    border: 1px solid #ccc;
+}
+ </style>
 </head>
 <body>
     <h1>Lotka-Volterra Model with Carrying Capacity</h1>
@@ -136,6 +145,21 @@
         <div class="plot-container" id="phasePlot"></div>
         <div class="plot-container" id="timePlot"></div>
     </div>
+    <!-- Hidden counter element -->
+<div id="pageCounter" style="display: none;"></div>
+
+<script>
+// Initialize or increment counter
+if(localStorage.getItem('pageLoadCount')) {
+    localStorage.pageLoadCount = Number(localStorage.pageLoadCount) + 1;
+} else {
+    localStorage.pageLoadCount = 1;
+}
+
+// Update hidden element
+document.getElementById('pageCounter').textContent = localStorage.pageLoadCount;
+</script>
+
 
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
