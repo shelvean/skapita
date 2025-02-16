@@ -218,12 +218,7 @@
                 return acc;
             }, {});
 
-        <!--    if(values.beta <= values.alpha/values.y0) {
-                alert('Predation rate β must exceed α/y₀ for population control');
-                return;
-            } -->
-
-            const trajectory = solveLV(
+             const trajectory = solveLV(
                 values.alpha, 
                 values.beta, 
                 values.gamma, 
