@@ -170,12 +170,12 @@
                     // Format eigenvalue with proper sign for imaginary part
                     let valStr;
                     if (math.isComplex(value)) {
-                        const re = math.re(value).toFixed(3);
+                        const re = math.re(value).toFixed(6);
                         const im = math.im(value);
-                        const imAbs = Math.abs(im).toFixed(3);
+                        const imAbs = Math.abs(im).toFixed(6);
                         valStr = `${re} ${im >= 0 ? '+' : '-'} ${imAbs}i`;
                     } else {
-                        valStr = value.toFixed(3);
+                        valStr = value.toFixed(6);
                     }
                     
                     latex += `\\lambda_{${i+1}} = ${valStr} \\\\ `;
