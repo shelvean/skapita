@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Complex Eigen Solver</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background: linear-gradient(120deg, #f6d365, #fda085);
+            display: flex;
+            justify-content: center;
+        }
+        #container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            max-width: 800px;
+            width: 90%;
+        }
+        .matrix-size input {
+            width: 60px;
+            padding: 8px;
+            margin: 0 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        table {
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        input.matrix-cell {
+            width: 50px;
+            padding: 5px;
+            text-align: center;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .katex-display { 
+            margin: 1em 0;
+            overflow-x: auto;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.2/math.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+</head>
+<body>
+    <div id="container">
+        <h2> Eigenvalue and Eigenvector Calculator</h2>
+        <div class="matrix-size">
+            <label> Matrix Size (n x n):</label>
+            <input type="number" id="matrixSize" min="1" max="10" value="2">
+            <button onclick="generateMatrix()">Generate Matrix</button>
+        </div>
+        
+        <div id="matrixInput"></div>
+        <button onclick="calculateEigens()">Calculate</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function generateMatrix() {
+            const size = parseInt(document.getElementById('matrixSize').value);
+            const container = document.getElementById('matrixInput');
+            let html = '<table>';
+            
+            for(let i = 0; i < size; i++) {
+                html += '<tr>';
+                for(let j = 0; j < size; j++) {
+                    html += `<td><input class="matrix-cell" type="number" 
+                             id="cell_${i}_${j}" placeholder="0"></td>`;
+                }
+                html += '</tr>';
+            }
+            html += '</table>';
+            container.innerHTML = html;
+        }
+
+        function getMatrix() {
+            const size = parseInt(document.getElementById('matrixSize').value);
+            let matrix = [];
+            
+            for(let i = 0; i < size; i++) {
+                let row = [];
+                for(let j = 0; j < size; j++) {
+                    const val = parseFloat(document.getElementById(`cell_${i}_${j}`).value);
+                    if(isNaN(val)) {
+                        alert('Please fill all matrix cells');
+                        return null;
+                    }
+                    row.push(val);
+                }
+                matrix.push(row);
+            }
+            return matrix;
+        }
+
+        function formatComplex(num) {
+            if (typeof num === 'number') return { re: num, im: 0 };
+            if (math.isComplex(num)) return { re: math.re(num), im: math.im(num) };
+            return { re: 0, im: 0 };
+        }
+
+        function decomposeVector(vec) {
+            const realParts = [];
+            const imagParts = [];
+            
+            // Normalize the vector first
+            const norm = math.norm(vec);
+            const normalizedVec = vec.map(v => math.divide(v, norm));
+
+            normalizedVec.forEach(component => {
+                const { re, im } = formatComplex(component);
+                realParts.push(re.toFixed(3));
+                imagParts.push(im.toFixed(3));
+            });
+
+            let latex = `\\begin{pmatrix}${realParts.join(' \\\\ ')} \\end{pmatrix}`;
+            
+            if (imagParts.some(im => parseFloat(im) !== 0)) {
+                latex += ` + i\\begin{pmatrix}${imagParts.join(' \\\\ ')} \\end{pmatrix}`;
+            }
+            
+            return latex;
+        }
+
+        function calculateEigens() {
+            const matrix = getMatrix();
+            if(!matrix) return;
+
+            try {
+                const { values, vectors } = math.eigs(matrix);
+                const sorted = values.map((v, i) => ({
+                    value: v,
+                    vector: vectors.map(row => row[i]),
+                    magnitude: math.norm(v)
+                })).sort((a, b) => b.magnitude - a.magnitude);
+
+                let latex = `\\text{Matrix: } \\begin{pmatrix}${matrix.map(row => 
+                    row.join(' & ')).join(' \\\\ ')} \\end{pmatrix}\\\\`;
+                
+                sorted.forEach(({value, vector}, i) => {
+                    // Format eigenvalue with proper sign for imaginary part
+                    let valStr;
+                    if (math.isComplex(value)) {
+                        const re = math.re(value).toFixed(3);
+                        const im = math.im(value);
+                        const imAbs = Math.abs(im).toFixed(3);
+                        valStr = `${re} ${im >= 0 ? '+' : '-'} ${imAbs}i`;
+                    } else {
+                        valStr = value.toFixed(3);
+                    }
+                    
+                    latex += `\\lambda_{${i+1}} = ${valStr} \\\\ `;
+                    latex += `\\mathbf{v}_{${i+1}} = ${decomposeVector(vector)}\\\\ `;
+                });
+
+                const div = document.createElement('div');
+                div.innerHTML = `$$${latex}$$`;
+                renderMathInElement(div, {
+                    delimiters: [
+                        {left: "$$", right: "$$", display: true},
+                        {left: "$", right: "$", display: false}
+                    ],
+                    throwOnError: false
+                });
+                
+                document.getElementById('results').innerHTML = '';
+                document.getElementById('results').appendChild(div);
+                
+            } catch (error) {
+                alert('Calculation error: ' + error.message);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false}
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>
