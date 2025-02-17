@@ -138,8 +138,8 @@
 
             normalizedVec.forEach(component => {
                 const { re, im } = formatComplex(component);
-                realParts.push(re.toFixed(3));
-                imagParts.push(im.toFixed(3));
+                realParts.push(re.toFixed(6));
+                imagParts.push(im.toFixed(6));
             });
 
             let latex = `\\begin{pmatrix}${realParts.join(' \\\\ ')} \\end{pmatrix}`;
