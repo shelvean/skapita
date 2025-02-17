@@ -1,1 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>RREF Calculator</title>
+    <!-- Include KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        /* Global modern styling */
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(120deg, #f6d365, #fda085);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        /* Main container card */
+        #container {
+            max-width: 800px;
+            width: 90%;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        p {
+            text-align: center;
+        }
+        /* Matrix size input section */
+        .matrix-size {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        .matrix-size input {
+            width: 60px;
+            padding: 8px;
+            margin: 0 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .matrix-size button {
+            padding: 10px 15px;
+            font-size: 16px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .matrix-size button:hover {
+            background: #45a049;
+        }
+        /* Container for dynamic matrix grid */
+        #matrixInput {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        #matrixInput table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        #matrixInput td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        #matrixInput td:hover {
+            background-color: #f0f0f0;
+        }
+        input.matrix-cell {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            outline: none;
+            text-align: center;
+            background: transparent;
+        }
+        /* Display mode options */
+        .display-mode {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .display-mode label {
+            margin: 0 10px;
+            font-size: 16px;
+        }
+        /* RREF calculation button */
+        button#calcBtn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button#calcBtn:hover {
+            background-color: #0069d9;
+        }
+        /* Transformation steps styling */
+        .step {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .latex {
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h2>RREF Calculator</h2>
+        <p> Enter matrix dimensions below, generate the input matrix, fill in the values, and then calculate the RREF. <br />(Note: The last column is considered the constants.) </p>
+        <!-- Matrix Dimensions Input -->
+        <div class="matrix-size">
+            <label for="rows">Rows:</label> 
+            <input type="number" id="rows" min="1" required />
+            <label for="cols">Columns:</label> 
+            <input type="number" id="cols" min="1" required />
+            <button type="button" onclick="generateMatrix()">Generate Matrix</button>
+        </div>
+        <!-- Dynamic Matrix Grid -->
+        <div id="matrixInput"></div>
+        <!-- Display mode radio buttons -->
+        <div class="display-mode">
+            Display Values as:
+            <label><input type="radio" name="displayMode" value="decimal" checked /> Decimal</label>
+            <label><input type="radio" name="displayMode" value="fraction" /> Fraction</label>
+        </div>
+        <!-- Button to trigger RREF calculation -->
+        <button id="calcBtn" type="button">Calculate RREF</button>
+        <!-- RREF transformation steps will be rendered here -->
+        <div id="result"></div>
+    </div>
+    <script>
+        // Global variable for current display mode (default is "decimal")
+        var currentDisplayMode = "decimal";
+        // Update display mode when the radio buttons change
+        document.querySelectorAll('input[name="displayMode"]').forEach(function(radio) {
+            radio.addEventListener("change", function () {
+                currentDisplayMode = this.value;
+            });
+        });
 
+        // Generate the dynamic matrix grid based on row/column inputs
+        function generateMatrix() {
+            var rows = parseInt(document.getElementById("rows").value, 10);
+            var cols = parseInt(document.getElementById("cols").value, 10);
+            if (isNaN(rows) || isNaN(cols) || rows <= 0 || cols <= 0) {
+                alert("Please enter valid positive numbers for both rows and columns.");
+                return;
+            }
+            var matrixDiv = document.getElementById("matrixInput");
+            matrixDiv.innerHTML = ""; // Clear any previous matrix
+            var table = document.createElement("table");
+            for (var i = 0; i < rows; i++) {
+                var tr = document.createElement("tr");
+                for (var j = 0; j < cols; j++) {
+                    var td = document.createElement("td");
+                    var input = document.createElement("input");
+                    input.type = "text";
+                    input.className = "matrix-cell";
+                    input.id = "cell_" + i + "_" + j;
+                    input.placeholder = "a" + (i + 1) + (j + 1);
+                    td.appendChild(input);
+                    tr.appendChild(td);
+                }
+                table.appendChild(tr);
+            }
+            matrixDiv.appendChild(table);
+        }
+
+        // Parse fraction or number from string
+        function parseFraction(str) {
+            str = str.trim();
+            if (str.includes('/')) {
+                let parts = str.split('/');
+                if (parts.length === 2) {
+                    let numerator = parseFloat(parts[0]);
+                    let denominator = parseFloat(parts[1]);
+                    if (!isNaN(numerator) && !isNaN(denominator) && denominator !== 0) {
+                        return numerator / denominator;
+                    }
+                }
+            }
+            return parseFloat(str); // If it's not a fraction, try parsing as a regular number
+        }
+
+        // Read the matrix values from the input grid and return a 2D array
+        function readMatrix() {
+            var rows = parseInt(document.getElementById("rows").value, 10);
+            var cols = parseInt(document.getElementById("cols").value, 10);
+            var matrix = [];
+            for (var i = 0; i < rows; i++) {
+                var row = [];
+                for (var j = 0; j < cols; j++) {
+                    var cell = document.getElementById("cell_" + i + "_" + j);
+                    var value = cell.value.trim();
+                    var num = parseFraction(value);
+                    if (isNaN(num)) {
+                        alert("Please enter valid numbers or fractions in all matrix cells.");
+                        return null;
+                    }
+                    row.push(num);
+                }
+                matrix.push(row);
+            }
+            return matrix;
+        }
+
+        // Convert a number to a fraction using a continued fraction algorithm
+        function toFraction(x, tolerance, maxIterations) {
+            tolerance = tolerance || 1e-6;
+            maxIterations = maxIterations || 20;
+            if (x === 0) return "0";
+            var sign = x < 0 ? "-" : "";
+            x = Math.abs(x);
+            var h1 = 1, h2 = 0, k1 = 0, k2 = 1, b = x;
+            for (var i = 0; i < maxIterations; i++) {
+                var a = Math.floor(b);
+                var h = a * h1 + h2;
+                var k = a * k1 + k2;
+                if (Math.abs(x - h / k) < tolerance) {
+                    return sign + h + "/" + k;
+                }
+                h2 = h1;
+                h1 = h;
+                k2 = k1;
+                k1 = k;
+                b = 1 / (b - a);
+            }
+            return sign + h1 + "/" + k1;
+        }
+
+        // Format number: whole numbers appear as integers; nonintegers can display as fractions if selected
+        function formatNumber(num) {
+            var epsilon = 1e-10;
+            if (Math.abs(num - Math.round(num)) < epsilon) {
+                return Math.round(num).toString();
+            }
+            if (currentDisplayMode === "fraction") {
+                return toFraction(num);
+            }
+            return parseFloat(num.toFixed(3)).toString();
+        }
+
+        // Clone a 2D array (matrix)
+        function cloneMatrix(matrix) {
+            return matrix.map(function (row) {
+                return row.slice();
+            });
+        }
+
+        // Convert a matrix to LaTeX using the pmatrix environment
+        function matrixToLatex(matrix) {
+            var latex = "\\begin{pmatrix}\n";
+            latex += matrix
+                .map(function (row) {
+                    return row.map(formatNumber).join(" & ");
+                })
+                .join(" \\\\ \n");
+            latex += "\n\\end{pmatrix}";
+            return latex;
+        }
+
+        // Compute the RREF of the matrix and record each transformation step
+        function computeRREF(origMatrix) {
+            var matrix = cloneMatrix(origMatrix);
+            var m = matrix.length;
+            if (m === 0) return { result: matrix, steps: [] };
+            var n = matrix[0].length; // Corrected to use the length of the first row
+            var lead = 0;
+            var steps = [];
+            // Record the initial matrix
+            steps.push({ desc: "Initial Matrix:", matrix: cloneMatrix(matrix) });
+            for (var r = 0; r < m; r++) {
+                if (lead >= n) break;
+                var i = r;
+                while (Math.abs(matrix[i][lead]) < 1e-10) {
+                    i++;
+                    if (i === m) {
+                        i = r;
+                        lead++;
+                        if (lead === n) break;
+                    }
+                }
+                if (lead === n) break;
+                if (i !== r) {
+                    // Swap rows r and i
+                    var temp = matrix[r];
+                    matrix[r] = matrix[i];
+                    matrix[i] = temp;
+                    steps.push({
+                        desc: "Swap row " + (r + 1) + " with row " + (i + 1) + ":",
+                        matrix: cloneMatrix(matrix)
+                    });
+                }
+                var pivotValue = matrix[r][lead];
+                for (var j = 0; j < n; j++) {
+                    matrix[r][j] /= pivotValue;
+                }
+                steps.push({
+                    desc: "Normalize row " + (r + 1) + " (divide by " + formatNumber(pivotValue) + "):",
+                    matrix: cloneMatrix(matrix)
+                });
+                // Eliminate entries in the current column
+                for (var i = 0; i < m; i++) {
+                    if (i !== r) {
+                        var factor = matrix[i][lead];
+                        var msg = factor >= 0
+                            ? "Subtract " + formatNumber(factor) + " times row " + (r + 1) + " from row " + (i + 1) + ":"
+                            : "Add " + formatNumber(Math.abs(factor)) + " times row " + (r + 1) + " to row " + (i + 1) + ":";
+                        for (var j = 0; j < n; j++) {
+                            matrix[i][j] -= factor * matrix[r][j];
+                        }
+                        steps.push({ desc: msg, matrix: cloneMatrix(matrix) });
+                    }
+                }
+                lead++;
+            }
+            // Record the final RREF matrix
+            steps.push({ desc: "Final RREF Matrix:", matrix: cloneMatrix(matrix) });
+            return { result: matrix, steps: steps };
+        }
+
+        // Render the transformation steps and matrices using KaTeX
+        function renderSteps(steps) {
+            var resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = "";
+            // Show the initial matrix
+            if (steps.length > 0 && steps[0].matrix) {
+                var initialDiv = document.createElement("div");
+                initialDiv.className = "step";
+                var initialTitle = document.createElement("p");
+                initialTitle.textContent = steps[0].desc;
+                initialDiv.appendChild(initialTitle);
+                var initialMath = document.createElement("div");
+                initialMath.className = "latex";
+                initialMath.textContent = "$$" + matrixToLatex(steps[0].matrix) + "$$";
+                initialDiv.appendChild(initialMath);
+                resultDiv.appendChild(initialDiv);
+            }
+            // Show the final RREF matrix
+            if (steps.length > 0) {
+                var finalDiv = document.createElement("div");
+                finalDiv.className = "step";
+                var finalTitle = document.createElement("p");
+                finalTitle.textContent = steps[steps.length - 1].desc;
+                finalDiv.appendChild(finalTitle);
+                var finalMath = document.createElement("div");
+                finalMath.className = "latex";
+                finalMath.textContent = "$$" + matrixToLatex(steps[steps.length - 1].matrix) + "$$";
+                finalDiv.appendChild(finalMath);
+                resultDiv.appendChild(finalDiv);
+            }
+            // Header for detailed transformation steps
+            var stepsHeader = document.createElement("h3");
+            stepsHeader.textContent = "Transformation Steps:";
+            resultDiv.appendChild(stepsHeader);
+            // Render each intermediate step (excluding the summaries)
+            for (var i = 1; i < steps.length - 1; i++) {
+                var step = steps[i];
+                var stepDiv = document.createElement("div");
+                stepDiv.className = "step";
+                var description = document.createElement("p");
+                description.textContent = step.desc;
+                stepDiv.appendChild(description);
+                if (step.matrix) {
+                    var matrixDiv = document.createElement("div");
+                    matrixDiv.className = "latex";
+                    matrixDiv.textContent = "$$" + matrixToLatex(step.matrix) + "$$";
+                    stepDiv.appendChild(matrixDiv);
+                }
+                resultDiv.appendChild(stepDiv);
+            }
+            // Trigger KaTeX auto-rendering
+            renderMathInElement(resultDiv, {
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },
+                    { left: "$", right: "$", display: false }
+                ]
+            });
+        }
+
+        // When the "Calculate RREF" button is clicked, read the input and run the computation
+        document.getElementById("calcBtn").addEventListener("click", function () {
+            var matrix = readMatrix();
+            if (matrix !== null) {
+                var computation = computeRREF(matrix);
+                renderSteps(computation.steps);
+            }
+        });
+    </script>
+</body>
+</html>
