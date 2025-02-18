@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta name="description" content="Eigenvalues and Eigenvectors Calculator">
-  <meta name="keywords" content="Matrix, Eigenvalues, Eigenvectors, Complex Eigenvectors, Complex Eigenvalues">
+    <meta name="keywords" content="Matrix, Eigenvalues, Eigenvectors, Complex Eigenvectors, Complex Eigenvalues">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-5B8PRB2WZT');
-</script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-5B8PRB2WZT');
+    </script>
     <meta charset="UTF-8">
     <title>Complex Eigen Solver</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -73,11 +73,11 @@
 </head>
 <body>
     <div id="container">
-        <h2> Eigenvalues and Eigenvectors Calculator</h2>
+        <h2>Eigenvalues and Eigenvectors Calculator</h2>
         <div class="matrix-size">
-            <label> Matrix Size (n x n):</label>
+            <label>Matrix Size (n x n):</label>
             <input type="number" id="matrixSize" min="1" max="10" value="2">
-            <button onclick="generateMatrix()">Generate Matrix</button>
+            <button onclick="generateMatrix()">Generate Matrix (non-zero entries)</button>
         </div>
         
         <div id="matrixInput"></div>
@@ -95,7 +95,7 @@
                 html += '<tr>';
                 for(let j = 0; j < size; j++) {
                     html += `<td><input class="matrix-cell" type="number" 
-                             id="cell_${i}_${j}" placeholder="0"></td>`;
+                             id="cell_${i}_${j}" placeholder="0" value="0"></td>`;
                 }
                 html += '</tr>';
             }
@@ -110,11 +110,9 @@
             for(let i = 0; i < size; i++) {
                 let row = [];
                 for(let j = 0; j < size; j++) {
-                    const val = parseFloat(document.getElementById(`cell_${i}_${j}`).value);
-                    if(isNaN(val)) {
-                        alert('Please fill all matrix cells');
-                        return null;
-                    }
+                    const inputElement = document.getElementById(`cell_${i}_${j}`);
+                    const val = parseFloat(inputElement.value) || 0;
+                    inputElement.value = val; // Update input field
                     row.push(val);
                 }
                 matrix.push(row);
@@ -167,7 +165,6 @@
                     row.join(' & ')).join(' \\\\ ')} \\end{pmatrix}\\\\`;
                 
                 sorted.forEach(({value, vector}, i) => {
-                    // Format eigenvalue with proper sign for imaginary part
                     let valStr;
                     if (math.isComplex(value)) {
                         const re = math.re(value).toFixed(6);
@@ -201,6 +198,7 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
+            generateMatrix();
             renderMathInElement(document.body, {
                 delimiters: [
                     {left: "$$", right: "$$", display: true},
