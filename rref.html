@@ -107,8 +107,8 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-			margin-right: auto;
-			margin-left: auto;
+            margin-right: auto;
+            margin-left: auto;
         }
         button#calcBtn:hover {
             background-color: #0069d9;
@@ -124,8 +124,8 @@
             border-radius: 4px;
             cursor: pointer;
             margin-top: 10px;
-			margin-right: auto;
-			margin-left: auto;
+            margin-right: auto;
+            margin-left: auto;
         }
         button#clearBtn:hover {
             background-color: #3cb371 ;
@@ -149,7 +149,6 @@
             <input type="number" id="cols" min="1" required />
             <button type="button" onclick="generateMatrix()">Generate Matrix</button>
         </div>
-
         <div id="matrixInput"></div>
 
         <div class="display-mode">
@@ -210,7 +209,6 @@
 
         document.getElementById("clearBtn").addEventListener("click", clearAll);
 
-        // Original calculator functions remain unchanged below
         function parseFraction(str) {
             str = str.trim();
             if (str.includes('/')) {
@@ -305,7 +303,9 @@
             var n = matrix[0].length;
             var lead = 0;
             var steps = [];
+            
             steps.push({ desc: "Initial Matrix:", matrix: cloneMatrix(matrix) });
+            
             for (var r = 0; r < m; r++) {
                 if (lead >= n) break;
                 var i = r;
@@ -318,6 +318,7 @@
                     }
                 }
                 if (lead === n) break;
+                
                 if (i !== r) {
                     var temp = matrix[r];
                     matrix[r] = matrix[i];
@@ -327,24 +328,32 @@
                         matrix: cloneMatrix(matrix)
                     });
                 }
+
                 var pivotValue = matrix[r][lead];
-                for (var j = 0; j < n; j++) {
-                    matrix[r][j] /= pivotValue;
+                // Optimization 1: Skip normalization if pivot is 1
+                if (Math.abs(pivotValue - 1) > 1e-10) {
+                    for (var j = 0; j < n; j++) {
+                        matrix[r][j] /= pivotValue;
+                    }
+                    steps.push({
+                        desc: "Normalize row " + (r + 1) + " (divide by " + formatNumber(pivotValue) + "):",
+                        matrix: cloneMatrix(matrix)
+                    });
                 }
-                steps.push({
-                    desc: "Normalize row " + (r + 1) + " (divide by " + formatNumber(pivotValue) + "):",
-                    matrix: cloneMatrix(matrix)
-                });
+
                 for (var i = 0; i < m; i++) {
                     if (i !== r) {
                         var factor = matrix[i][lead];
-                        var msg = factor >= 0
-                            ? "Subtract " + formatNumber(factor) + " times row " + (r + 1) + " from row " + (i + 1) + ":"
-                            : "Add " + formatNumber(Math.abs(factor)) + " times row " + (r + 1) + " to row " + (i + 1) + ":";
-                        for (var j = 0; j < n; j++) {
-                            matrix[i][j] -= factor * matrix[r][j];
+                        // Optimization 2: Skip zero-factor operations
+                        if (Math.abs(factor) > 1e-10) {
+                            var msg = factor >= 0
+                                ? "Subtract " + formatNumber(factor) + " times row " + (r + 1) + " from row " + (i + 1) + ":"
+                                : "Add " + formatNumber(Math.abs(factor)) + " times row " + (r + 1) + " to row " + (i + 1) + ":";
+                            for (var j = 0; j < n; j++) {
+                                matrix[i][j] -= factor * matrix[r][j];
+                            }
+                            steps.push({ desc: msg, matrix: cloneMatrix(matrix) });
                         }
-                        steps.push({ desc: msg, matrix: cloneMatrix(matrix) });
                     }
                 }
                 lead++;
