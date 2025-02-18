@@ -20,6 +20,7 @@
             background: linear-gradient(120deg, #f6d365, #fda085);
             display: flex;
             justify-content: center;
+            min-height: 100vh;
         }
         #container {
             background: white;
@@ -28,11 +29,28 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
             max-width: 800px;
             width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .matrix-size {
+            text-align: center;
+            margin-bottom: 20px;
         }
         .matrix-size input {
             width: 60px;
             padding: 8px;
             margin: 0 10px;
+        }
+        .matrix-input-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            width: 100%;
+        }
+        .matrix-table {
+            display: inline-table;
+            margin: 0 auto;
         }
         button {
             padding: 10px 15px;
@@ -41,12 +59,20 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin-right: auto;
-			margin-left: auto;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            width: 100%;
         }
         table {
             border-collapse: collapse;
-            margin: 20px 0;
         }
         td {
             border: 1px solid #ddd;
@@ -57,8 +83,6 @@
             width: 50px;
             padding: 5px;
             text-align: center;
-            margin-right: auto;
-			margin-left: auto;
         }
         .result {
             margin: 20px 0;
@@ -81,11 +105,18 @@
         <div class="matrix-size">
             <label>Matrix Size (n x n):</label>
             <input type="number" id="matrixSize" min="1" max="10" value="2">
-            <button onclick="generateMatrix()">Generate Matrix (non-zero entries)</button>
+            <button onclick="generateMatrix()">Generate Matrix</button>
         </div>
         
-        <div id="matrixInput"></div>
-        <button onclick="calculateEigens()">Calculate</button>
+        <div class="matrix-input-container">
+            <div id="matrixInput"></div>
+        </div>
+        
+        <div class="button-group">
+            <button onclick="calculateEigens()">Calculate</button>
+            <button onclick="clearAll()">Clear All</button>
+        </div>
+        
         <div id="results"></div>
     </div>
 
@@ -93,7 +124,7 @@
         function generateMatrix() {
             const size = parseInt(document.getElementById('matrixSize').value);
             const container = document.getElementById('matrixInput');
-            let html = '<table>';
+            let html = '<table class="matrix-table">';
             
             for(let i = 0; i < size; i++) {
                 html += '<tr>';
@@ -116,12 +147,18 @@
                 for(let j = 0; j < size; j++) {
                     const inputElement = document.getElementById(`cell_${i}_${j}`);
                     const val = parseFloat(inputElement.value) || 0;
-                    inputElement.value = val; // Update input field
+                    inputElement.value = val;
                     row.push(val);
                 }
                 matrix.push(row);
             }
             return matrix;
+        }
+
+        function clearAll() {
+            const cells = document.getElementsByClassName('matrix-cell');
+            Array.from(cells).forEach(cell => cell.value = '0');
+            document.getElementById('results').innerHTML = '';
         }
 
         function formatComplex(num) {
@@ -134,7 +171,6 @@
             const realParts = [];
             const imagParts = [];
             
-            // Normalize the vector first
             const norm = math.norm(vec);
             const normalizedVec = vec.map(v => math.divide(v, norm));
 
