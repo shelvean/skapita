@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -168,26 +169,45 @@
         }
 
         function decomposeVector(vec) {
-            const realParts = [];
-            const imagParts = [];
-            
-            const norm = math.norm(vec);
-            const normalizedVec = vec.map(v => math.divide(v, norm));
+			const realParts = [];
+			const imagParts = [];
+			const lastIndex = vec.length - 1; // Dynamic last component index
+			
+			const processedVec = vec.map((component, index) => {
+				const { re, im } = formatComplex(component);
+				
+				// For last component
+				if (index === lastIndex) {
+					if (re !== 0 || im !== 0) {
+						return { re: 1, im: 0 }; // Set to real 1 if not zero
+					}
+					// If last component is zero, adjust first component
+					else if (index === 0) {
+						const magnitude = Math.sqrt(re**2 + im**2);
+						return { 
+							re: re/magnitude || 0, 
+							im: im/magnitude || 0 
+						};
+					}
+				}
+				return { re, im };
+			});
 
-            normalizedVec.forEach(component => {
-                const { re, im } = formatComplex(component);
-                realParts.push(re.toFixed(6));
-                imagParts.push(im.toFixed(6));
-            });
+			processedVec.forEach(component => {
+				realParts.push(component.re.toFixed(6));
+				imagParts.push(component.im.toFixed(6));
+			});
 
-            let latex = `\\begin{pmatrix}${realParts.join(' \\\\ ')} \\end{pmatrix}`;
-            
-            if (imagParts.some(im => parseFloat(im) !== 0)) {
-                latex += ` + i\\begin{pmatrix}${imagParts.join(' \\\\ ')} \\end{pmatrix}`;
-            }
-            
-            return latex;
-        }
+			let latex = `\\begin{pmatrix}${realParts.join(' \\\\ ')} \\end{pmatrix}`;
+			
+			if (imagParts.some(im => parseFloat(im) !== 0)) {
+				latex += ` + i\\begin{pmatrix}${imagParts.join(' \\\\ ')} \\end{pmatrix}`;
+			}
+			
+			return latex;
+		}
+
+
 
         function calculateEigens() {
             const matrix = getMatrix();
