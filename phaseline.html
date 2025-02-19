@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-5B8PRB2WZT');
-</script>
-	<meta name="description" content="Phase Line Diagram Plot Autonomous Differential Euqations Classify Equilibrium Points">
-  <meta name="keywords" content="Phase Line, Autonomous, Differential Equations, Classify Equilibrium, Stable, Unstable, Semistable">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-5B8PRB2WZT');
+    </script>
+    <meta name="description" content="Phase Line Diagram Plot Autonomous Differential Equations Classify Equilibrium Points">
+    <meta name="keywords" content="Phase Line, Autonomous, Differential Equations, Classify Equilibrium, Stable, Unstable, Semistable">
     <title>Phase Line Diagram Generator</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.css">
     <style>
@@ -28,14 +28,19 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         #equation {
-            font-size: 1.2em;
-            margin-bottom: 20px;
+            font-size: 1.3em;
+            margin-bottom: 15px;
             text-align: center;
         }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
         input[type="text"] {
-            width: 100%;
+            flex-grow: 1;
             padding: 10px;
-            margin: 10px 0;
             border: 2px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
@@ -74,33 +79,29 @@
         th {
             background-color: #f8f9fa;
         }
-		.classification-circle {
-    vertical-align: middle;
-    margin-right: 8px;
-}
-
-		.classification-circle {
-			display: inline-block;
-			  width: 12px;
-			  height: 12px;
-			  border-radius: 50%;
-			  margin-right: 8px;
-}
-
-.stable-circle { background-color: #28a745; }
-.unstable-circle { background-color: #dc3545; }
-.semistable-circle {
-  background: linear-gradient(90deg, #28a745 50%, #dc3545 50%);
-}
-}
+        .classification-circle {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .stable-circle { background-color: #28a745; }
+        .unstable-circle { background-color: #dc3545; }
+        .semistable-circle {
+            background: linear-gradient(90deg, #28a745 50%, #dc3545 50%);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div id="equation"></div>
-<input type="text" id="functionInput" 
-       placeholder="Enter f(y) e.g., -0.25*(y+3)*(y+1)*(y-2)^2" 
-       value="-0.25*(y+3)*(y+1)*(y-2)^2">
+        <div class="input-group">
+            <span style="font-size: 1.1em">f(y) =</span>
+            <input type="text" id="functionInput" 
+                   placeholder="-0.25*(y+3)*(y+1)*(y-2)^2"
+                   value="-0.25*(y+3)*(y+1)*(y-2)^2">
+        </div>
         <button id="resetButton">Update Plot</button>
         <div class="canvas-container">
             <canvas id="plotCanvas" width="800" height="400"></canvas>
@@ -297,42 +298,40 @@
             drawArrowheads(ctx, zeroY, scaleX, roots, f);
             ctx.restore();
 
-            // Generate table
             const tableHTML = `<table>
-  <tr><th>Label</th><th>Value</th><th>Classification</th></tr>
-  ${roots.map((y, i) => `
-    <tr>
-      <td>${String.fromCharCode(97 + i)}</td>
-      <td>${y.toFixed(2)}</td>
-      <td style="display: flex; align-items: center;">
-        <span class="classification-circle ${classifyEquilibrium(f, y).includes('semistable') ? 'semistable-circle' : classifyEquilibrium(f, y).replace(' ', '-') + '-circle'}"></span>
-        ${classifyEquilibrium(f, y).replace(/-right|-left/g, '')}
-      </td>
-    </tr>
-  `).join('')}
-</table>`;
-
+                <tr><th>Label</th><th>Value</th><th>Classification</th></tr>
+                ${roots.map((y, i) => `
+                    <tr>
+                        <td>${String.fromCharCode(97 + i)}</td>
+                        <td>${y.toFixed(2)}</td>
+                        <td style="display: flex; align-items: center;">
+                            <span class="classification-circle ${classifyEquilibrium(f, y).includes('semistable') ? 
+                                'semistable-circle' : 
+                                classifyEquilibrium(f, y).replace(' ', '-') + '-circle'}"></span>
+                            ${classifyEquilibrium(f, y).replace(/-right|-left/g, '')}
+                        </td>
+                    </tr>
+                `).join('')}
+            </table>`;
 
             document.getElementById('equilibriumTable').innerHTML = tableHTML;
         }
+
+        // Initialize title and first plot
+        katex.render("\\text{Phase Line Diagram for } y' = f(y)", 
+                   document.getElementById('equation'), 
+                   { throwOnError: false });
 
         document.getElementById('resetButton').addEventListener('click', () => {
             const input = document.getElementById('functionInput').value;
             const f = parseFunction(input);
             if (!f) return alert('Invalid function!');
-            
-            try {
-                katex.render(`y' = ${formatLatex(input)}`, 
-                           document.getElementById('equation'), {throwOnError: false});
-            } catch (e) {
-                console.error('KaTeX error:', e);
-            }
             drawPlot(f);
         });
-		// Add after existing event listener
-window.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('resetButton').click();
-});
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('resetButton').click();
+        });
     </script>
 </body>
 </html>
