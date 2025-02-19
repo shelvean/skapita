@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Meta tags and CSS unchanged -->
     <meta name="description" content="Eigenvalues and Eigenvectors Calculator">
     <meta name="keywords" content="Matrix, Eigenvalues, Eigenvectors, Complex Eigenvectors, Complex Eigenvalues">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
@@ -14,6 +15,7 @@
     <title>Complex Eigen Solver</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <style>
+        /* CSS styles unchanged from original */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 20px;
@@ -100,6 +102,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 </head>
 <body>
+    <!-- HTML structure unchanged -->
     <div id="container">
         <h2>Eigenvalues and Eigenvectors Calculator</h2>
         <div class="matrix-size">
@@ -121,6 +124,7 @@
     </div>
 
     <script>
+        // Matrix generation and UI functions unchanged
         function generateMatrix() {
             const size = parseInt(document.getElementById('matrixSize').value);
             const container = document.getElementById('matrixInput');
@@ -161,36 +165,59 @@
             document.getElementById('results').innerHTML = '';
         }
 
+        // Improved eigenvector scaling functions
         function formatComplex(num) {
             if (typeof num === 'number') return { re: num, im: 0 };
             if (math.isComplex(num)) return { re: math.re(num), im: math.im(num) };
             return { re: 0, im: 0 };
         }
 
+        function findPivotIndex(components) {
+            const tolerance = 1e-8;
+            for(let i = components.length - 1; i >= 0; i--) {
+                if (Math.abs(components[i].re) > tolerance || Math.abs(components[i].im) > tolerance) {
+                    return i;
+                }
+            }
+            return components.length - 1;
+        }
+
         function scaleEigenvector(vec) {
             const components = vec.map(formatComplex);
-            const lastEntry = components[components.length - 1];
-            
-            if (lastEntry.re !== 0 || lastEntry.im !== 0) {
-                const denominator = lastEntry.re**2 + lastEntry.im**2;
+            const pivotIndex = findPivotIndex(components);
+            const pivot = components[pivotIndex];
+            const tolerance = 1e-8;
+
+            // Check if pivot is effectively zero
+            if (Math.abs(pivot.re) < tolerance && Math.abs(pivot.im) < tolerance) {
+                const magnitude = Math.sqrt(components.reduce((sum, c) => 
+                    sum + c.re**2 + c.im**2, 0));
                 return components.map(comp => ({
-                    re: Number(((comp.re * lastEntry.re + comp.im * lastEntry.im) / denominator).toFixed(6)),
-                    im: Number(((comp.im * lastEntry.re - comp.re * lastEntry.im) / denominator).toFixed(6))
+                    re: Number((comp.re / magnitude).toFixed(6)),
+                    im: Number((comp.im / magnitude).toFixed(6))
                 }));
             }
-            
-            const magnitude = Math.sqrt(components.reduce((sum, c) => sum + c.re**2 + c.im**2, 0));
+
+            // Complex scaling using pivot component
+            const denominator = pivot.re**2 + pivot.im**2;
             return components.map(comp => ({
-                re: Number((comp.re / magnitude).toFixed(6)),
-                im: Number((comp.im / magnitude).toFixed(6))
+                re: Number(((comp.re * pivot.re + comp.im * pivot.im) / denominator).toFixed(6)),
+                im: Number(((comp.im * pivot.re - comp.re * pivot.im) / denominator).toFixed(6))
             }));
         }
 
         function decomposeVector(vec) {
             const scaled = scaleEigenvector(vec);
-            const realParts = scaled.map(c => c.re.toFixed(6));
-            const imagParts = scaled.map(c => c.im.toFixed(6));
+            const realParts = scaled.map(c => {
+                const val = c.re.toFixed(6);
+                return Math.abs(val) < 1e-8 ? '0.000000' : val;
+            });
             
+            const imagParts = scaled.map(c => {
+                const val = c.im.toFixed(6);
+                return Math.abs(val) < 1e-8 ? '0.000000' : val;
+            });
+
             let latex = `\\begin{pmatrix}${realParts.join(' \\\\ ')} \\end{pmatrix}`;
             
             if (imagParts.some(im => parseFloat(im) !== 0)) {
@@ -200,6 +227,7 @@
             return latex;
         }
 
+        // Calculation function remains unchanged
         function calculateEigens() {
             const matrix = getMatrix();
             if(!matrix) return;
