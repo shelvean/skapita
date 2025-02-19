@@ -322,7 +322,7 @@
             if (!f) return alert('Invalid function!');
             
             try {
-                katex.render(`\\dot{y} = ${formatLatex(input)}`, 
+                katex.render(`\\{y'} = ${formatLatex(input)}`, 
                            document.getElementById('equation'), {throwOnError: false});
             } catch (e) {
                 console.error('KaTeX error:', e);
