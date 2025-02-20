@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Meta tags and CSS unchanged -->
     <meta name="description" content="Eigenvalues and Eigenvectors Calculator">
     <meta name="keywords" content="Matrix, Eigenvalues, Eigenvectors, Complex Eigenvectors, Complex Eigenvalues">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
@@ -14,84 +13,8 @@
     <meta charset="UTF-8">
     <title>Complex Eigen Solver</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        /* CSS styles unchanged from original */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 20px;
-            background: linear-gradient(120deg, #f6d365, #fda085);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        #container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            max-width: 800px;
-            width: 90%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .matrix-size {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .matrix-size input {
-            width: 60px;
-            padding: 8px;
-            margin: 0 10px;
-        }
-        .matrix-input-container {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-            width: 100%;
-        }
-        .matrix-table {
-            display: inline-table;
-            margin: 0 auto;
-        }
-        button {
-            padding: 10px 15px;
-            background: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background: #45a049;
-        }
-        .button-group {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 20px 0;
-            width: 100%;
-        }
-        table {
-            border-collapse: collapse;
-        }
-        td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: center;
-        }
-        input.matrix-cell {
-            width: 50px;
-            padding: 5px;
-            text-align: center;
-        }
-        .result {
-            margin: 20px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 4px;
-        }
         .katex-display { 
             margin: 1em 0;
             overflow-x: auto;
@@ -101,40 +24,33 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 </head>
-<body>
-    <!-- HTML structure unchanged -->
-    <div id="container">
-        <h2>Eigenvalues and Eigenvectors Calculator</h2>
-        <div class="matrix-size">
-            <label>Matrix Size (n x n):</label>
-            <input type="number" id="matrixSize" min="1" max="10" value="2">
-            <button onclick="generateMatrix()">Generate Matrix</button>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg shadow-md max-w-3xl w-full">
+        <h2 class="text-2xl font-bold mb-4 text-center">Eigenvalues and Eigenvectors Calculator</h2>
+        <div class="flex items-center justify-center mb-4">
+            <label class="mr-2">Matrix Size <span>$n \times n$</span>:</label>
+            <input type="number" id="matrixSize" min="1" max="10" value="2" class="w-16 p-2 border rounded">
+            <button onclick="generateMatrix()" class="ml-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Generate Matrix</button>
         </div>
-        
-        <div class="matrix-input-container">
+        <div class="flex justify-center mb-4 overflow-x-auto">
             <div id="matrixInput"></div>
         </div>
-        
-        <div class="button-group">
-            <button onclick="calculateEigens()">Calculate</button>
-            <button onclick="clearAll()">Clear All</button>
+        <div class="flex justify-center space-x-4 mb-4">
+            <button onclick="calculateEigens()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Calculate</button>
+            <button onclick="clearAll()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Clear All</button>
         </div>
-        
-        <div id="results"></div>
+        <div id="results" class="mt-6 p-4 bg-gray-50 rounded-lg"></div>
     </div>
 
     <script>
-        // Matrix generation and UI functions unchanged
         function generateMatrix() {
             const size = parseInt(document.getElementById('matrixSize').value);
             const container = document.getElementById('matrixInput');
-            let html = '<table class="matrix-table">';
-            
+            let html = '<table class="mx-auto">';
             for(let i = 0; i < size; i++) {
                 html += '<tr>';
                 for(let j = 0; j < size; j++) {
-                    html += `<td><input class="matrix-cell" type="number" 
-                             id="cell_${i}_${j}" placeholder="0" value="0"></td>`;
+                    html += `<td class="p-1"><input class="matrix-cell w-14 p-2 border rounded text-center" type="number" id="cell_${i}_${j}" placeholder="0" value="0"></td>`;
                 }
                 html += '</tr>';
             }
@@ -145,7 +61,6 @@
         function getMatrix() {
             const size = parseInt(document.getElementById('matrixSize').value);
             let matrix = [];
-            
             for(let i = 0; i < size; i++) {
                 let row = [];
                 for(let j = 0; j < size; j++) {
@@ -165,7 +80,6 @@
             document.getElementById('results').innerHTML = '';
         }
 
-        // Improved eigenvector scaling functions
         function formatComplex(num) {
             if (typeof num === 'number') return { re: num, im: 0 };
             if (math.isComplex(num)) return { re: math.re(num), im: math.im(num) };
@@ -188,7 +102,6 @@
             const pivot = components[pivotIndex];
             const tolerance = 1e-8;
 
-            // Check if pivot is effectively zero
             if (Math.abs(pivot.re) < tolerance && Math.abs(pivot.im) < tolerance) {
                 const magnitude = Math.sqrt(components.reduce((sum, c) => 
                     sum + c.re**2 + c.im**2, 0));
@@ -198,7 +111,6 @@
                 }));
             }
 
-            // Complex scaling using pivot component
             const denominator = pivot.re**2 + pivot.im**2;
             return components.map(comp => ({
                 re: Number(((comp.re * pivot.re + comp.im * pivot.im) / denominator).toFixed(6)),
@@ -212,26 +124,21 @@
                 const val = c.re.toFixed(6);
                 return Math.abs(val) < 1e-8 ? '0.000000' : val;
             });
-            
             const imagParts = scaled.map(c => {
                 const val = c.im.toFixed(6);
                 return Math.abs(val) < 1e-8 ? '0.000000' : val;
             });
 
             let latex = `\\begin{pmatrix}${realParts.join(' \\\\ ')} \\end{pmatrix}`;
-            
             if (imagParts.some(im => parseFloat(im) !== 0)) {
                 latex += ` + i\\begin{pmatrix}${imagParts.join(' \\\\ ')} \\end{pmatrix}`;
             }
-            
             return latex;
         }
 
-        // Calculation function remains unchanged
         function calculateEigens() {
             const matrix = getMatrix();
             if(!matrix) return;
-
             try {
                 const { values, vectors } = math.eigs(matrix);
                 const sorted = values.map((v, i) => ({
@@ -242,7 +149,6 @@
 
                 let latex = `\\text{Matrix: } \\begin{pmatrix}${matrix.map(row => 
                     row.join(' & ')).join(' \\\\ ')} \\end{pmatrix}\\\\`;
-                
                 sorted.forEach(({value, vector}, i) => {
                     let valStr;
                     if (math.isComplex(value)) {
@@ -253,24 +159,19 @@
                     } else {
                         valStr = value.toFixed(6);
                     }
-                    
                     latex += `\\lambda_{${i+1}} = ${valStr} \\\\ `;
                     latex += `\\mathbf{v}_{${i+1}} = ${decomposeVector(vector)}\\\\ `;
                 });
 
-                const div = document.createElement('div');
-                div.innerHTML = `$$${latex}$$`;
-                renderMathInElement(div, {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = `$$${latex}$$`;
+                renderMathInElement(resultsDiv, {
                     delimiters: [
                         {left: "$$", right: "$$", display: true},
                         {left: "$", right: "$", display: false}
                     ],
                     throwOnError: false
                 });
-                
-                document.getElementById('results').innerHTML = '';
-                document.getElementById('results').appendChild(div);
-                
             } catch (error) {
                 alert('Calculation error: ' + error.message);
             }
