@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -9,8 +8,9 @@
 <title>JavaScript Projects</title>
 <meta name="generator" content="Org mode" />
 <meta name="author" content="Shelvean Kapita" />
-<link rel="stylesheet" href="styles.css">
-<link href="https://fonts.googleapis.com/css?family=Neuton:400,400i,700,700i" rel="stylesheet"><script>
+<!-- Add Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css?family=Neuton:400,400i,700,700i" rel="stylesheet">
 </head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
@@ -20,55 +20,36 @@
   gtag('js', new Date());
   gtag('config', 'G-5B8PRB2WZT');
 </script>
-<body>
-<div id="preamble" class="status">
-<header><h1><a href="index.html">Shelvean Kapita</a></h1><nav><ul>
-<li><a href="index.html">Home</a></li>
-<li><a href="teaching.html">Teaching</a></li>
-<li><a href="projects.html">Projects</a></li>
-</ul></nav></header>
-</div>
-<div id="content">
+<body class="bg-gray-100 font-[Neuton] min-h-screen">
+<div class="container mx-auto px-4 py-8">
+    <header class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">
+            <a href="index.html" class="hover:text-blue-600">Shelvean Kapita</a>
+        </h1>
+        <nav>
+            <ul class="flex space-x-6">
+                <li><a href="index.html" class="text-gray-600 hover:text-blue-600">Home</a></li>
+                <li><a href="teaching.html" class="text-gray-600 hover:text-blue-600">Teaching</a></li>
+                <li><a href="projects.html" class="text-gray-600 hover:text-blue-600">Projects</a></li>
+            </ul>
+        </nav>
+    </header>
 
-<div id="outline-container-orgae19f82" class="outline-2">
-</div>
-        <div class="outline-text-2" id="text-orgff1cfc9">
-          <ul>
-            <li> <a href="slope.html"> Direction Field </a>
-              
-            </li>
-
-            <li> <a href="phaseline.html"> Phase Line Plot </a>
-              
-            </li>
-            
-            <li> <a href="spring.html"> Mass-Spring-Damping Simulator </a>
-              
-            </li>
-            <li> <a href="pendulum.html"> Damped Pendulum Simulator </a>
-            </li>
-             <li> <a href="forcing.html"> Forced Vibrations and Resonance </a>
-              
-            </li>
-            <li>  <a href="fourier.html"> Fourier Series Approximation </a> 
-            </li>
-              
-            <li> <a href="portrait.html"> Linear Phase Portraits</a>
-              
-            </li>
-            <li> <a href="nonlinear.html"> Nonlinear Phase Portraits </a> 
-
-            </li>
-            <li> <a href="lotkavolterra.html"> Predator Prey Dynamics </a>
-              
-            </li>
-            <li> <a href="lvcarrying.html"> Predator Prey - Finite Carrying Capacity </a>
-              
-            </li>
-            <li> <a href="lorenz.html"> Lorenz System </a>
-            </li>
-          </ul>
-        </div>
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <ul class="space-y-2">
+            <li><a href="slope.html" class="text-blue-600 hover:text-blue-800">Direction Field</a></li>
+            <li><a href="phaseline.html" class="text-blue-600 hover:text-blue-800">Phase Line Plot</a></li>
+            <li><a href="spring.html" class="text-blue-600 hover:text-blue-800">Mass-Spring-Damping Simulator</a></li>
+            <li><a href="pendulum.html" class="text-blue-600 hover:text-blue-800">Damped Pendulum Simulator</a></li>
+            <li><a href="forcing.html" class="text-blue-600 hover:text-blue-800">Forced Vibrations and Resonance</a></li>
+            <li><a href="fourier.html" class="text-blue-600 hover:text-blue-800">Fourier Series Approximation</a></li>
+            <li><a href="portrait.html" class="text-blue-600 hover:text-blue-800">Linear Phase Portraits</a></li>
+            <li><a href="nonlinear.html" class="text-blue-600 hover:text-blue-800">Nonlinear Phase Portraits</a></li>
+            <li><a href="lotkavolterra.html" class="text-blue-600 hover:text-blue-800">Predator Prey Dynamics</a></li>
+            <li><a href="lvcarrying.html" class="text-blue-600 hover:text-blue-800">Predator Prey - Finite Carrying Capacity</a></li>
+            <li><a href="lorenz.html" class="text-blue-600 hover:text-blue-800">Lorenz System</a></li>
+        </ul>
+    </div>
 </div>
 </body>
 </html>
