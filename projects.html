@@ -11,6 +11,11 @@
 <!-- Add Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css?family=Neuton:400,400i,700,700i" rel="stylesheet">
+<style>
+  a:active {
+    color: #1e40af; /* darker blue */
+  }
+</style>
 </head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
@@ -41,8 +46,8 @@
         </nav>
     </header>
 
-    <div class="bg-white shadow-md rounded-lg p-6">
-        <ul class="space-y-2">
+    <div class="bg-white shadow-md rounded-lg p-6 flex justify-center">
+        <ul class="list-disc pl-4 space-y-2 text-lg"> <!-- Added text-lg here -->
             <li><a href="slope.html" class="text-blue-600 hover:text-blue-800">Direction Field</a></li>
             <li><a href="phaseline.html" class="text-blue-600 hover:text-blue-800">Phase Line Plot</a></li>
             <li><a href="spring.html" class="text-blue-600 hover:text-blue-800">Mass-Spring-Damping Simulator</a></li>
