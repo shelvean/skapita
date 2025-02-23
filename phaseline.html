@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -173,18 +174,20 @@
         }
 
         function classifyEquilibrium(f, y0) {
-            const eps = 0.001;
-            const left = f(y0 - eps);
-            const right = f(y0 + eps);
-            
-            if (Math.abs(left - right) < 0.0001) {
-                const d2f = (f(y0 + eps) - 2*f(y0) + f(y0 - eps))/(eps*eps);
-                return d2f > 0 ? 'semistable-right' : 'semistable-left';
-            }
-            
-            return left > 0 && right < 0 ? 'stable' :
-                   left < 0 && right > 0 ? 'unstable' : 'semistable';
-        }
+    const eps = 0.001;
+    const left = f(y0 - eps);
+    const right = f(y0 + eps);
+    
+    // Check if signs are the same (semistable condition)
+    if (left * right > 0) {
+        const d2f = (f(y0 + eps) - 2*f(y0) + f(y0 - eps))/(eps*eps);
+        return d2f > 0 ? 'semistable-right' : 'semistable-left';
+    }
+    
+    // Standard stability classification
+    return left > 0 && right < 0 ? 'stable' :
+           left < 0 && right > 0 ? 'unstable' : 'semistable';
+}
 
         function drawArrowheads(ctx, zeroY, scaleX, roots, f) {
             ctx.fillStyle = '#000';
