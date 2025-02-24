@@ -117,7 +117,7 @@
             }
             .button-container button.clear:hover {
                 background-color: #c82333;
-            } /* New instruction styles */
+            }
             .instruction {
                 position: absolute;
                 top: 20px;
@@ -155,7 +155,7 @@
             </div>
             <div class="input-container">
                 <div class="latex-label" id="g-label"></div>
-                <div class="input-group" style="width: 100%;"><input type="text" id="gInput" value="-0.15*y-sin(x)" /></div>
+                <div class="input-group" style="width: 100%;"><input type="text" id="gInput" value="-0.10*y-sin(x)" /></div>
             </div>
             <div class="input-container">
                 <div class="input-group"><label for="xMin">X Min:</label><input type="number" id="xMin" value="-10" /></div>
@@ -168,9 +168,12 @@
             <div class="input-container">
                 <div class="input-group" style="width: 100%;"><label for="arrowCount">Number of Arrows per Axis:</label><input type="number" id="arrowCount" value="25" /></div>
             </div>
-            <div class="button-container"><button onclick="drawPhasePlane()">Generate Phase Plane</button><button class="clear" onclick="clearTrajectories()">Clear Trajectories</button></div>
+            <div class="button-container">
+                <button onclick="drawPhasePlane()">Generate Phase Plane</button>
+                <button class="clear" onclick="clearTrajectories()">Clear Trajectories</button>
+            </div>
             <div id="plot-container">
-                <canvas id="canvas" width="600" height="600"></canvas>
+                <canvas id="canvas" width="900" height="600"></canvas>
                 <div class="instruction" id="instruction">✨ Click anywhere on the graph to draw trajectories</div>
             </div>
         </div>
@@ -182,15 +185,20 @@
             const ctx = canvas.getContext("2d");
             let scaleLabels = [];
             const instruction = document.getElementById("instruction");
+
             function setCanvasResolution() {
                 canvas.width = canvas.clientWidth;
                 canvas.height = canvas.clientHeight;
             }
+
             document.addEventListener("DOMContentLoaded", function () {
                 setCanvasResolution();
                 katex.render("f(x,y)=", document.getElementById("f-label"));
                 katex.render("g(x,y)=", document.getElementById("g-label"));
-                katex.render(`\\begin{cases}\\dot{x}=f(x,y) \\\\ \\dot{y}=g(x,y) \\end{cases}`, document.getElementById("equation-display"), { throwOnError: false, displayMode: true });
+                katex.render(`\\begin{cases}\\dot{x}=f(x,y) \\\\ \\dot{y}=g(x,y) \\end{cases}`, 
+                           document.getElementById("equation-display"), 
+                           { throwOnError: false, displayMode: true });
+                
                 canvas.addEventListener("click", function (event) {
                     const rect = canvas.getBoundingClientRect();
                     const clickX = event.clientX - rect.left;
@@ -208,11 +216,13 @@
                     instruction.style.display = "none";
                 });
             });
+
             function drawPhasePlane() {
                 setCanvasResolution();
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 scaleLabels.forEach((label) => label.remove());
                 scaleLabels = [];
+                
                 const f = document.getElementById("fInput").value;
                 const g = document.getElementById("gInput").value;
                 const xMin = parseFloat(document.getElementById("xMin").value);
@@ -220,82 +230,96 @@
                 const yMin = parseFloat(document.getElementById("yMin").value);
                 const yMax = parseFloat(document.getElementById("yMax").value);
                 const arrowCount = parseInt(document.getElementById("arrowCount").value);
+
                 drawAxes(xMin, xMax, yMin, yMax);
                 drawVectorField(f, g, xMin, xMax, yMin, yMax, arrowCount);
-                ctx.strokeStyle = "#800000";
+                
                 ctx.lineWidth = 2;
                 userPoints.forEach((point) => {
                     const path = computeTrajectory(f, g, point.x, point.y, xMin, xMax, yMin, yMax);
                     drawTrajectory(path, xMin, xMax, yMin, yMax);
                 });
+
                 if (userPoints.length === 0) {
                     instruction.style.display = "block";
                 }
             }
+
             function drawTrajectory(points, xMin, xMax, yMin, yMax) {
-                ctx.beginPath();
+                const totalPoints = points.length;
                 points.forEach((point, index) => {
-                    const canvasX = ((point.x - xMin) / (xMax - xMin)) * canvas.width;
-                    const canvasY = ((yMax - point.y) / (yMax - yMin)) * canvas.height;
-                    if (index === 0) ctx.moveTo(canvasX, canvasY);
-                    else ctx.lineTo(canvasX, canvasY);
+                    if (index === 0) return;
+                    
+                    // Jet colormap interpolation
+                    const ratio = index/totalPoints;
+                    const r = Math.min(4 * ratio - 1.0, -4 * ratio + 5.0);
+                    const g = Math.min(4 * ratio - 1.5, -4 * ratio + 2.5);
+                    const b = Math.min(4 * ratio + 1.0, -4 * ratio + 1.5);
+                    
+                    ctx.strokeStyle = `rgb(
+                        ${Math.floor(255 * Math.max(0, Math.min(1, r)))},
+                        ${Math.floor(255 * Math.max(0, Math.min(1, g)))},
+                        ${Math.floor(255 * Math.max(0, Math.min(1, b)))}
+                    )`;
+                    
+                    const prev = points[index-1];
+                    const canvasX = ((point.x - xMin)/(xMax-xMin))*canvas.width;
+                    const canvasY = ((yMax-point.y)/(yMax-yMin))*canvas.height;
+                    const prevX = ((prev.x - xMin)/(xMax-xMin))*canvas.width;
+                    const prevY = ((yMax-prev.y)/(yMax-yMin))*canvas.height;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(prevX, prevY);
+                    ctx.lineTo(canvasX, canvasY);
+                    ctx.stroke();
                 });
-                ctx.stroke();
             }
-  
-// Updated RK4 solver with precompiled functions
-function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
-  const dt = 0.05;
-  const maxSteps = 1500;
-  const points = [{ x: x0, y: y0 }];
 
-  // Precompile the functions once instead of re-parsing at each step.
-  const fCompiled = math.compile(f);
-  const gCompiled = math.compile(g);
+            function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
+                const dt = 0.05;
+                const maxSteps = 1500;
+                const points = [{ x: x0, y: y0 }];
+                const fCompiled = math.compile(f);
+                const gCompiled = math.compile(g);
 
-  // Improved RK4 step uses the precompiled expressions.
-  const rk4Step = (x, y, dt) => {
-    const k1x = fCompiled.evaluate({ x, y, t: 0 });
-    const k1y = gCompiled.evaluate({ x, y, t: 0 });
+                const rk4Step = (x, y, dt) => {
+                    const k1x = fCompiled.evaluate({ x, y, t: 0 });
+                    const k1y = gCompiled.evaluate({ x, y, t: 0 });
+                    const k2x = fCompiled.evaluate({ x: x + (k1x * dt)/2, y: y + (k1y * dt)/2, t: dt/2 });
+                    const k2y = gCompiled.evaluate({ x: x + (k1x * dt)/2, y: y + (k1y * dt)/2, t: dt/2 });
+                    const k3x = fCompiled.evaluate({ x: x + (k2x * dt)/2, y: y + (k2y * dt)/2, t: dt/2 });
+                    const k3y = gCompiled.evaluate({ x: x + (k2x * dt)/2, y: y + (k2y * dt)/2, t: dt/2 });
+                    const k4x = fCompiled.evaluate({ x: x + k3x * dt, y: y + k3y * dt, t: dt });
+                    const k4y = gCompiled.evaluate({ x: x + k3x * dt, y: y + k3y * dt, t: dt });
 
-    const k2x = fCompiled.evaluate({ x: x + (k1x * dt) / 2, y: y + (k1y * dt) / 2, t: dt / 2 });
-    const k2y = gCompiled.evaluate({ x: x + (k1x * dt) / 2, y: y + (k1y * dt) / 2, t: dt / 2 });
+                    return {
+                        dx: ((k1x + 2*k2x + 2*k3x + k4x)/6) * dt,
+                        dy: ((k1y + 2*k2y + 2*k3y + k4y)/6) * dt
+                    };
+                };
 
-    const k3x = fCompiled.evaluate({ x: x + (k2x * dt) / 2, y: y + (k2y * dt) / 2, t: dt / 2 });
-    const k3y = gCompiled.evaluate({ x: x + (k2x * dt) / 2, y: y + (k2y * dt) / 2, t: dt / 2 });
+                // Forward integration
+                let x = x0, y = y0;
+                for (let i = 0; i < maxSteps; i++) {
+                    const { dx, dy } = rk4Step(x, y, dt);
+                    x += dx;
+                    y += dy;
+                    if (x < xMin || x > xMax || y < yMin || y > yMax) break;
+                    points.push({ x, y });
+                }
 
-    const k4x = fCompiled.evaluate({ x: x + k3x * dt, y: y + k3y * dt, t: dt });
-    const k4y = gCompiled.evaluate({ x: x + k3x * dt, y: y + k3y * dt, t: dt });
-
-    return {
-      dx: ((k1x + 2 * k2x + 2 * k3x + k4x) / 6) * dt,
-      dy: ((k1y + 2 * k2y + 2 * k3y + k4y) / 6) * dt
-    };
-  };
-
-  // Forward integration
-  let x = x0, y = y0;
-  for (let i = 0; i < maxSteps; i++) {
-    const { dx, dy } = rk4Step(x, y, dt);
-    x += dx;
-    y += dy;
-    if (x < xMin || x > xMax || y < yMin || y > yMax) break;
-    points.push({ x, y });
-  }
-
-  // Backward integration
-  x = x0;
-  y = y0;
-  for (let i = 0; i < maxSteps; i++) {
-    const { dx, dy } = rk4Step(x, y, -dt);
-    x += dx;
-    y += dy;
-    if (x < xMin || x > xMax || y < yMin || y > yMax) break;
-    points.unshift({ x, y });
-  }
-  return points;
-}
-
+                // Backward integration
+                x = x0;
+                y = y0;
+                for (let i = 0; i < maxSteps; i++) {
+                    const { dx, dy } = rk4Step(x, y, -dt);
+                    x += dx;
+                    y += dy;
+                    if (x < xMin || x > xMax || y < yMin || y > yMax) break;
+                    points.unshift({ x, y });
+                }
+                return points;
+            }
 
             function drawArrow(fromX, fromY, toX, toY) {
                 const angle = Math.atan2(toY - fromY, toX - fromX);
@@ -306,26 +330,30 @@ function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
                 const arrowSize = 5;
                 ctx.beginPath();
                 ctx.moveTo(toX, toY);
-                ctx.lineTo(toX - arrowSize * Math.cos(angle - Math.PI / 6), toY - arrowSize * Math.sin(angle - Math.PI / 6));
+                ctx.lineTo(toX - arrowSize * Math.cos(angle - Math.PI/6), 
+                          toY - arrowSize * Math.sin(angle - Math.PI/6));
                 ctx.moveTo(toX, toY);
-                ctx.lineTo(toX - arrowSize * Math.cos(angle + Math.PI / 6), toY - arrowSize * Math.sin(angle + Math.PI / 6));
+                ctx.lineTo(toX - arrowSize * Math.cos(angle + Math.PI/6), 
+                          toY - arrowSize * Math.sin(angle + Math.PI/6));
                 ctx.stroke();
             }
+
             function drawVectorField(f, g, xMin, xMax, yMin, yMax, arrowCount) {
                 ctx.strokeStyle = "#007BFF";
                 ctx.lineWidth = 0.5;
-                const xStep = (xMax - xMin) / arrowCount;
-                const yStep = (yMax - yMin) / arrowCount;
+                const xStep = (xMax - xMin)/arrowCount;
+                const yStep = (yMax - yMin)/arrowCount;
+
                 for (let x = xMin; x <= xMax; x += xStep) {
                     for (let y = yMin; y <= yMax; y += yStep) {
                         try {
                             const dx = math.evaluate(f, { x, y, t: 0 });
                             const dy = math.evaluate(g, { x, y, t: 0 });
-                            const startX = ((x - xMin) / (xMax - xMin)) * canvas.width;
-                            const startY = canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height;
+                            const startX = ((x - xMin)/(xMax - xMin)) * canvas.width;
+                            const startY = canvas.height - ((y - yMin)/(yMax - yMin)) * canvas.height;
                             const maxLength = 30;
-                            const length = Math.sqrt(dx * dx + dy * dy);
-                            const scale = length === 0 ? 0 : Math.min(20, maxLength / length);
+                            const length = Math.sqrt(dx*dx + dy*dy);
+                            const scale = length === 0 ? 0 : Math.min(20, maxLength/length);
                             const endX = startX + dx * scale;
                             const endY = startY - dy * scale;
                             drawArrow(startX, startY, endX, endY);
@@ -335,22 +363,25 @@ function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
                     }
                 }
             }
+
             function drawAxes(xMin, xMax, yMin, yMax) {
                 ctx.strokeStyle = "#95a5a6";
                 ctx.lineWidth = 1;
-                const yZeroCanvas = (yMax / (yMax - yMin)) * canvas.height;
+                const yZeroCanvas = (yMax/(yMax - yMin)) * canvas.height;
                 ctx.beginPath();
                 ctx.moveTo(0, yZeroCanvas);
                 ctx.lineTo(canvas.width, yZeroCanvas);
                 ctx.stroke();
-                const xZeroCanvas = (-xMin / (xMax - xMin)) * canvas.width;
+
+                const xZeroCanvas = (-xMin/(xMax - xMin)) * canvas.width;
                 ctx.beginPath();
                 ctx.moveTo(xZeroCanvas, 0);
                 ctx.lineTo(xZeroCanvas, canvas.height);
                 ctx.stroke();
+
                 const xLabels = [xMin, 0, xMax];
                 xLabels.forEach((label) => {
-                    const xCanvas = ((label - xMin) / (xMax - xMin)) * canvas.width;
+                    const xCanvas = ((label - xMin)/(xMax - xMin)) * canvas.width;
                     const labelEl = document.createElement("div");
                     labelEl.className = "scale-label x-scale";
                     labelEl.textContent = label.toFixed(1);
@@ -358,9 +389,10 @@ function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
                     document.getElementById("plot-container").appendChild(labelEl);
                     scaleLabels.push(labelEl);
                 });
+
                 const yLabels = [yMin, 0, yMax];
                 yLabels.forEach((label) => {
-                    const yCanvas = canvas.height - ((label - yMin) / (yMax - yMin)) * canvas.height;
+                    const yCanvas = canvas.height - ((label - yMin)/(yMax - yMin)) * canvas.height;
                     const labelEl = document.createElement("div");
                     labelEl.className = "scale-label y-scale";
                     labelEl.textContent = label.toFixed(1);
@@ -369,6 +401,7 @@ function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
                     scaleLabels.push(labelEl);
                 });
             }
+
             function clearTrajectories() {
                 userPoints = [];
                 drawPhasePlane();
