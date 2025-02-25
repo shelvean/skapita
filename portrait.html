@@ -86,7 +86,7 @@ function drawPhasePortrait(){
             if(len===0)continue;
             const slope=dy/dx;
             ctx.strokeStyle=slope<0?'#ADD8E6':'#ADD8E6';
-            const arrowScale=Math.min(1,len/10);
+            const arrowScale=Math.min(0.5,len/10);
             const dxNorm=(dx/len)*arrowScale;
             const dyNorm=(dy/len)*arrowScale;
             const startX=centerX+x*scale;
