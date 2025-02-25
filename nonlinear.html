@@ -234,7 +234,7 @@
                 drawAxes(xMin, xMax, yMin, yMax);
                 drawVectorField(f, g, xMin, xMax, yMin, yMax, arrowCount);
                 
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 1;
                 userPoints.forEach((point) => {
                     const path = computeTrajectory(f, g, point.x, point.y, xMin, xMax, yMin, yMax);
                     drawTrajectory(path, xMin, xMax, yMin, yMax);
@@ -252,7 +252,7 @@
                     
                     // Jet colormap interpolation
                     
-                    ctx.strokeStyle = "#40E0D0";
+                    ctx.strokeStyle = "#2f0909";
                     
                     const prev = points[index-1];
                     const canvasX = ((point.x - xMin)/(xMax-xMin))*canvas.width;
