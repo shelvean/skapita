@@ -94,14 +94,14 @@ function drawPhasePortrait(){
             drawArrow(ctx,startX,startY,startX+dxNorm*scale,startY-dyNorm*scale,arrowScale);
         }
     }
-    ctx.strokeStyle='#800000';
-    ctx.lineWidth=2;
+    ctx.strokeStyle='#2f0909';
+    ctx.lineWidth=1.0;
     userPoints.forEach(point=>{
         const path=computeTrajectory(point.x,point.y,a,b,c,d,scale,centerX,centerY);
         drawTrajectory(ctx,path);
     });
-    ctx.strokeStyle='#2f0909';
-    ctx.lineWidth=1.0;
+    ctx.strokeStyle='#000000';
+    ctx.lineWidth=2.0;
     ctx.beginPath();
     ctx.moveTo(centerX,0);
     ctx.lineTo(centerX,canvas.height);
