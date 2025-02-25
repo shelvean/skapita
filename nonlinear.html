@@ -251,16 +251,8 @@
                     if (index === 0) return;
                     
                     // Jet colormap interpolation
-                    const ratio = index/totalPoints;
-                    const r = Math.min(4 * ratio - 1.0, -4 * ratio + 5.0);
-                    const g = Math.min(4 * ratio - 1.5, -4 * ratio + 2.5);
-                    const b = Math.min(4 * ratio + 1.0, -4 * ratio + 1.5);
                     
-                    ctx.strokeStyle = `rgb(
-                        ${Math.floor(255 * Math.max(0, Math.min(1, r)))},
-                        ${Math.floor(255 * Math.max(0, Math.min(1, g)))},
-                        ${Math.floor(255 * Math.max(0, Math.min(1, b)))}
-                    )`;
+                    ctx.strokeStyle = "#40E0D0";
                     
                     const prev = points[index-1];
                     const canvasX = ((point.x - xMin)/(xMax-xMin))*canvas.width;
