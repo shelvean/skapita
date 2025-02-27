@@ -45,7 +45,7 @@
             margin: 1rem 0;
         }
 
-        select, button {
+        button, .custom-time {
             padding: 0.5rem 1rem;
             margin: 0.5rem;
             font-size: 1rem;
@@ -65,6 +65,18 @@
             top: 1rem;
             right: 1rem;
         }
+
+        .custom-time {
+            width: 120px;
+            text-align: center;
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -78,16 +90,13 @@
         <div id="time-display"></div>
 
         <div class="controls" id="countdown-controls" style="display: none;">
-            <select id="time-select">
-                <option value="15">15 minutes</option>
-                <option value="30">30 minutes</option>
-                <option value="45">45 minutes</option>
-                <option value="60">60 minutes</option>
-                <option value="75">75 minutes</option>
-                <option value="90">90 minutes</option>
-                <option value="120">120 minutes</option>
-                <option value="150">150 minutes</option>
-            </select>
+            <div>
+                <input type="text" id="custom-time" class="custom-time" 
+                       placeholder="MM:SS" pattern="\d{1,3}:\d{2}">
+                <div class="error-message" id="time-error">
+                    Invalid format (max 150:00)
+                </div>
+            </div>
 
             <select id="font-select">
                 <option value="Arial">Arial</option>
@@ -110,9 +119,11 @@
     const modeLabel = document.getElementById('current-mode');
     const controls = document.getElementById('countdown-controls');
     const startBtn = document.getElementById('startBtn');
+    const customTimeInput = document.getElementById('custom-time');
+    const timeError = document.getElementById('time-error');
     let userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    // Get precise timezone from IP
+    // Timezone detection
     fetch('https://worldtimeapi.org/api/ip')
         .then(response => response.json())
         .then(data => {
@@ -122,7 +133,7 @@
             console.log('Using browser-detected timezone:', userTimezone);
         });
 
-    // Toggle between modes
+    // Mode switching
     function toggleMode(mode) {
         currentMode = mode;
         modeLabel.textContent = mode === 'local' ? 'Local Time' : 'Countdown Timer';
@@ -131,7 +142,6 @@
         if (mode === 'countdown') {
             resetTimer();
         } else {
-            // Stop timer if running when switching to local time
             if (timer) {
                 clearInterval(timer);
                 timer = null;
@@ -140,7 +150,7 @@
         }
     }
 
-    // Local Time Display
+    // Time display
     function updateLocalTime() {
         const options = {
             timeZone: userTimezone,
@@ -152,7 +162,7 @@
         display.textContent = new Date().toLocaleTimeString('en-US', options);
     }
 
-    // Countdown Timer
+    // Timer functions
     function formatTime(seconds) {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -171,38 +181,64 @@
         }
     }
 
+    function validateCustomTime(input) {
+        const pattern = /^(?:\d{1,3}):(?:[0-5]\d)$/;
+        if (!pattern.test(input)) return false;
+        const [minutes] = input.split(':').map(Number);
+        return minutes <= 150;
+    }
+
+    function parseCustomTime(input) {
+        const [minutes, seconds] = input.split(':').map(Number);
+        return minutes * 60 + seconds;
+    }
+
     function resetTimer() {
         clearInterval(timer);
         timer = null;
-        remainingTime = parseInt(document.getElementById('time-select').value) * 60;
-        display.textContent = formatTime(remainingTime);
+        customTimeInput.value = '';
+        remainingTime = 0;
+        display.textContent = "00:00";
         startBtn.textContent = 'Start';
+        timeError.style.display = 'none';
     }
 
-    // Event Listeners
+    // Event listeners
+    customTimeInput.addEventListener('input', (e) => {
+        if (validateCustomTime(e.target.value)) {
+            timeError.style.display = 'none';
+            remainingTime = parseCustomTime(e.target.value);
+            display.textContent = formatTime(remainingTime);
+        } else {
+            timeError.style.display = 'block';
+        }
+    });
+
     startBtn.addEventListener('click', () => {
         if (timer) {
             clearInterval(timer);
             timer = null;
             startBtn.textContent = 'Start';
         } else {
-            if (remainingTime <= 0) resetTimer();
+            if (!validateCustomTime(customTimeInput.value)) {
+                timeError.style.display = 'block';
+                return;
+            }
+            remainingTime = parseCustomTime(customTimeInput.value);
             timer = setInterval(updateTimer, 1000);
             startBtn.textContent = 'Stop';
         }
     });
 
     document.getElementById('resetBtn').addEventListener('click', resetTimer);
-
     document.getElementById('font-select').addEventListener('change', (e) => {
         display.style.fontFamily = e.target.value;
     });
 
-    // Initialize
+    // Initialization
     setInterval(() => {
         if (currentMode === 'local') updateLocalTime();
     }, 1000);
-    
     toggleMode('local');
 </script>
 </body>
