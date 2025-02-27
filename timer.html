@@ -110,19 +110,40 @@
     const modeLabel = document.getElementById('current-mode');
     const controls = document.getElementById('countdown-controls');
     const startBtn = document.getElementById('startBtn');
+    let userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    // Get precise timezone from IP
+    fetch('https://worldtimeapi.org/api/ip')
+        .then(response => response.json())
+        .then(data => {
+            userTimezone = data.timezone;
+        })
+        .catch(error => {
+            console.log('Using browser-detected timezone:', userTimezone);
+        });
 
     // Toggle between modes
     function toggleMode(mode) {
         currentMode = mode;
         modeLabel.textContent = mode === 'local' ? 'Local Time' : 'Countdown Timer';
         controls.style.display = mode === 'countdown' ? 'block' : 'none';
-        if (mode === 'countdown') resetTimer();
+        
+        if (mode === 'countdown') {
+            resetTimer();
+        } else {
+            // Stop timer if running when switching to local time
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+                startBtn.textContent = 'Start';
+            }
+        }
     }
 
     // Local Time Display
     function updateLocalTime() {
         const options = {
-            timeZone: 'America/Chicago',
+            timeZone: userTimezone,
             hour12: true,
             hour: 'numeric',
             minute: '2-digit',
