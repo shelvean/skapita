@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Time Display App</title>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            font-family: Arial, sans-serif;
+        }
+
+        .display-container {
+            background-color: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin: 1rem;
+            width: 80vw;
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .mode-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        #time-display {
+            font-size: 6rem;
+            margin: 2rem 0;
+            transition: font-family 0.3s ease;
+        }
+
+        .controls {
+            margin: 1rem 0;
+        }
+
+        select, button {
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .mode-switcher {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="display-container">
+        <div class="mode-switcher">
+            <button onclick="toggleMode('local')" class="mode-btn">Local</button>
+            <button onclick="toggleMode('countdown')" class="mode-btn">Timer</button>
+        </div>
+
+        <div class="mode-label" id="current-mode"></div>
+        <div id="time-display"></div>
+
+        <div class="controls" id="countdown-controls" style="display: none;">
+            <select id="time-select">
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60">60 minutes</option>
+                <option value="75">75 minutes</option>
+                <option value="90">90 minutes</option>
+                <option value="120">120 minutes</option>
+                <option value="150">150 minutes</option>
+            </select>
+
+            <select id="font-select">
+                <option value="Arial">Arial</option>
+                <option value="'Courier New'">Courier New</option>
+                <option value="'Times New Roman'">Times New Roman</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Georgia">Georgia</option>
+            </select>
+
+            <button id="startBtn">Start</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+<script>
+    let currentMode = 'local';
+    let timer;
+    let remainingTime = 0;
+    const display = document.getElementById('time-display');
+    const modeLabel = document.getElementById('current-mode');
+    const controls = document.getElementById('countdown-controls');
+    const startBtn = document.getElementById('startBtn');
+
+    // Toggle between modes
+    function toggleMode(mode) {
+        currentMode = mode;
+        modeLabel.textContent = mode === 'local' ? 'Local Time' : 'Countdown Timer';
+        controls.style.display = mode === 'countdown' ? 'block' : 'none';
+        if (mode === 'countdown') resetTimer();
+    }
+
+    // Local Time Display
+    function updateLocalTime() {
+        const options = {
+            timeZone: 'America/Chicago',
+            hour12: true,
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit'
+        };
+        display.textContent = new Date().toLocaleTimeString('en-US', options);
+    }
+
+    // Countdown Timer
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateTimer() {
+        if (remainingTime >= 0) {
+            display.textContent = formatTime(remainingTime);
+            remainingTime--;
+        } else {
+            clearInterval(timer);
+            startBtn.textContent = 'Start';
+            display.textContent = "00:00";
+            alert('Time is up!');
+        }
+    }
+
+    function resetTimer() {
+        clearInterval(timer);
+        timer = null;
+        remainingTime = parseInt(document.getElementById('time-select').value) * 60;
+        display.textContent = formatTime(remainingTime);
+        startBtn.textContent = 'Start';
+    }
+
+    // Event Listeners
+    startBtn.addEventListener('click', () => {
+        if (timer) {
+            clearInterval(timer);
+            timer = null;
+            startBtn.textContent = 'Start';
+        } else {
+            if (remainingTime <= 0) resetTimer();
+            timer = setInterval(updateTimer, 1000);
+            startBtn.textContent = 'Stop';
+        }
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', resetTimer);
+
+    document.getElementById('font-select').addEventListener('change', (e) => {
+        display.style.fontFamily = e.target.value;
+    });
+
+    // Initialize
+    setInterval(() => {
+        if (currentMode === 'local') updateLocalTime();
+    }, 1000);
+    
+    toggleMode('local');
+</script>
+</body>
+</html>
