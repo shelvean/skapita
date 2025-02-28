@@ -2,244 +2,190 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Time Display App</title>
+    <title>Modern Time Display</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        body {
-            background-color: #f3f4f6;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 2rem;
-            font-family: Arial, sans-serif;
+        /* Custom canvas-style width handling */
+        .main-container {
+            width: calc(100% - 40px);
+            margin: 0 20px;
         }
-
-        .display-container {
-            background-color: white;
-            padding: 3rem;
-            border-radius: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            margin: 1rem;
-            width: 80vw;
-            min-height: 60vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .mode-label {
-            font-size: 0.8rem;
-            color: #666;
-            margin-bottom: 0.5rem;
-        }
-
-        #time-display {
-            font-size: 18rem;
-            margin: 2rem 0;
-            transition: font-family 0.3s ease;
-        }
-
-        .controls {
-            margin: 1rem 0;
-        }
-
-        button, .custom-time {
-            padding: 0.5rem 1rem;
-            margin: 0.5rem;
-            font-size: 1rem;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            background-color: #3b82f6;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        .mode-switcher {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-        }
-
-        .custom-time {
-            width: 120px;
-            text-align: center;
-        }
-
-        .error-message {
-            color: #dc2626;
-            font-size: 0.8rem;
-            margin-top: 0.3rem;
-            display: none;
+        
+        @media (min-width: 1024px) {
+            .main-container {
+                width: calc(100% - 80px);
+                margin: 0 40px;
+            }
         }
     </style>
 </head>
-<body>
-    <div class="display-container">
-        <div class="mode-switcher">
-            <button onclick="toggleMode('local')" class="mode-btn">Local</button>
-            <button onclick="toggleMode('countdown')" class="mode-btn">Timer</button>
+<body class="bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen flex items-center justify-center p-0">
+    <div id="app" class="main-container bg-white rounded-2xl shadow-2xl p-8 transition-all duration-300 hover:shadow-3xl">
+        <!-- Mode Switcher -->
+        <div class="flex gap-2 mb-6 justify-end">
+            <button 
+                @click="toggleMode('local')"
+                :class="currentMode === 'local' ? 
+                       'bg-gradient-to-r from-blue-500 to-purple-600 text-white' : 
+                       'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                class="px-6 py-2 rounded-full font-semibold transition-all duration-200"
+            >
+                Local Time
+            </button>
+            <button 
+                @click="toggleMode('countdown')"
+                :class="currentMode === 'countdown' ? 
+                       'bg-gradient-to-r from-blue-500 to-purple-600 text-white' : 
+                       'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                class="px-6 py-2 rounded-full font-semibold transition-all duration-200"
+            >
+                Timer
+            </button>
         </div>
 
-        <div class="mode-label" id="current-mode"></div>
-        <div id="time-display"></div>
+        <!-- Time Display -->
+        <div class="text-center mb-8 w-full">
+            <div class="text-[7.5rem] md:text-[12rem] font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-none"
+                 :style="{ width: 'calc(100% - 40px)' }">
+                {{ formattedTime }}
+            </div>
+        </div>
 
-        <div class="controls" id="countdown-controls" style="display: none;">
-            <div>
-                <input type="text" id="custom-time" class="custom-time" 
-                       placeholder="MM:SS" pattern="\d{1,3}:\d{2}">
-                <div class="error-message" id="time-error">
-                    Invalid format (max 150:00)
+        <!-- Timer Controls -->
+        <div v-if="currentMode === 'countdown'" class="animate-fade-in w-full">
+            <div class="flex flex-col items-center gap-4 max-w-xs mx-auto w-full">
+                <input 
+                    v-model="customTime"
+                    placeholder="MM:SS"
+                    class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 text-center font-mono"
+                    @input="validateTime"
+                >
+                <div class="flex gap-3 w-full">
+                    <button 
+                        @click="toggleTimer"
+                        class="flex-1 py-3 bg-gradient-to-r" 
+                        :class="timerRunning ? 
+                              'from-red-500 to-pink-600 hover:from-red-600' : 
+                              'from-green-500 to-blue-500 hover:from-green-600'"
+                    >
+                        {{ timerRunning ? 'Stop' : 'Start' }}
+                    </button>
+                    <button 
+                        @click="resetTimer"
+                        class="flex-1 py-3 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-lg font-semibold transition-all"
+                    >
+                        Reset
+                    </button>
                 </div>
             </div>
-
-            <select id="font-select">
-                <option value="Arial">Arial</option>
-                <option value="'Courier New'">Courier New</option>
-                <option value="'Times New Roman'">Times New Roman</option>
-                <option value="Verdana">Verdana</option>
-                <option value="Georgia">Georgia</option>
-            </select>
-
-            <button id="startBtn">Start</button>
-            <button id="resetBtn">Reset</button>
         </div>
     </div>
 
-<script>
-    let currentMode = 'local';
-    let timer;
-    let remainingTime = 0;
-    const display = document.getElementById('time-display');
-    const modeLabel = document.getElementById('current-mode');
-    const controls = document.getElementById('countdown-controls');
-    const startBtn = document.getElementById('startBtn');
-    const customTimeInput = document.getElementById('custom-time');
-    const timeError = document.getElementById('time-error');
-    let userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    <script>
+        const { createApp, ref, computed, onMounted, onBeforeUnmount } = Vue;
 
-    // Timezone detection
-    fetch('https://worldtimeapi.org/api/ip')
-        .then(response => response.json())
-        .then(data => {
-            userTimezone = data.timezone;
-        })
-        .catch(error => {
-            console.log('Using browser-detected timezone:', userTimezone);
-        });
+        createApp({
+            setup() {
+                const currentMode = ref('local')
+                const timerRunning = ref(false)
+                const remainingSeconds = ref(0)
+                const customTime = ref('')
+                const intervalId = ref(null)
+                const timezone = ref('UTC')
+                const currentTime = ref(Date.now())
+                const localTimeInterval = ref(null)
 
-    // Mode switching
-    function toggleMode(mode) {
-        currentMode = mode;
-        modeLabel.textContent = mode === 'local' ? 'Local Time' : 'Countdown Timer';
-        controls.style.display = mode === 'countdown' ? 'block' : 'none';
-        
-        if (mode === 'countdown') {
-            resetTimer();
-        } else {
-            if (timer) {
-                clearInterval(timer);
-                timer = null;
-                startBtn.textContent = 'Start';
+                // Local time updates
+                const startLocalTimeUpdates = () => {
+                    localTimeInterval.value = setInterval(() => {
+                        currentTime.value = Date.now()
+                    }, 1000)
+                }
+
+                // Lifecycle hooks
+                onMounted(() => {
+                    startLocalTimeUpdates()
+                    fetch('https://worldtimeapi.org/api/ip')
+                        .then(res => res.json())
+                        .then(data => timezone.value = data.timezone)
+                        .catch(console.error)
+                })
+
+                onBeforeUnmount(() => {
+                    clearInterval(intervalId.value)
+                    clearInterval(localTimeInterval.value)
+                })
+
+                const formattedTime = computed(() => {
+                    if (currentMode.value === 'local') {
+                        return new Date(currentTime.value).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true,
+                            timeZone: timezone.value
+                        })
+                    }
+                    const mins = Math.floor(remainingSeconds.value / 60)
+                    const secs = remainingSeconds.value % 60
+                    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+                })
+
+                function toggleMode(mode) {
+                    if (mode === currentMode.value) return
+                    currentMode.value = mode
+                    resetTimer()
+                }
+
+                function validateTime() {
+                    const isValid = /^[0-9]{1,3}:[0-5][0-9]$/.test(customTime.value)
+                    if (isValid) {
+                        const [mins, secs] = customTime.value.split(':').map(Number)
+                        remainingSeconds.value = (mins * 60) + secs
+                    }
+                    return isValid
+                }
+
+                function toggleTimer() {
+                    if (timerRunning.value) {
+                        clearInterval(intervalId.value)
+                        timerRunning.value = false
+                    } else {
+                        if (!validateTime()) return
+                        intervalId.value = setInterval(() => {
+                            if (remainingSeconds.value > 0) {
+                                remainingSeconds.value--
+                            } else {
+                                clearInterval(intervalId.value)
+                                timerRunning.value = false
+                            }
+                        }, 1000)
+                        timerRunning.value = true
+                    }
+                }
+
+                function resetTimer() {
+                    clearInterval(intervalId.value)
+                    intervalId.value = null
+                    remainingSeconds.value = 0
+                    customTime.value = ''
+                    timerRunning.value = false
+                }
+
+                return {
+                    currentMode,
+                    timerRunning,
+                    customTime,
+                    formattedTime,
+                    toggleMode,
+                    validateTime,
+                    toggleTimer,
+                    resetTimer
+                }
             }
-        }
-    }
-
-    // Time display
-    function updateLocalTime() {
-        const options = {
-            timeZone: userTimezone,
-            hour12: true,
-            hour: 'numeric',
-            minute: '2-digit',
-            second: '2-digit'
-        };
-        display.textContent = new Date().toLocaleTimeString('en-US', options);
-    }
-
-    // Timer functions
-    function formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function updateTimer() {
-        if (remainingTime >= 0) {
-            display.textContent = formatTime(remainingTime);
-            remainingTime--;
-        } else {
-            clearInterval(timer);
-            startBtn.textContent = 'Start';
-            display.textContent = "00:00";
-            alert('Time is up!');
-        }
-    }
-
-    function validateCustomTime(input) {
-        const pattern = /^(?:\d{1,3}):(?:[0-5]\d)$/;
-        if (!pattern.test(input)) return false;
-        const [minutes] = input.split(':').map(Number);
-        return minutes <= 150;
-    }
-
-    function parseCustomTime(input) {
-        const [minutes, seconds] = input.split(':').map(Number);
-        return minutes * 60 + seconds;
-    }
-
-    function resetTimer() {
-        clearInterval(timer);
-        timer = null;
-        customTimeInput.value = '';
-        remainingTime = 0;
-        display.textContent = "00:00";
-        startBtn.textContent = 'Start';
-        timeError.style.display = 'none';
-    }
-
-    // Event listeners
-    customTimeInput.addEventListener('input', (e) => {
-        if (validateCustomTime(e.target.value)) {
-            timeError.style.display = 'none';
-            remainingTime = parseCustomTime(e.target.value);
-            display.textContent = formatTime(remainingTime);
-        } else {
-            timeError.style.display = 'block';
-        }
-    });
-
-    startBtn.addEventListener('click', () => {
-        if (timer) {
-            clearInterval(timer);
-            timer = null;
-            startBtn.textContent = 'Start';
-        } else {
-            if (!validateCustomTime(customTimeInput.value)) {
-                timeError.style.display = 'block';
-                return;
-            }
-            remainingTime = parseCustomTime(customTimeInput.value);
-            timer = setInterval(updateTimer, 1000);
-            startBtn.textContent = 'Stop';
-        }
-    });
-
-    document.getElementById('resetBtn').addEventListener('click', resetTimer);
-    document.getElementById('font-select').addEventListener('change', (e) => {
-        display.style.fontFamily = e.target.value;
-    });
-
-    // Initialization
-    setInterval(() => {
-        if (currentMode === 'local') updateLocalTime();
-    }, 1000);
-    toggleMode('local');
-</script>
+        }).mount('#app')
+    </script>
 </body>
 </html>
