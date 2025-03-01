@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -208,7 +209,7 @@ function solveODE(slopeFunc, t0, y0, tMin, tMax, yMin, yMax) {
         const ypp = (yp_next - yp) / step;  // Second derivative approximation
 
         // Check for instability (sharp change in second derivative)
-        if (points.length > 2 && Math.abs(ypp - prevYpp) > 1000) {  // Adjust threshold as needed
+        if (points.length > 2 && Math.abs(ypp - prevYpp) > 2000) {  // Adjust threshold as needed
             // Remove last two points where instability started
             if (points.length >= 2) points.splice(-2, 2);
             break;
@@ -244,7 +245,7 @@ function solveODE(slopeFunc, t0, y0, tMin, tMax, yMin, yMax) {
         const yp_next = slopeFunc(t - step, y + (k1 + 2*k2 + 2*k3 + k4)/6);
         const ypp = (yp - yp_next) / step;  // Note direction change for backward
 
-        if (backwardPoints.length > 2 && Math.abs(ypp - prevYpp) > 1000) {
+        if (backwardPoints.length > 2 && Math.abs(ypp - prevYpp) > 2000) {
             if (backwardPoints.length >= 2) backwardPoints.splice(-2, 2);
             break;
         }
