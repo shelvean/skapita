@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-5B8PRB2WZT');
-</script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-5B8PRB2WZT');
+  </script>
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -101,7 +101,7 @@
       max-width: 100%; 
     }
 
-     .controls input {
+    .controls input {
       width: 40px;
       padding: 0.3rem;
       border: 1px solid #dee2e6;
@@ -229,299 +229,315 @@
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script>
     const canvas = document.getElementById('simulationCanvas');
-const ctx = canvas.getContext('2d');
-const graphCanvas = document.getElementById('graphCanvas');
-const graphCtx = graphCanvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
+    const graphCanvas = document.getElementById('graphCanvas');
+    const graphCtx = graphCanvas.getContext('2d');
 
-// Simulation parameters
-let m = 2;      // Mass (kg)
-let k = 100;    // Spring constant (N/m)
-let c = 5;      // Damping coefficient (N·s/m)
-let y0 = 0.3;   // Initial displacement (m)
-let v0 = 0;     // Initial velocity (m/s)
+    // Simulation parameters
+    let m = 4;      // Mass (kg)
+    let k = 36;     // Spring constant (N/m)
+    let c = 0.5;    // Damping coefficient (N·s/m)
+    let y0 = 1.5;   // Initial displacement (m)
+    let v0 = -1.0;  // Initial velocity (m/s)
 
-// Simulation state
-let y = y0;
-let v = v0;
-let t = 0;
-const dt = 0.04;    // Time step (seconds)
-const graphMaxTime = 30; // Seconds
-let isSimulationRunning = true;
-const graphData = [];
+    // Simulation state
+    let y = y0;
+    let v = v0;
+    let t = 0;
+    const dt = 0.04;    // Time step (seconds)
+    const graphMaxTime = 30; // Seconds
+    let isSimulationRunning = true;
+    const graphData = [];
+    const STIFF_THRESHOLD = 100; // Threshold for Backward Euler
+    const OSCILLATORY_THRESHOLD = 10; // Threshold for Verlet-Störmer (sqrt(k/m))
 
-// Spring visualization parameters
-const springLength = 200; // Natural length of the spring
-const springCoils = 20;    // Number of coils in the spring
-const springRadius = 15; // Radius of the spring coils
-const ballRadius = 20;   // Radius of the mass (half of the square)
+    // Spring visualization parameters
+    const springLength = 200;
+    const springCoils = 20;
+    const springRadius = 15;
+    const ballRadius = 20;
+    const canvasCenterX = canvas.width / 2;
+    let alertBox = null;
 
-// Center of the canvas width
-const canvasCenterX = canvas.width / 2;
-let alertBox = null;
-
-function calculateDerivatives(y, v) {
-    const a = (-c * v - k * y) / m;
-    return {
-        y: v,
-        v: a
-    };
-}
-
-function updatePhysics() {
-    if (!isSimulationRunning) return;
-
-    // RK4 integration
-    const k1 = calculateDerivatives(y, v);
-    const k2 = calculateDerivatives(y + k1.y * dt / 2, v + k1.v * dt / 2);
-    const k3 = calculateDerivatives(y + k2.y * dt / 2, v + k2.v * dt / 2);
-    const k4 = calculateDerivatives(y + k3.y * dt, v + k3.v * dt);
-
-    y += (k1.y + 2 * k2.y + 2 * k3.y + k4.y) * dt / 6;
-    v += (k1.v + 2 * k2.v + 2 * k3.v + k4.v) * dt / 6;
-    t += dt;
-
-    // Check if displacement is less than -2.7 after t=2 seconds
-    if (t > 2 && y < -2.7) {
-        isSimulationRunning = false; // Stop the simulation
-        showAlert("Adjust parameters! Displacement has exceeded the maximum.");
+    function calculateDerivatives(y, v, c_calc) {
+      const a = (-c_calc * v - k * y) / m;
+      return { y: v, v: a };
     }
 
-    // Store data for graph from the beginning (t=0)
-    graphData.push({ t, y });
+    function calculateDiscriminant(c_calc) {
+      return c_calc * c_calc - 4 * m * k;
+    }
 
-    if (t > graphMaxTime) isSimulationRunning = false;
-}
+    function isStiffSystem(c_calc) {
+      const discriminant = calculateDiscriminant(c_calc);
+      return discriminant > STIFF_THRESHOLD && discriminant > 0;
+    }
 
-function drawSpringMass() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function isHighlyOscillatory(c_calc) {
+      const naturalFrequency = Math.sqrt(k / m);
+      return naturalFrequency > OSCILLATORY_THRESHOLD && c_calc < 1; // Low damping
+    }
 
-    // Draw fixed support at the top center of the canvas
-    const supportWidth = 100;
-    const supportHeight = 30;
-    ctx.fillStyle = '#333';
-    ctx.fillRect(canvasCenterX - supportWidth / 2, 20, supportWidth, supportHeight);
+    function updatePhysicsRK4(c_calc) {
+      const k1 = calculateDerivatives(y, v, c_calc);
+      const k2 = calculateDerivatives(y + k1.y * dt / 2, v + k1.v * dt / 2, c_calc);
+      const k3 = calculateDerivatives(y + k2.y * dt / 2, v + k2.v * dt / 2, c_calc);
+      const k4 = calculateDerivatives(y + k3.y * dt, v + k3.v * dt, c_calc);
 
-    // Calculate displacement for visualization
-    const displacement = y * 80; // Scale displacement for visualization
+      const nextY = y + (k1.y + 2 * k2.y + 2 * k3.y + k4.y) * dt / 6;
+      const nextV = v + (k1.v + 2 * k2.v + 2 * k3.v + k4.v) * dt / 6;
 
-    // Adjust spring start point to ensure it touches the mass
-    const springStart = 20 + supportHeight; // Start right below the support
-    const totalSpringLength = springLength + displacement;
-    const springEnd = springStart + totalSpringLength;
+      y = isNaN(nextY) ? y : nextY;
+      v = isNaN(nextV) ? v : nextV;
+    }
 
-    drawSpring(springStart, springEnd);
-    drawMass(springEnd);
-}
+    function updatePhysicsBackwardEuler(c_calc) {
+      const denom = m + c_calc * dt + k * dt * dt;
+      const nextV = (m * v - k * dt * y) / denom;
+      const nextY = y + dt * nextV;
 
-function drawSpring(startY, endY) {
-    const n = (endY - startY) / springCoils;
+      y = isNaN(nextY) ? y : nextY;
+      v = isNaN(nextV) ? v : nextV;
+    }
 
-    ctx.beginPath();
-    ctx.strokeStyle = '#181b59';
-    ctx.lineWidth = 1;
-    for (let r = 0; r < springCoils; r++) {
+    function updatePhysicsVerletStormer(c_calc) {
+      // Verlet-Störmer (Velocity Verlet) method
+      const a = (-c_calc * v - k * y) / m; // Acceleration at current position
+      const nextY = y + v * dt + 0.5 * a * dt * dt; // Update position
+      const nextA = (-c_calc * v - k * nextY) / m; // Acceleration at new position
+      const nextV = v + 0.5 * (a + nextA) * dt; // Update velocity using average acceleration
+
+      y = isNaN(nextY) ? y : nextY;
+      v = isNaN(nextV) ? v : nextV;
+    }
+
+    function updatePhysics() {
+      if (!isSimulationRunning) return;
+
+      const c_calc = (c === 0) ? 0.000001 : c;
+
+      if (isStiffSystem(c_calc)) {
+        updatePhysicsBackwardEuler(c_calc);
+      } else if (isHighlyOscillatory(c_calc)) {
+        updatePhysicsVerletStormer(c_calc);
+      } else {
+        updatePhysicsRK4(c_calc);
+      }
+
+      t += dt;
+
+      if (t > 2 && y < -2.7) {
+        isSimulationRunning = false;
+        showAlert("Adjust parameters! Displacement has exceeded the maximum.");
+      }
+
+      graphData.push({ t, y });
+
+      if (t > graphMaxTime) isSimulationRunning = false;
+    }
+
+    function drawSpringMass() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const supportWidth = 100;
+      const supportHeight = 30;
+      ctx.fillStyle = '#333';
+      ctx.fillRect(canvasCenterX - supportWidth / 2, 20, supportWidth, supportHeight);
+
+      const displacement = y * 80;
+      const springStart = 20 + supportHeight;
+      const totalSpringLength = springLength + displacement;
+      const springEnd = springStart + totalSpringLength;
+
+      drawSpring(springStart, springEnd);
+      drawMass(springEnd);
+    }
+
+    function drawSpring(startY, endY) {
+      const n = (endY - startY) / springCoils;
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#181b59';
+      ctx.lineWidth = 1;
+      for (let r = 0; r < springCoils; r++) {
         const i = startY + r * n;
         ctx.moveTo(canvasCenterX - springRadius, i);
         ctx.arc(canvasCenterX, i + n / 4, springRadius, Math.PI, 0, false);
         ctx.moveTo(canvasCenterX + springRadius, i + n / 2);
         ctx.arc(canvasCenterX, i + (3 * n) / 4, springRadius, 0, Math.PI, false);
+      }
+      ctx.stroke();
     }
-    ctx.stroke();
-}
 
-function drawMass(y) {
-    const sideLength = ballRadius * 2; // Since diameter = 2 * radius
+    function drawMass(y) {
+      const sideLength = ballRadius * 2;
+      ctx.fillStyle = '#8B4513';
+      ctx.strokeStyle = '#000';
+      ctx.fillRect(canvasCenterX - ballRadius, y - ballRadius, sideLength, sideLength);
+      ctx.strokeRect(canvasCenterX - ballRadius, y - ballRadius, sideLength, sideLength);
+    }
 
-    ctx.fillStyle = '#8B4513'; // Dark brown color
-    ctx.strokeStyle = '#000';
+    function drawGraph() {
+      graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
 
-    // Draw a square instead of a circle, centered horizontally
-    ctx.fillRect(canvasCenterX - ballRadius, y - ballRadius, sideLength, sideLength);
-    ctx.strokeRect(canvasCenterX - ballRadius, y - ballRadius, sideLength, sideLength);
-}
+      graphCtx.beginPath();
+      graphCtx.moveTo(50, 20);
+      graphCtx.lineTo(50, graphCanvas.height - 20);
+      graphCtx.lineTo(graphCanvas.width - 20, graphCanvas.height - 20);
+      graphCtx.strokeStyle = '#ddd';
+      graphCtx.stroke();
 
-function drawGraph() {
-    graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+      if (graphData.length === 0) return;
 
-    // Draw axes
-    graphCtx.beginPath();
-    graphCtx.moveTo(50, 20);
-    graphCtx.lineTo(50, graphCanvas.height - 20);
-    graphCtx.lineTo(graphCanvas.width - 20, graphCanvas.height - 20);
-    graphCtx.strokeStyle = '#ddd';
-    graphCtx.stroke();
+      const maxY = Math.max(...graphData.map(d => d.y));
+      const minY = Math.min(...graphData.map(d => d.y));
+      const yRange = maxY - minY || 0.1; // Avoid division by zero
+      const scaleY = (graphCanvas.height - 60) / yRange;
 
-    if (graphData.length === 0) return;
+      graphCtx.beginPath();
+      graphCtx.strokeStyle = '#007bff';
+      graphCtx.lineWidth = 2;
 
-    // Find maximum and minimum displacement for dynamic scaling
-    const maxY = Math.max(...graphData.map(d => d.y));
-    const minY = Math.min(...graphData.map(d => d.y));
-    const yRange = maxY - minY;
-    const scaleY = (graphCanvas.height - 60) / Math.max(yRange, 0.1);
-
-    // Plot data
-    graphCtx.beginPath();
-    graphCtx.strokeStyle = '#007bff';
-    graphCtx.lineWidth = 2;
-
-    for (let i = 0; i < graphData.length; i++) {
+      for (let i = 0; i < graphData.length; i++) {
         const point = graphData[i];
         const x = 50 + (point.t / graphMaxTime) * (graphCanvas.width - 70);
         const y = graphCanvas.height - 40 - (point.y - minY) * scaleY;
-        if (i === 0) {
-            graphCtx.moveTo(x, y);
-        } else {
-            graphCtx.lineTo(x, y);
-        }
+        if (i === 0) graphCtx.moveTo(x, y);
+        else graphCtx.lineTo(x, y);
+      }
+      graphCtx.stroke();
+
+      drawDisplacementScaleOnGraph(scaleY, maxY, minY);
+      drawTimeScaleOnGraph();
     }
-    graphCtx.stroke();
 
-    // Add dynamic displacement scale
-    drawDisplacementScaleOnGraph(scaleY, maxY, minY);
+    function drawDisplacementScaleOnGraph(scaleY, maxY, minY) {
+      graphCtx.strokeStyle = '#000';
+      graphCtx.fillStyle = '#000';
+      graphCtx.font = '10px Arial';
+      graphCtx.textAlign = 'right';
+      graphCtx.textBaseline = 'middle';
 
-    // Add time scale to the bottom of the graph
-    drawTimeScaleOnGraph();
-}
+      const marks = 5;
+      const yStep = (maxY - minY) / marks;
 
-function drawDisplacementScaleOnGraph(scaleY, maxY, minY) {
-    graphCtx.strokeStyle = '#000';
-    graphCtx.fillStyle = '#000';
-    graphCtx.font = '10px Arial';
-    graphCtx.textAlign = 'right';
-    graphCtx.textBaseline = 'middle';
-
-    const marks = 5;
-    const yStep = (maxY - minY) / marks;
-
-    for (let i = 0; i <= marks; i++) {
+      for (let i = 0; i <= marks; i++) {
         const yVal = minY + i * yStep;
-        const yPos = graphCanvas.height - 40 - (yVal - minY) * scaleY; // Match plot's y calculation
-
+        const yPos = graphCanvas.height - 40 - (yVal - minY) * scaleY;
         graphCtx.beginPath();
         graphCtx.moveTo(50, yPos);
         graphCtx.lineTo(40, yPos);
         graphCtx.stroke();
-
         graphCtx.fillText(yVal.toFixed(2), 38, yPos);
+      }
     }
-}
 
-function drawTimeScaleOnGraph() {
-    graphCtx.strokeStyle = '#000';
-    graphCtx.fillStyle = '#000';
-    graphCtx.font = '10px Arial';
-    graphCtx.textAlign = 'center';
-    graphCtx.textBaseline = 'top';
+    function drawTimeScaleOnGraph() {
+      graphCtx.strokeStyle = '#000';
+      graphCtx.fillStyle = '#000';
+      graphCtx.font = '10px Arial';
+      graphCtx.textAlign = 'center';
+      graphCtx.textBaseline = 'top';
 
-    const marks = 7;
-    const step = (graphCanvas.width - 70) / (marks - 1);
-    for (let i = 0; i < marks; i++) {
+      const marks = 7;
+      const step = (graphCanvas.width - 70) / (marks - 1);
+      for (let i = 0; i < marks; i++) {
         const xPos = 50 + i * step;
-        const value = (i * graphMaxTime) / (marks - 1); // Adjust time range for the 3-second delay
-
+        const value = (i * graphMaxTime) / (marks - 1);
         graphCtx.beginPath();
         graphCtx.moveTo(xPos, graphCanvas.height - 20);
         graphCtx.lineTo(xPos, graphCanvas.height - 10);
         graphCtx.stroke();
-
         graphCtx.fillText(value.toFixed(1), xPos, graphCanvas.height - 8);
+      }
     }
-}
 
-function showAlert(message) {
-    if (!alertBox) {
+    function showAlert(message) {
+      if (!alertBox) {
         alertBox = document.createElement('div');
         alertBox.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #f8d7da;
-            border: 2px solid #f5c6cb;
-            color: #721c24;
-            padding: 10px 20px;
-            border-radius: 5px;
-            z-index: 1000;
+          position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+          background-color: #f8d7da; border: 2px solid #f5c6cb; color: #721c24;
+          padding: 10px 20px; border-radius: 5px; z-index: 1000;
         `;
         const closeButton = document.createElement('button');
         closeButton.textContent = 'X';
         closeButton.style.cssText = `
-            float: right;
-            background: transparent;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            color: #721c24;
+          float: right; background: transparent; border: none; font-size: 16px;
+          cursor: pointer; color: #721c24;
         `;
         closeButton.onclick = hideAlert;
         alertBox.appendChild(closeButton);
         alertBox.appendChild(document.createTextNode(message));
         document.body.appendChild(alertBox);
+      }
     }
-}
 
-function hideAlert() {
-    if (alertBox) {
+    function hideAlert() {
+      if (alertBox) {
         document.body.removeChild(alertBox);
         alertBox = null;
+      }
     }
-}
 
-function updateParameters() {
-    m = parseFloat(document.getElementById('mass').value);
-    k = parseFloat(document.getElementById('springConstant').value);
-    c = parseFloat(document.getElementById('damping').value);
-    y0 = parseFloat(document.getElementById('initialDisplacement').value);
-    v0 = parseFloat(document.getElementById('initialVelocity').value);
+    function updateParameters() {
+      const userC = parseFloat(document.getElementById('damping').value) || 0;
+      c = (userC === 0) ? 0.000001 : userC; // Use 0.000001 for calculations if user inputs 0
+      m = parseFloat(document.getElementById('mass').value) || 4;
+      k = parseFloat(document.getElementById('springConstant').value) || 36;
+      y0 = parseFloat(document.getElementById('initialDisplacement').value) || 1.5;
+      v0 = parseFloat(document.getElementById('initialVelocity').value) || -1.0;
 
-    // Update equation display
-    try {
-        katex.render(
-            `${m.toFixed(1)}y'' + ${c.toFixed(1)}y' + ${k.toFixed(1)}y = 0`,
-            document.getElementById('equation'),
+      const equationElement = document.getElementById('equation');
+      if (equationElement) {
+        try {
+          katex.render(
+            `${m.toFixed(1)}y'' + ${userC.toFixed(1)}y' + ${k.toFixed(1)}y = 0`,
+            equationElement,
             { throwOnError: false }
-        );
-    } catch (error) {
-        console.error('KaTeX error:', error);
+          );
+        } catch (error) {
+          console.error('KaTeX error:', error);
+          equationElement.textContent = `${m.toFixed(1)}y'' + ${userC.toFixed(1)}y' + ${k.toFixed(1)}y = 0`;
+        }
+      }
     }
-}
 
-function resetSimulation() {
-    m = parseFloat(document.getElementById('mass').value);
-    k = parseFloat(document.getElementById('springConstant').value);
-    c = parseFloat(document.getElementById('damping').value);
-    y0 = parseFloat(document.getElementById('initialDisplacement').value);
-    v0 = parseFloat(document.getElementById('initialVelocity').value);
+    function resetSimulation() {
+      updateParameters();
+      y = y0;
+      v = v0;
+      t = 0;
+      graphData.length = 0;
+      isSimulationRunning = true;
+      drawSpringMass();
+      drawGraph();
+      hideAlert();
+    }
 
-    y = y0;
-    v = v0;
-    t = 0;
-    graphData.length = 0; // Clear graph data
-    isSimulationRunning = true;
-    updateParameters();
-    drawSpringMass();
-    drawGraph();
-    hideAlert();
-}
-
-function animate() {
-    if (isSimulationRunning) {
+    function animate() {
+      if (isSimulationRunning) {
         updatePhysics();
         drawSpringMass();
         drawGraph();
+      }
+      requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-    katex.render(
-        `my'' + cy' + ky = 0, \\quad y(0) = y_0, \\quad y'(0) = v_0`,
-        document.getElementById('equationGeneral'),
-        { throwOnError: false, displayMode: true }
-    );
-    updateParameters();
-    animate();
-});
+    document.addEventListener('DOMContentLoaded', () => {
+      const equationGeneral = document.getElementById('equationGeneral');
+      if (equationGeneral) {
+        katex.render(
+          `my'' + cy' + ky = 0, \\quad y(0) = y_0, \\quad y'(0) = v_0`,
+          equationGeneral,
+          { throwOnError: false, displayMode: true }
+        );
+      }
+      updateParameters();
+      drawSpringMass();
+      drawGraph();
+      animate();
+    });
   </script>
 </body>
 </html>
