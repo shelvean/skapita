@@ -379,6 +379,7 @@
       v = v0;
       t = 0;
       graphData.length = 0;
+      graphData.push({ t, y }); // Include initial state at t=0
       isSimulationRunning = true;
 
       updateParameters();
