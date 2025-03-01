@@ -248,8 +248,8 @@
     const graphMaxTime = 30; // Seconds
     let isSimulationRunning = true;
     const graphData = [];
-    const STIFF_THRESHOLD = 1; // Threshold for Backward Euler
-    const OSCILLATORY_THRESHOLD = 1; // Threshold for Verlet-Störmer (sqrt(k/m))
+    const STIFF_THRESHOLD = 5; // Threshold for Backward Euler
+    const OSCILLATORY_THRESHOLD = 5; // Threshold for Verlet-Störmer (sqrt(k/m))
 
     // Spring visualization parameters
     const springLength = 200;
@@ -301,11 +301,10 @@
     }
 
     function updatePhysicsVerletStormer(c_calc) {
-      // Verlet-Störmer (Velocity Verlet) method
-      const a = (-c_calc * v - k * y) / m; // Acceleration at current position
-      const nextY = y + v * dt + 0.5 * a * dt * dt; // Update position
-      const nextA = (-c_calc * v - k * nextY) / m; // Acceleration at new position
-      const nextV = v + 0.5 * (a + nextA) * dt; // Update velocity using average acceleration
+      const a = (-c_calc * v - k * y) / m;
+      const nextY = y + v * dt + 0.5 * a * dt * dt;
+      const nextA = (-c_calc * v - k * nextY) / m;
+      const nextV = v + 0.5 * (a + nextA) * dt;
 
       y = isNaN(nextY) ? y : nextY;
       v = isNaN(nextV) ? v : nextV;
@@ -328,7 +327,7 @@
 
       if (t > 2 && y < -2.7) {
         isSimulationRunning = false;
-        showAlert("Adjust parameters! Displacement has exceeded the maximum.");
+        showAlert("Displacement has exceeded the maximum.");
       }
 
       graphData.push({ t, y });
@@ -391,7 +390,7 @@
 
       const maxY = Math.max(...graphData.map(d => d.y));
       const minY = Math.min(...graphData.map(d => d.y));
-      const yRange = maxY - minY || 0.1; // Avoid division by zero
+      const yRange = maxY - minY || 0.1;
       const scaleY = (graphCanvas.height - 60) / yRange;
 
       graphCtx.beginPath();
@@ -509,8 +508,9 @@
       v = v0;
       t = 0;
       graphData.length = 0;
+      graphData.push({ t, y }); // Include initial state at t=0
       isSimulationRunning = true;
-      
+
       // Redraw
       drawSpringMass();
       drawGraph();
