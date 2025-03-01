@@ -248,8 +248,8 @@
     const graphMaxTime = 30; // Seconds
     let isSimulationRunning = true;
     const graphData = [];
-    const STIFF_THRESHOLD = 100; // Threshold for Backward Euler
-    const OSCILLATORY_THRESHOLD = 10; // Threshold for Verlet-Störmer (sqrt(k/m))
+    const STIFF_THRESHOLD = 1; // Threshold for Backward Euler
+    const OSCILLATORY_THRESHOLD = 1; // Threshold for Verlet-Störmer (sqrt(k/m))
 
     // Spring visualization parameters
     const springLength = 200;
@@ -480,14 +480,16 @@
       }
     }
 
-    function updateParameters() {
-      const userC = parseFloat(document.getElementById('damping').value) || 0;
-      c = (userC === 0) ? 0.000001 : userC; // Use 0.000001 for calculations if user inputs 0
+    function resetSimulation() {
+      // Update all parameters from input fields
       m = parseFloat(document.getElementById('mass').value) || 4;
       k = parseFloat(document.getElementById('springConstant').value) || 36;
-      y0 = parseFloat(document.getElementById('initialDisplacement').value) || 1.5;
-      v0 = parseFloat(document.getElementById('initialVelocity').value) || -1.0;
+      const userC = parseFloat(document.getElementById('damping').value) || 0;
+      c = (userC === 0) ? 0.000001 : userC;
+      y0 = parseFloat(document.getElementById('initialDisplacement').value) || 0;
+      v0 = parseFloat(document.getElementById('initialVelocity').value) || 0;
 
+      // Update the equation display
       const equationElement = document.getElementById('equation');
       if (equationElement) {
         try {
@@ -501,15 +503,15 @@
           equationElement.textContent = `${m.toFixed(1)}y'' + ${userC.toFixed(1)}y' + ${k.toFixed(1)}y = 0`;
         }
       }
-    }
 
-    function resetSimulation() {
-      updateParameters();
+      // Reset simulation state
       y = y0;
       v = v0;
       t = 0;
       graphData.length = 0;
       isSimulationRunning = true;
+      
+      // Redraw
       drawSpringMass();
       drawGraph();
       hideAlert();
@@ -533,9 +535,18 @@
           { throwOnError: false, displayMode: true }
         );
       }
-      updateParameters();
-      drawSpringMass();
-      drawGraph();
+      
+      // Initialize with input values instead of hardcoded defaults
+      m = parseFloat(document.getElementById('mass').value) || 4;
+      k = parseFloat(document.getElementById('springConstant').value) || 36;
+      const userC = parseFloat(document.getElementById('damping').value) || 0;
+      c = (userC === 0) ? 0.000001 : userC;
+      y0 = parseFloat(document.getElementById('initialDisplacement').value) || 0;
+      v0 = parseFloat(document.getElementById('initialVelocity').value) || 0;
+      y = y0;
+      v = v0;
+
+      resetSimulation();
       animate();
     });
   </script>
