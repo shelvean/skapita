@@ -275,7 +275,7 @@
 
     function isHighlyOscillatory(c_calc) {
       const naturalFrequency = Math.sqrt(k / m);
-      return naturalFrequency > OSCILLATORY_THRESHOLD && c_calc < 1; // Low damping
+      return naturalFrequency > OSCILLATORY_THRESHOLD && c_calc < 5; // Low damping
     }
 
     function updatePhysicsRK4(c_calc) {
