@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -44,7 +43,7 @@ gtag('config','G-5B8PRB2WZT');
 <div class="control-group">
 <label>Differential Equation: y'= </label>
 <input type="text" id="equation" value="-t/y" placeholder="Enter equation"/>
-<button onclick="drawDirectionField()">🔄 Update</button>
+<button onclick="drawDirectionField(true)">🔄 Update</button>
 </div>
 <div class="control-group">
 <label>Horizontal (t) Axis:</label>
@@ -86,7 +85,11 @@ function preprocessEquation(eq) {
              .replace(/(?<!\w)e(?!\w)/g, 'Math.E');
 }
 
-function drawDirectionField() {
+function drawDirectionField(clearSolutionsFlag = false) {
+    if (clearSolutionsFlag) {
+        solutions = [];
+        instruction.style.display = 'block';
+    }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const equation = document.getElementById('equation').value;
     const tMin = parseFloat(document.getElementById('tMin').value);
@@ -184,10 +187,9 @@ function solveODE(slopeFunc, t0, y0, tMin, tMax, yMin, yMax) {
     const points = [];
     let t = t0;
     let y = y0;
-    let prevYpp = 0;  // Previous second derivative
+    let prevYpp = 0;
     let withinBounds = true;
 
-    // Forward integration
     while (t <= tMax && withinBounds) {
         if (y >= yMin && y <= yMax) {
             points.push({t, y});
@@ -197,20 +199,16 @@ function solveODE(slopeFunc, t0, y0, tMin, tMax, yMin, yMax) {
         
         if (Math.abs(y) > 1e6 || isNaN(y)) break;
 
-        // RK4 step with second derivative estimation
         const k1 = step * slopeFunc(t, y);
         const k2 = step * slopeFunc(t + step/2, y + k1/2);
         const k3 = step * slopeFunc(t + step/2, y + k2/2);
         const k4 = step * slopeFunc(t + step, y + k3);
         
-        // Estimate second derivative using finite difference
-        const yp = slopeFunc(t, y);  // First derivative
+        const yp = slopeFunc(t, y);
         const yp_next = slopeFunc(t + step, y + (k1 + 2*k2 + 2*k3 + k4)/6);
-        const ypp = (yp_next - yp) / step;  // Second derivative approximation
+        const ypp = (yp_next - yp) / step;
 
-        // Check for instability (sharp change in second derivative)
-        if (points.length > 2 && Math.abs(ypp - prevYpp) > 1000) {  // Adjust threshold as needed
-            // Remove last two points where instability started
+        if (points.length > 2 && Math.abs(ypp - prevYpp) > 1000) {
             if (points.length >= 2) points.splice(-2, 2);
             break;
         }
@@ -220,7 +218,6 @@ function solveODE(slopeFunc, t0, y0, tMin, tMax, yMin, yMax) {
         prevYpp = ypp;
     }
 
-    // Backward integration
     t = t0 - step;
     y = y0;
     withinBounds = true;
@@ -243,7 +240,7 @@ function solveODE(slopeFunc, t0, y0, tMin, tMax, yMin, yMax) {
         
         const yp = slopeFunc(t, y);
         const yp_next = slopeFunc(t - step, y + (k1 + 2*k2 + 2*k3 + k4)/6);
-        const ypp = (yp - yp_next) / step;  // Note direction change for backward
+        const ypp = (yp - yp_next) / step;
 
         if (backwardPoints.length > 2 && Math.abs(ypp - prevYpp) > 1000) {
             if (backwardPoints.length >= 2) backwardPoints.splice(-2, 2);
@@ -326,9 +323,7 @@ function getAxisStep(min, max) {
 }
 
 function clearSolutions() {
-    solutions = [];
-    drawDirectionField();
-    instruction.style.display = 'block';
+    drawDirectionField(true);
 }
 
 function drawGrid(tMin, tMax, yMin, yMax, xScale, yScale) {
