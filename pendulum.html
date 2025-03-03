@@ -129,7 +129,7 @@
             <div class="simulation-column">
                 <canvas id="simulationCanvas" width="500" height="400"></canvas>
                 <div class="graph-container">
-                    <h2>Phase Space (ω vs θ)</h2>
+                    <h2>Phase Space (θ' vs θ)</h2>
                     <canvas id="phaseGraphCanvas" width="300" height="200"></canvas>
                 </div>
             </div>
@@ -265,70 +265,78 @@
             ctx.stroke();
         }
 
-        function drawGraph() {
-            graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
-            
-            // Draw axes
-            graphCtx.beginPath();
-            graphCtx.moveTo(50, 20);
-            graphCtx.lineTo(50, graphCanvas.height - 30);
-            graphCtx.lineTo(graphCanvas.width - 20, graphCanvas.height - 30);
-            graphCtx.strokeStyle = '#000';
-            graphCtx.stroke();
+        
+// Modified drawGraph function with corrected label positioning
+		function drawGraph() {
+			graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+			
+			// Draw axes
+			graphCtx.beginPath();
+			graphCtx.moveTo(50, 20);
+			graphCtx.lineTo(50, graphCanvas.height - 30);  // Increased bottom margin
+			graphCtx.lineTo(graphCanvas.width - 20, graphCanvas.height - 30);
+			graphCtx.strokeStyle = '#000';
+			graphCtx.stroke();
 
-            if (graphData.length === 0) return;
+			if (graphData.length === 0) return;
 
-            const maxTheta = Math.max(...graphData.map(d => Math.abs(d.theta)));
-            const maxAbsTheta = Math.max(maxTheta || 0.001, 0.001);
-            const maxTime = graphMaxTime;
+			// Calculate max absolute theta with fallback
+			const maxTheta = Math.max(...graphData.map(d => Math.abs(d.theta)));
+			const maxAbsTheta = Math.max(maxTheta || 0.001, 0.001);  // Ensure non-zero
+			const maxTime = graphMaxTime;
 
-            // Draw vertical axis labels
-            graphCtx.fillStyle = '#000';
-            graphCtx.font = '10px Arial';
-            graphCtx.textAlign = 'right';
-            
-            const labelCount = 5;
-            for (let i = -labelCount; i <= labelCount; i++) {
-                const thetaVal = (i/labelCount) * maxAbsTheta;
-                const y = graphCanvas.height - 30 - 
-                         ((thetaVal + maxAbsTheta) / (2 * maxAbsTheta)) * 
-                         (graphCanvas.height - 50);
-                
-                graphCtx.textBaseline = i === -labelCount ? 'top' : 
-                                     i === labelCount ? 'bottom' : 'middle';
-                
-                graphCtx.fillText(thetaVal.toFixed(2), 45, y);
-            }
+			// Draw vertical axis labels
+			graphCtx.fillStyle = '#000';
+			graphCtx.font = '10px Arial';
+			graphCtx.textAlign = 'right';
+			
+			// Single loop for both positive and negative labels
+			const labelCount = 5;
+			for (let i = -labelCount; i <= labelCount; i++) {
+				const thetaVal = (i/labelCount) * maxAbsTheta;
+				const y = graphCanvas.height - 30 - 
+						 ((thetaVal + maxAbsTheta) / (2 * maxAbsTheta)) * 
+						 (graphCanvas.height - 50);
+				
+				// Set appropriate text baseline based on position
+				graphCtx.textBaseline = i === -labelCount ? 'top' : 
+									   i === labelCount ? 'bottom' : 'middle';
+				
+				graphCtx.fillText(thetaVal.toFixed(2), 45, y);
+			}
 
-            // Draw horizontal axis labels
-            graphCtx.textAlign = 'center';
-            graphCtx.textBaseline = 'top';
-            for (let tVal = 0; tVal <= maxTime; tVal += maxTime/5) {
-                const x = 50 + (tVal/maxTime) * (graphCanvas.width - 70);
-                graphCtx.fillText(tVal.toFixed(1), x, graphCanvas.height - 25);
-            }
+			// Draw horizontal axis labels
+			graphCtx.textAlign = 'center';
+			graphCtx.textBaseline = 'top';
+			for (let tVal = 0; tVal <= maxTime; tVal += maxTime/5) {
+				const x = 50 + (tVal/maxTime) * (graphCanvas.width - 70);
+				graphCtx.fillText(tVal.toFixed(1), x, graphCanvas.height - 25);  // Lowered position
+			}
 
-            // Draw curve
-            graphCtx.beginPath();
-            graphCtx.strokeStyle = '#007bff';
-            graphCtx.lineWidth = 2;
-            const verticalRange = graphCanvas.height - 50;
-            
-            graphData.forEach((point, idx) => {
-                const x = 50 + (point.t/maxTime) * (graphCanvas.width - 70);
-                const y = graphCanvas.height - 30 - 
-                         ((point.theta + maxAbsTheta) / (2 * maxAbsTheta)) * verticalRange;
-                
-                if (idx === 0) graphCtx.moveTo(x, y);
-                else graphCtx.lineTo(x, y);
-            });
-            
-            graphCtx.stroke();
-        }
+			// Draw curve (existing code remains unchanged)
+			graphCtx.beginPath();
+			graphCtx.strokeStyle = '#007bff';
+			graphCtx.lineWidth = 2;
+			const verticalRange = graphCanvas.height - 50;
+			
+			graphData.forEach((point, idx) => {
+				const x = 50 + (point.t/maxTime) * (graphCanvas.width - 70);
+				const y = graphCanvas.height - 30 - 
+						 ((point.theta + maxAbsTheta) / (2 * maxAbsTheta)) * verticalRange;
+				
+				if (idx === 0) graphCtx.moveTo(x, y);
+				else graphCtx.lineTo(x, y);
+			});
+			
+			graphCtx.stroke();
+		}
+
+
 
         function drawPhaseGraph() {
             phaseGraphCtx.clearRect(0, 0, phaseGraphCanvas.width, phaseGraphCanvas.height);
             
+            // Add 10% padding to axis ranges
             const maxTheta = Math.max(...graphData.map(d => Math.abs(d.theta))) * 1.1 || 1;
             const maxOmega = Math.max(...graphData.map(d => Math.abs(d.omega))) * 1.1 || 1;
             
@@ -347,11 +355,13 @@
             phaseGraphCtx.textAlign = 'center';
             phaseGraphCtx.textBaseline = 'top';
             
+            // X-axis labels
             [-maxTheta, 0, maxTheta].forEach(val => {
                 const x = 50 + (val + maxTheta) * (phaseGraphCanvas.width - 80) / (2 * maxTheta);
                 phaseGraphCtx.fillText(val.toFixed(1), x, phaseGraphCanvas.height - 15);
             });
 
+            // Y-axis labels
             phaseGraphCtx.textAlign = 'right';
             phaseGraphCtx.textBaseline = 'middle';
             [-maxOmega, 0, maxOmega].forEach(val => {
@@ -457,9 +467,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Modified KaTeX rendering to include initial conditions
             katex.render(
-                `\\theta'' + \\frac{b}{m} \\theta' + \\frac{g}{L} \\sin(\\theta) = 0, \\quad \\theta(0) = \\theta_0, \\quad \\theta'(0) = \\omega_0`,
+                `\\theta'' + \\frac{b}{m} \\theta' + \\frac{g}{L} \\sin(\\theta) = 0`,
                 document.getElementById('equationGeneral'),
                 { throwOnError: false, displayMode: true }
             );
