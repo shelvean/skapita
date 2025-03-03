@@ -244,12 +244,11 @@
     let y = y0;
     let v = v0;
     let t = 0;
-    const dt = 0.04;    // Time step (seconds)
+    const dt = 0.05;    // Time step (seconds)
     const graphMaxTime = 30; // Seconds
     let isSimulationRunning = true;
     const graphData = [];
     const STIFF_THRESHOLD = 5; // Threshold for Backward Euler
-    const OSCILLATORY_THRESHOLD = 5; // Threshold for Verlet-Störmer (sqrt(k/m))
 
     // Spring visualization parameters
     const springLength = 200;
@@ -271,24 +270,6 @@
     function isStiffSystem(c_calc) {
       const discriminant = calculateDiscriminant(c_calc);
       return discriminant > STIFF_THRESHOLD && discriminant > 0;
-    }
-
-    function isHighlyOscillatory(c_calc) {
-      const naturalFrequency = Math.sqrt(k / m);
-      return naturalFrequency > OSCILLATORY_THRESHOLD && c_calc < 1; // Low damping
-    }
-
-    function updatePhysicsRK4(c_calc) {
-      const k1 = calculateDerivatives(y, v, c_calc);
-      const k2 = calculateDerivatives(y + k1.y * dt / 2, v + k1.v * dt / 2, c_calc);
-      const k3 = calculateDerivatives(y + k2.y * dt / 2, v + k2.v * dt / 2, c_calc);
-      const k4 = calculateDerivatives(y + k3.y * dt, v + k3.v * dt, c_calc);
-
-      const nextY = y + (k1.y + 2 * k2.y + 2 * k3.y + k4.y) * dt / 6;
-      const nextV = v + (k1.v + 2 * k2.v + 2 * k3.v + k4.v) * dt / 6;
-
-      y = isNaN(nextY) ? y : nextY;
-      v = isNaN(nextV) ? v : nextV;
     }
 
     function updatePhysicsBackwardEuler(c_calc) {
@@ -317,10 +298,8 @@
 
       if (isStiffSystem(c_calc)) {
         updatePhysicsBackwardEuler(c_calc);
-      } else if (isHighlyOscillatory(c_calc)) {
-        updatePhysicsVerletStormer(c_calc);
       } else {
-        updatePhysicsRK4(c_calc);
+        updatePhysicsVerletStormer(c_calc);
       }
 
       t += dt;
