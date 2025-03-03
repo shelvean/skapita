@@ -155,11 +155,11 @@
             </div>
             <div class="input-container">
                 <div class="latex-label" id="g-label"></div>
-                <div class="input-group" style="width: 100%;"><input type="text" id="gInput" value="-x+0.4*(1-x^2)*y" /></div>
+                <div class="input-group" style="width: 100%;"><input type="text" id="gInput" value="-0.1*y-sin(x)" /></div>
             </div>
             <div class="input-container">
-                <div class="input-group"><label for="xMin">X Min:</label><input type="number" id="xMin" value="-6" /></div>
-                <div class="input-group"><label for="xMax">X Max:</label><input type="number" id="xMax" value="6" /></div>
+                <div class="input-group"><label for="xMin">X Min:</label><input type="number" id="xMin" value="-10" /></div>
+                <div class="input-group"><label for="xMax">X Max:</label><input type="number" id="xMax" value="10" /></div>
             </div>
             <div class="input-container">
                 <div class="input-group"><label for="yMin">Y Min:</label><input type="number" id="yMin" value="-5" /></div>
@@ -244,29 +244,24 @@
                     instruction.style.display = "block";
                 }
             }
+           
+           function drawTrajectory(points, xMin, xMax, yMin, yMax) {
+    ctx.strokeStyle = "#B7410E";  // "#353839";  // Dark gray color for trajectories
+    ctx.lineWidth = 1.5;          // Slightly thicker lines for solidity
+    ctx.beginPath();              // Start a single path
 
-            function drawTrajectory(points, xMin, xMax, yMin, yMax) {
-                const totalPoints = points.length;
-                points.forEach((point, index) => {
-                    if (index === 0) return;
-                    
-                    // Jet colormap interpolation
-                    
-                    ctx.strokeStyle = "#2f0909";
-                    
-                    const prev = points[index-1];
-                    const canvasX = ((point.x - xMin)/(xMax-xMin))*canvas.width;
-                    const canvasY = ((yMax-point.y)/(yMax-yMin))*canvas.height;
-                    const prevX = ((prev.x - xMin)/(xMax-xMin))*canvas.width;
-                    const prevY = ((yMax-prev.y)/(yMax-yMin))*canvas.height;
+    points.forEach((point, index) => {
+        const canvasX = ((point.x - xMin) / (xMax - xMin)) * canvas.width;
+        const canvasY = ((yMax - point.y) / (yMax - yMin)) * canvas.height;
+        if (index === 0) {
+            ctx.moveTo(canvasX, canvasY);  // Move to the starting point
+        } else {
+            ctx.lineTo(canvasX, canvasY);  // Draw a line to the next point
+        }
+    });
 
-                   
-                    ctx.beginPath();
-                    ctx.moveTo(prevX, prevY);
-                    ctx.lineTo(canvasX, canvasY);
-                    ctx.stroke();
-                });
-            }
+    ctx.stroke();  // Render the entire trajectory at once
+}
 
             function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
                 const dt = 0.01;
@@ -314,49 +309,6 @@
                 return points;
             }
 
-            function drawArrow(fromX, fromY, toX, toY) {
-                const angle = Math.atan2(toY - fromY, toX - fromX);
-                ctx.beginPath();
-                ctx.moveTo(fromX, fromY);
-                ctx.lineTo(toX, toY);
-                ctx.stroke();
-                const arrowSize = 5;
-                ctx.beginPath();
-                ctx.moveTo(toX, toY);
-                ctx.lineTo(toX - arrowSize * Math.cos(angle - Math.PI/6), 
-                          toY - arrowSize * Math.sin(angle - Math.PI/6));
-                ctx.moveTo(toX, toY);
-                ctx.lineTo(toX - arrowSize * Math.cos(angle + Math.PI/6), 
-                          toY - arrowSize * Math.sin(angle + Math.PI/6));
-                ctx.stroke();
-            }
-
-            function drawVectorField(f, g, xMin, xMax, yMin, yMax, arrowCount) {
-                ctx.strokeStyle = "#007BFF";
-                ctx.lineWidth = 0.5;
-                const xStep = (xMax - xMin)/arrowCount;
-                const yStep = (yMax - yMin)/arrowCount;
-
-                for (let x = xMin; x <= xMax; x += xStep) {
-                    for (let y = yMin; y <= yMax; y += yStep) {
-                        try {
-                            const dx = math.evaluate(f, { x, y, t: 0 });
-                            const dy = math.evaluate(g, { x, y, t: 0 });
-                            const startX = ((x - xMin)/(xMax - xMin)) * canvas.width;
-                            const startY = canvas.height - ((y - yMin)/(yMax - yMin)) * canvas.height;
-                            const maxLength = 30;
-                            const length = Math.sqrt(dx*dx + dy*dy);
-                            const scale = length === 0 ? 0 : Math.min(20, maxLength/length);
-                            const endX = startX + dx * scale;
-                            const endY = startY - dy * scale;
-                            drawArrow(startX, startY, endX, endY);
-                        } catch (e) {
-                            console.error("Error evaluating function:", e);
-                        }
-                    }
-                }
-            }
-
             function drawAxes(xMin, xMax, yMin, yMax) {
                 ctx.strokeStyle = "#95a5a6";
                 ctx.lineWidth = 1;
@@ -393,6 +345,76 @@
                     document.getElementById("plot-container").appendChild(labelEl);
                     scaleLabels.push(labelEl);
                 });
+            }
+
+            function drawVectorField(f, g, xMin, xMax, yMin, yMax, arrowCount) {
+                ctx.strokeStyle = "#007BFF";
+                ctx.lineWidth = 1.0;
+                const xStep = (xMax - xMin) / arrowCount;
+                const yStep = (yMax - yMin) / arrowCount;
+
+                // Compute maximum magnitude for normalization
+                let maxMag = 0;
+                for (let x = xMin; x <= xMax; x += xStep) {
+                    for (let y = yMin; y <= yMax; y += yStep) {
+                        try {
+                            const dx = math.evaluate(f, { x, y, t: 0 });
+                            const dy = math.evaluate(g, { x, y, t: 0 });
+                            const mag = Math.sqrt(dx * dx + dy * dy);
+                            maxMag = Math.max(maxMag, mag);
+                        } catch (e) {
+                            console.error("Error evaluating function:", e);
+                        }
+                    }
+                }
+
+                // Scale arrows based on plot width (units='width')
+                const arrowScale = 0.05 * canvas.width / (maxMag > 0 ? maxMag : 1);
+
+                for (let x = xMin; x <= xMax; x += xStep) {
+                    for (let y = yMin; y <= yMax; y += yStep) {
+                        try {
+                            const dx = math.evaluate(f, { x, y, t: 0 });
+                            const dy = math.evaluate(g, { x, y, t: 0 });
+                            const startX = ((x - xMin) / (xMax - xMin)) * canvas.width;
+                            const startY = canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height;
+                            const u = dx * arrowScale;
+                            const v = -dy * arrowScale; // Negate v for upward y-direction
+
+                            drawArrow(ctx, startX, startY, startX + u, startY + v);
+                        } catch (e) {
+                            console.error("Error evaluating function:", e);
+                        }
+                    }
+                }
+            }
+
+            function drawArrow(ctx, x1, y1, x2, y2) {
+                const headLength = 5;
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const angle = Math.atan2(dy, dx);
+
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = '#007BFF';
+                ctx.lineWidth = 1.0;
+                ctx.stroke();
+
+                // Arrowhead
+                ctx.beginPath();
+                ctx.moveTo(x2, y2);
+                ctx.lineTo(
+                    x2 - headLength * Math.cos(angle - Math.PI / 6),
+                    y2 - headLength * Math.sin(angle - Math.PI / 6)
+                );
+                ctx.moveTo(x2, y2);
+                ctx.lineTo(
+                    x2 - headLength * Math.cos(angle + Math.PI / 6),
+                    y2 - headLength * Math.sin(angle + Math.PI / 6)
+                );
+                ctx.stroke();
             }
 
             function clearTrajectories() {
