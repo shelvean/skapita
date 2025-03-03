@@ -76,14 +76,20 @@ const SEGMENT_LENGTH = 15;
 const GRID_STEP = 20;
 const PADDING = 20;
 let solutions = [];
-let hue = 0;
+let colorIndex = 0;
+
+const DARK_COLORS = [
+  [0,0,0], [47,79,79], [61,12,2],
+  [112,66,65], [50,23,77], [86,3,25],
+  [0,0,54], [128,0,128], [106,90,205],
+  [111,0,255], [255,69,0], [160,82,45],
+  [0,0,205]
+];
 
 function preprocessEquation(eq) {
     let processed = eq;
-    // Replace standard math functions with Math.* equivalents first
     processed = processed.replace(/\b(sin|cos|tan|sinh|cosh|tanh|coth|sech|csch|asin|acos|atan|acot|asec|acsc|asinh|acosh|atanh|acoth|asech|acsch|exp|log|log10|sqrt|abs|ceil|floor|round|sign|max|min)\b/gi, 'Math.$1');
     
-    // Handle reciprocal trigonometric functions with different syntax forms
     const recipFuncs = [
         {name: 'sec', replacement: '1/Math.cos'},
         {name: 'csc', replacement: '1/Math.sin'},
@@ -91,24 +97,18 @@ function preprocessEquation(eq) {
     ];
 
     recipFuncs.forEach(func => {
-        // Handle parentheses: sec(...), Sec(...), SEC(...)
         processed = processed.replace(new RegExp(`\\b${func.name}\\s*\\(([^)]+)\\)`, 'gi'), 
             `${func.replacement}($1)`);
-        
-        // Handle space-separated: sec x, Sec y, SEC t
         processed = processed.replace(new RegExp(`\\b${func.name}\\s+([a-zA-Z0-9]+)`, 'gi'),
             `${func.replacement}($1)`);
     });
 
-    // Handle other substitutions
     processed = processed.replace(/\^/g, '**')
         .replace(/\bpi\b/gi, 'Math.PI')
         .replace(/(?<!\w)e(?!\w)/g, 'Math.E');
 
     return processed;
 }
-
-
 
 function drawDirectionField(clearSolutionsFlag = false) {
     if (clearSolutionsFlag) {
@@ -136,10 +136,9 @@ function drawDirectionField(clearSolutionsFlag = false) {
                 const t = tMin + (px - PADDING) / xScale;
                 const y = yMin + (canvas.height - PADDING - py) / yScale;
                 try {
-                    if (y === 0 && equation.includes('/y')) continue; // Avoid division by zero for default case
+                    if (y === 0 && equation.includes('/y')) continue;
                     const slope = slopeFunc(t, y);
-                    console.log(`t: ${t}, y: ${y}, slope: ${slope}`); // Debug slope values
-                    if (isNaN(slope) || !isFinite(slope)) continue; // Skip invalid slopes
+                    if (isNaN(slope) || !isFinite(slope)) continue;
                     const angle = Math.atan(-slope * aspectRatio);
                     const dx = SEGMENT_LENGTH * Math.cos(angle);
                     const dy = SEGMENT_LENGTH * Math.sin(angle);
@@ -302,8 +301,14 @@ canvas.addEventListener('click', (e) => {
         const processedEquation = preprocessEquation(equation);
         const slopeFunc = new Function('t', 'y', `return ${processedEquation}`);
         const solutionPoints = solveODE(slopeFunc, t, yVal, tMin, tMax, yMin, yMax);
-        solutions.push({points: solutionPoints, color: `hsl(${hue}, 80%, 50%)`});
-        hue = (hue + 60) % 360;
+        
+        const [r, g, b] = DARK_COLORS[colorIndex % DARK_COLORS.length];
+        solutions.push({
+            points: solutionPoints,
+            color: `rgb(${r},${g},${b})`
+        });
+        colorIndex++;
+        
         drawDirectionField();
         instruction.style.display = 'none';
     } catch (e) {
