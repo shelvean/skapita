@@ -79,11 +79,36 @@ let solutions = [];
 let hue = 0;
 
 function preprocessEquation(eq) {
-    return eq.replace(/(sin|cos|tan|exp|log|sqrt|abs|asin|acos|atan)/gi, 'Math.$1')
-             .replace(/\^/g, '**')
-             .replace(/\bpi\b/gi, 'Math.PI')
-             .replace(/(?<!\w)e(?!\w)/g, 'Math.E');
+    let processed = eq;
+    // Replace standard math functions with Math.* equivalents first
+    processed = processed.replace(/\b(sin|cos|tan|sinh|cosh|tanh|coth|sech|csch|asin|acos|atan|acot|asec|acsc|asinh|acosh|atanh|acoth|asech|acsch|exp|log|log10|sqrt|abs|ceil|floor|round|sign|max|min)\b/gi, 'Math.$1');
+    
+    // Handle reciprocal trigonometric functions with different syntax forms
+    const recipFuncs = [
+        {name: 'sec', replacement: '1/Math.cos'},
+        {name: 'csc', replacement: '1/Math.sin'},
+        {name: 'cot', replacement: '1/Math.tan'}
+    ];
+
+    recipFuncs.forEach(func => {
+        // Handle parentheses: sec(...), Sec(...), SEC(...)
+        processed = processed.replace(new RegExp(`\\b${func.name}\\s*\\(([^)]+)\\)`, 'gi'), 
+            `${func.replacement}($1)`);
+        
+        // Handle space-separated: sec x, Sec y, SEC t
+        processed = processed.replace(new RegExp(`\\b${func.name}\\s+([a-zA-Z0-9]+)`, 'gi'),
+            `${func.replacement}($1)`);
+    });
+
+    // Handle other substitutions
+    processed = processed.replace(/\^/g, '**')
+        .replace(/\bpi\b/gi, 'Math.PI')
+        .replace(/(?<!\w)e(?!\w)/g, 'Math.E');
+
+    return processed;
 }
+
+
 
 function drawDirectionField(clearSolutionsFlag = false) {
     if (clearSolutionsFlag) {
@@ -99,7 +124,7 @@ function drawDirectionField(clearSolutionsFlag = false) {
     
     try {
         const processedEquation = preprocessEquation(equation);
-        const slopeFunc = new Function('t', 'y', `return ${processedEquation};`);
+        const slopeFunc = new Function('t', 'y', `return ${processedEquation}`);
         const xScale = (canvas.width - 2 * PADDING) / (tMax - tMin);
         const yScale = (canvas.height - 2 * PADDING) / (yMax - yMin);
         const aspectRatio = yScale / xScale;
@@ -111,8 +136,10 @@ function drawDirectionField(clearSolutionsFlag = false) {
                 const t = tMin + (px - PADDING) / xScale;
                 const y = yMin + (canvas.height - PADDING - py) / yScale;
                 try {
-                    if (y === 0) continue;
+                    if (y === 0 && equation.includes('/y')) continue; // Avoid division by zero for default case
                     const slope = slopeFunc(t, y);
+                    console.log(`t: ${t}, y: ${y}, slope: ${slope}`); // Debug slope values
+                    if (isNaN(slope) || !isFinite(slope)) continue; // Skip invalid slopes
                     const angle = Math.atan(-slope * aspectRatio);
                     const dx = SEGMENT_LENGTH * Math.cos(angle);
                     const dy = SEGMENT_LENGTH * Math.sin(angle);
@@ -122,7 +149,9 @@ function drawDirectionField(clearSolutionsFlag = false) {
                     const endY = py + dy/2;
                     const arrowColor = slope < 0 ? '#FA8128' : '#48AAAD';
                     drawArrow(ctx, startX, startY, endX, endY, 1, arrowColor);
-                } catch (e) {}
+                } catch (e) {
+                    console.log(`Error at t: ${t}, y: ${y} - ${e.message}`);
+                }
             }
         }
         
@@ -271,14 +300,14 @@ canvas.addEventListener('click', (e) => {
     try {
         const equation = document.getElementById('equation').value;
         const processedEquation = preprocessEquation(equation);
-        const slopeFunc = new Function('t', 'y', `return ${processedEquation};`);
+        const slopeFunc = new Function('t', 'y', `return ${processedEquation}`);
         const solutionPoints = solveODE(slopeFunc, t, yVal, tMin, tMax, yMin, yMax);
         solutions.push({points: solutionPoints, color: `hsl(${hue}, 80%, 50%)`});
         hue = (hue + 60) % 360;
         drawDirectionField();
         instruction.style.display = 'none';
     } catch (e) {
-        alert("Could not compute solution curve");
+        alert("Could not compute solution curve: " + e.message);
     }
 });
 
