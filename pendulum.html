@@ -3,7 +3,6 @@
 <head>
     <meta name="description" content="Simple Pendulum Simulation Second Order Differential Equation, Damping, Spring Constant">
     <meta name="keywords" content="Pendulum, Simulation, Damping, Spring Constant, Second Order, Differential Equations">
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -26,296 +25,194 @@
         }
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             margin: 0;
             padding: 30px;
             background: var(--background);
             color: var(--text);
             min-height: 100vh;
+            display: flex;
             justify-content: center;
+            align-items: center;
         }
         .main-container {
-            max-width: 1000px;
+            max-width: 1200px;
             width: 100%;
             margin: 0 auto;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        h1 {
-            font-size: 1.5rem;
-            color: black;
-            margin-bottom: 0.5rem;
-        }
-        #equationTitle {
-            margin-bottom: 0.5rem;
         }
         .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+        .simulation-column {
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 100%;
+            flex-direction: column;
+            gap: 30px;
         }
         .controls-wrapper {
-            flex: 1;
-            min-width: 250px;
-            max-width: 350px;
-        }
-        .controls {
-            width: 100%;
-            padding: 0.8rem;
             background: rgba(255,255,255,0.9);
             border: 1px solid rgba(0,0,0,0.1);
             border-radius: 14px;
+            padding: 1.5rem;
             box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        .controls .row1, .controls .row2 {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
         }
         canvas {
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             border: 2px solid var(--surface);
             background: white;
-            flex: 0 0 auto;
         }
         #simulationCanvas {
-            width: calc(500px*1.0);
+            width: 100%;
             height: 400px;
-            max-width: 100%;
-        }
-        .controls input {
-            width: 40px;
-            padding: 0.3rem;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            background: white;
-            color: var(--text);
-            font-size: 0.8rem;
-            transition: all 0.2s ease;
-        }
-        .controls input:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px var(--primary);
-            background: rgba(255,255,255,0.15);
-        }
-        .controls label {
-            color: var(--secondary);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.8rem;
-        }
-        button {
-            padding: 0.5rem 0.8rem;
-            border: none;
-            border-radius: 8px;
-            background: var(--primary);
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 0.8rem;
-        }
-        button:hover {
-            background: var(--accent);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
-        }
-        #equation {
-            font-size: 1em;
-            margin: 0.5rem 0;
-            padding: 0.5rem;
-            background: rgba(233,236,239,0.6);
-            color: var(--primary);
-            border-radius: 8px;
-            font-family: monospace;
-            text-align: center;
         }
         .graph-container {
-            width: 100%;
-            max-width: 350px;
-            margin-top: 10px;
             background: white;
             border: 1px solid var(--surface);
             border-radius: 16px;
             padding: 1rem;
             box-shadow: 0 4px 20px rgba(0,0,0,0.06);
         }
-        .graph-container h2 {
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .controls label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.9rem;
             color: var(--secondary);
-            margin-bottom: 1rem;
-            font-weight: 600;
+        }
+        .controls input {
+            width: 80px;
+            padding: 0.4rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
             font-size: 0.9rem;
         }
-        @media (max-width: 840px) {
-            .content-wrapper {
-                flex-direction: column;
-                align-items: center;
-            }
-            .controls-wrapper, #simulationCanvas {
-                width: 100%;
-            }
-            h1 {
-                font-size: 1.2rem;
-            }
+        button {
+            padding: 0.6rem 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-        .px-8 { padding-left: 2rem; padding-right: 2rem; }
-        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-        .bg-red-400 { background-color: #f87171; }
-        .text-white { color: white; }
-        .flex { display: flex; }
-        .justify-between { justify-content: space-between; }
-        .rounded { border-radius: 0.25rem; }
-        .items-center { align-items: center; }
-        .mr-6 { margin-right: 1.5rem; }
-        .h-7, .w-7 { height: 1.75rem; width: 1.75rem; }
-        .h-6, .w-6 { height: 1.5rem; width: 1.5rem; }
-        .text-red-100 { color: #fee2e2; }
-        .hover\:text-white:hover { color: white; }
-        body {
-            transform: scale(1.2);
-            transform-origin: top left;
-            width: 83.33%;
-            height: 83.33vh;
-            overflow-x: hidden;
-            min-height: 83.33vh;
+        button:hover {
+            background: var(--accent);
+            transform: translateY(-1px);
         }
-        .main-container {
-            transform: scale(1);
-            width: 100%;
-            max-width: 1000px;
+        .alert {
+            padding: 1rem;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        .graph-label {
+            font-size: 0.8rem;
+            fill: var(--text);
         }
     </style>
 </head>
 <body>
     <div class="main-container">
-        <h1 id="equationTitle">Damped Pendulum Oscillator</h1>
-        <div id="equationGeneral">
-            \[
-            \theta'' + \frac{b}{m} \theta' + \frac{g}{L} \sin(\theta) = 0, \quad 
-            \theta(0) = \theta_0, \quad \theta'(0) = \omega_0
-            \]
-        </div>
-        <p id="equation"></p>
+        <h1>Damped Pendulum Oscillator</h1>
+        <div id="equationGeneral"></div>
         <div class="content-wrapper">
+            <div class="simulation-column">
+                <canvas id="simulationCanvas" width="500" height="400"></canvas>
+                <div class="graph-container">
+                    <h2>Phase Space (ω vs θ)</h2>
+                    <canvas id="phaseGraphCanvas" width="300" height="200"></canvas>
+                </div>
+            </div>
             <div class="controls-wrapper">
                 <div class="controls">
-                    <div class="row1">
-                        <label for="length">Length (L) [m]:</label>
-                        <input type="number" id="length" value="2" min="0.1" max="10" step="0.1">
-                        <label for="initialAngle">Initial Angle (θ₀) [rad]:</label>
-                        <input type="number" id="initialAngle" value="1.4" step="0.01" min="-1.57" max="1.57">
-                        <label for="initialVelocity">Angular Velocity (ω₀) [rad/s]:</label>
-                        <input type="number" id="initialVelocity" value="1" step="0.1">
+                    <div>
+                        <label for="length">Length (L) [m]:<input type="number" id="length" value="2" min="0.1" step="0.1"></label>
+                        <label for="initialAngle">Initial Angle (θ₀) [rad]:<input type="number" id="initialAngle" value="1.4" step="0.01"></label>
+                        <label for="initialVelocity">Angular Velocity (ω₀) [rad/s]:<input type="number" id="initialVelocity" value="1" step="0.1"></label>
                     </div>
-                    <div class="row2">
-                        <label for="mass">Mass (m) [kg]:</label>
-                        <input type="number" id="mass" value="1" step="0.1">
-                        <label for="damping">Damping (b) [kg/s]:</label>
-                        <input type="number" id="damping" value="0.15" step="0.01">
-                        <button onclick="resetSimulation()">Reset</button>
+                    <div>
+                        <label for="mass">Mass (m) [kg]:<input type="number" id="mass" value="1" step="0.1"></label>
+                        <label for="damping">Damping (b) [kg/s]:<input type="number" id="damping" value="0.15" step="0.01"></label>
+                        <button onclick="resetSimulation()" style="margin-top: 1rem;">Reset Simulation</button>
                     </div>
                 </div>
                 <div class="graph-container">
-                    <h2>Angular Displacement (θ) vs Time (t)</h2>
+                    <h2>Angular Displacement vs Time</h2>
                     <canvas id="graphCanvas" width="350" height="200"></canvas>
                 </div>
             </div>
-            <canvas id="simulationCanvas" width="500" height="400"></canvas>
         </div>
+        <div id="alertContainer" class="alert" style="display: none;"></div>
     </div>
-    <div id="alertContainer" style="display: none;"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script>
         const canvas = document.getElementById('simulationCanvas');
         const ctx = canvas.getContext('2d');
         const graphCanvas = document.getElementById('graphCanvas');
         const graphCtx = graphCanvas.getContext('2d');
-        const g = 9.81; // m/s²
-        // Simulation parameters
-        let L = 1;         // Length (meters)
-        let theta0 = 0.3;  // Initial angle (radians)
-        let omega0 = 0;    // Initial angular velocity (rad/s)
-        let m = 1;         // Mass (kg)
-        let b = 0.1;       // Damping coefficient (kg/s)
-        // Simulation state
-        let theta = theta0;
-        let omega = omega0;
-        let t = 0;
-        const dt = 0.03;       // Time step (seconds)
-        const graphMaxTime = 30; // Seconds
+        const phaseGraphCanvas = document.getElementById('phaseGraphCanvas');
+        const phaseGraphCtx = phaseGraphCanvas.getContext('2d');
+        const g = 9.81;
+        
+        let L = 2, theta0 = 1.4, omega0 = 1, m = 1, b = 0.15;
+        let theta = theta0, omega = omega0, t = 0;
+        const dt = 0.03, graphMaxTime = 30;
         let isSimulationRunning = true;
         const graphData = [];
-        let useBackwardEuler = false; // Flag to decide solver
+        let useBackwardEuler = false;
 
         function calculateDerivatives(theta, omega) {
             const alpha = (-b * omega / m) - (g / L) * Math.sin(theta);
-            return {
-                theta: omega,
-                omega: alpha
-            };
+            return { theta: omega, omega: alpha };
         }
 
         function backwardEulerStep(theta, omega, dt) {
-            const denom = 1 + dt * (b / m); // Precompute denominator
-            const F = (theta_next) => {
-                return (
-                    theta_next -
-                    theta -
-                    dt * (omega - (dt * (g / L) * Math.sin(theta_next))) / denom
-                );
-            };
-            const F_prime = (theta_next) => {
-                return 1 + (dt * dt * (g / L) * Math.cos(theta_next)) / denom;
-            };
-            let theta_next = theta; // Initial guess
+            const denom = 1 + dt * (b / m);
+            const F = (theta_next) => theta_next - theta - dt * (omega - (dt * (g / L) * Math.sin(theta_next))) / denom;
+            const F_prime = (theta_next) => 1 + (dt * dt * (g / L) * Math.cos(theta_next)) / denom;
+            
+            let theta_next = theta;
             const tolerance = 1e-6;
             const maxIterations = 100;
+            
             for (let i = 0; i < maxIterations; i++) {
                 const f_val = F(theta_next);
                 const f_prime_val = F_prime(theta_next);
-                if (Math.abs(f_prime_val) < 1e-12) {
-                    console.warn("Derivative too small in Newton's method");
-                    break;
-                }
+                if (Math.abs(f_prime_val) < 1e-12) break;
                 const delta = f_val / f_prime_val;
                 theta_next -= delta;
-                if (Math.abs(delta) < tolerance) {
-                    break;
-                }
+                if (Math.abs(delta) < tolerance) break;
             }
+            
             const omega_next = (omega - (dt * (g / L) * Math.sin(theta_next))) / denom;
             return { theta: theta_next, omega: omega_next };
         }
 
         function updatePhysics() {
             if (!isSimulationRunning) return;
-            // Check angle limits
+            
             if (Math.abs(theta) > Math.PI / 2) {
                 isSimulationRunning = false;
                 showAlert("Pendulum angle exceeded π/2 radians! Simulation stopped.");
                 return;
             }
+
             if (useBackwardEuler) {
                 const nextState = backwardEulerStep(theta, omega, dt);
                 theta = nextState.theta;
                 omega = nextState.omega;
             } else {
-                // RK4 integration
                 const k1 = calculateDerivatives(theta, omega);
                 const k2 = calculateDerivatives(
                     theta + (k1.theta * dt) / 2,
@@ -329,11 +226,13 @@
                     theta + k3.theta * dt,
                     omega + k3.omega * dt
                 );
+                
                 theta += (k1.theta + 2 * k2.theta + 2 * k3.theta + k4.theta) * dt / 6;
                 omega += (k1.omega + 2 * k2.omega + 2 * k3.omega + k4.omega) * dt / 6;
             }
+
             t += dt;
-            graphData.push({ t, theta });
+            graphData.push({ t, theta, omega });
             if (t > graphMaxTime) isSimulationRunning = false;
         }
 
@@ -343,78 +242,151 @@
             const pivotY = 60;
             const scale = 120;
             const bobRadius = 18;
+            
             ctx.fillStyle = '#333';
             ctx.fillRect(pivotX - 60, 0, 120, 60);
+            
             const visualLength = L * scale;
             const bobX = pivotX + visualLength * Math.sin(theta);
             const bobY = pivotY + visualLength * Math.cos(theta);
+            
             ctx.beginPath();
             ctx.moveTo(pivotX, pivotY);
             ctx.lineTo(bobX, bobY);
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 4;
             ctx.stroke();
+            
             ctx.beginPath();
             ctx.arc(bobX, bobY, bobRadius, 0, Math.PI * 2);
             ctx.fillStyle = '#8B4513';
             ctx.fill();
             ctx.strokeStyle = '#000';
             ctx.stroke();
-            if (Math.abs(theta) > Math.PI - 0.1) {
-                ctx.beginPath();
-                ctx.moveTo(pivotX - 60, 60);
-                ctx.lineTo(bobX, bobY - bobRadius);
-                ctx.strokeStyle = '#ff000055';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            }
         }
 
         function drawGraph() {
             graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+            
+            // Draw axes
             graphCtx.beginPath();
             graphCtx.moveTo(50, 20);
-            graphCtx.lineTo(50, graphCanvas.height - 20);
-            graphCtx.lineTo(graphCanvas.width - 20, graphCanvas.height - 20);
-            graphCtx.strokeStyle = '#ffffff';
+            graphCtx.lineTo(50, graphCanvas.height - 30);
+            graphCtx.lineTo(graphCanvas.width - 20, graphCanvas.height - 30);
+            graphCtx.strokeStyle = '#000';
             graphCtx.stroke();
+
             if (graphData.length === 0) return;
-            const maxTheta = Math.max(...graphData.map(d => d.theta));
-            const minTheta = Math.min(...graphData.map(d => d.theta));
-            const maxAbsTheta = Math.max(Math.abs(maxTheta), Math.abs(minTheta));
+
+            const maxTheta = Math.max(...graphData.map(d => Math.abs(d.theta)));
+            const maxAbsTheta = Math.max(maxTheta || 0.001, 0.001);
             const maxTime = graphMaxTime;
+
+            // Draw vertical axis labels
             graphCtx.fillStyle = '#000';
             graphCtx.font = '10px Arial';
             graphCtx.textAlign = 'right';
-            graphCtx.textBaseline = 'middle';
-            for (let thetaVal = 0; thetaVal <= maxAbsTheta; thetaVal += maxAbsTheta / 4) {
-                const y = graphCanvas.height / 2 - (thetaVal / maxAbsTheta) * (graphCanvas.height / 2 - 30);
+            
+            const labelCount = 5;
+            for (let i = -labelCount; i <= labelCount; i++) {
+                const thetaVal = (i/labelCount) * maxAbsTheta;
+                const y = graphCanvas.height - 30 - 
+                         ((thetaVal + maxAbsTheta) / (2 * maxAbsTheta)) * 
+                         (graphCanvas.height - 50);
+                
+                graphCtx.textBaseline = i === -labelCount ? 'top' : 
+                                     i === labelCount ? 'bottom' : 'middle';
+                
                 graphCtx.fillText(thetaVal.toFixed(2), 45, y);
             }
-            for (let thetaVal = 0; thetaVal >= -maxAbsTheta; thetaVal -= maxAbsTheta / 4) {
-                const y = graphCanvas.height / 2 - (thetaVal / maxAbsTheta) * (graphCanvas.height / 2 - 30);
-                graphCtx.fillText(thetaVal.toFixed(2), 45, y);
-            }
+
+            // Draw horizontal axis labels
             graphCtx.textAlign = 'center';
             graphCtx.textBaseline = 'top';
-            for (let tVal = 0; tVal <= maxTime; tVal += maxTime / 5) {
-                const x = 50 + (tVal / maxTime) * (graphCanvas.width - 70);
-                graphCtx.fillText(tVal.toFixed(1), x, graphCanvas.height - 15);
+            for (let tVal = 0; tVal <= maxTime; tVal += maxTime/5) {
+                const x = 50 + (tVal/maxTime) * (graphCanvas.width - 70);
+                graphCtx.fillText(tVal.toFixed(1), x, graphCanvas.height - 25);
             }
+
+            // Draw curve
             graphCtx.beginPath();
             graphCtx.strokeStyle = '#007bff';
             graphCtx.lineWidth = 2;
-            const verticalRange = graphCanvas.height / 2 - 30;
-            const firstPoint = graphData[0];
-            const x = 50 + (firstPoint.t / maxTime) * (graphCanvas.width - 70);
-            const y = graphCanvas.height / 2 - (firstPoint.theta / maxAbsTheta) * verticalRange;
-            graphCtx.moveTo(x, y);
-            for (const point of graphData) {
-                const x = 50 + (point.t / maxTime) * (graphCanvas.width - 70);
-                const y = graphCanvas.height / 2 - (point.theta / maxAbsTheta) * verticalRange;
-                graphCtx.lineTo(x, y);
-            }
+            const verticalRange = graphCanvas.height - 50;
+            
+            graphData.forEach((point, idx) => {
+                const x = 50 + (point.t/maxTime) * (graphCanvas.width - 70);
+                const y = graphCanvas.height - 30 - 
+                         ((point.theta + maxAbsTheta) / (2 * maxAbsTheta)) * verticalRange;
+                
+                if (idx === 0) graphCtx.moveTo(x, y);
+                else graphCtx.lineTo(x, y);
+            });
+            
             graphCtx.stroke();
+        }
+
+        function drawPhaseGraph() {
+            phaseGraphCtx.clearRect(0, 0, phaseGraphCanvas.width, phaseGraphCanvas.height);
+            
+            const maxTheta = Math.max(...graphData.map(d => Math.abs(d.theta))) * 1.1 || 1;
+            const maxOmega = Math.max(...graphData.map(d => Math.abs(d.omega))) * 1.1 || 1;
+            
+            // Draw axes
+            phaseGraphCtx.beginPath();
+            phaseGraphCtx.moveTo(50, phaseGraphCanvas.height - 30);
+            phaseGraphCtx.lineTo(phaseGraphCanvas.width - 30, phaseGraphCanvas.height - 30);
+            phaseGraphCtx.moveTo(50, 20);
+            phaseGraphCtx.lineTo(50, phaseGraphCanvas.height - 30);
+            phaseGraphCtx.strokeStyle = '#000';
+            phaseGraphCtx.stroke();
+
+            // Draw labels
+            phaseGraphCtx.fillStyle = '#000';
+            phaseGraphCtx.font = '10px Arial';
+            phaseGraphCtx.textAlign = 'center';
+            phaseGraphCtx.textBaseline = 'top';
+            
+            [-maxTheta, 0, maxTheta].forEach(val => {
+                const x = 50 + (val + maxTheta) * (phaseGraphCanvas.width - 80) / (2 * maxTheta);
+                phaseGraphCtx.fillText(val.toFixed(1), x, phaseGraphCanvas.height - 15);
+            });
+
+            phaseGraphCtx.textAlign = 'right';
+            phaseGraphCtx.textBaseline = 'middle';
+            [-maxOmega, 0, maxOmega].forEach(val => {
+                const y = phaseGraphCanvas.height - 30 - (val + maxOmega) * (phaseGraphCanvas.height - 50) / (2 * maxOmega);
+                phaseGraphCtx.fillText(val.toFixed(1), 40, y);
+            });
+
+            if (graphData.length === 0) return;
+
+            // Draw trajectory
+            phaseGraphCtx.beginPath();
+            phaseGraphCtx.strokeStyle = '#007bff';
+            phaseGraphCtx.lineWidth = 1;
+            
+            graphData.forEach((point, idx) => {
+                const x = 50 + (point.theta + maxTheta) * (phaseGraphCanvas.width - 80) / (2 * maxTheta);
+                const y = phaseGraphCanvas.height - 30 - (point.omega + maxOmega) * (phaseGraphCanvas.height - 50) / (2 * maxOmega);
+                
+                if (idx === 0) phaseGraphCtx.moveTo(x, y);
+                else phaseGraphCtx.lineTo(x, y);
+            });
+            
+            phaseGraphCtx.stroke();
+
+            // Draw current state dot
+            if (graphData.length > 0) {
+                const current = graphData[graphData.length - 1];
+                const x = 50 + (current.theta + maxTheta) * (phaseGraphCanvas.width - 80) / (2 * maxTheta);
+                const y = phaseGraphCanvas.height - 30 - (current.omega + maxOmega) * (phaseGraphCanvas.height - 50) / (2 * maxOmega);
+                
+                phaseGraphCtx.beginPath();
+                phaseGraphCtx.arc(x, y, 4, 0, Math.PI * 2);
+                phaseGraphCtx.fillStyle = '#ff0000';
+                phaseGraphCtx.fill();
+            }
         }
 
         function updateParameters() {
@@ -423,6 +395,7 @@
             omega0 = parseFloat(document.getElementById('initialVelocity').value);
             m = parseFloat(document.getElementById('mass').value);
             b = parseFloat(document.getElementById('damping').value);
+            
             try {
                 katex.render(
                     `\\theta'' + \\frac{${b.toFixed(2)}}{${m.toFixed(2)}} \\theta' + \\frac{${g.toFixed(2)}}{${L.toFixed(2)}} \\sin(\\theta) = 0`,
@@ -440,17 +413,10 @@
             omega0 = parseFloat(document.getElementById('initialVelocity').value);
             m = parseFloat(document.getElementById('mass').value);
             b = parseFloat(document.getElementById('damping').value);
+            
             const D = Math.pow(b / m, 2) - 4 * (g / L);
             useBackwardEuler = D > 0;
-            if (theta0 === 0 && omega0 === 0) {
-                isSimulationRunning = false;
-                theta = 0;
-                omega = 0;
-                graphData.length = 0;
-                drawPendulum();
-                drawGraph();
-                return;
-            }
+
             theta = theta0;
             omega = omega0;
             t = 0;
@@ -459,24 +425,16 @@
             updateParameters();
             drawPendulum();
             drawGraph();
+            drawPhaseGraph();
             removeAlert();
         }
 
         function showAlert(message) {
             const alertContainer = document.getElementById('alertContainer');
             alertContainer.innerHTML = `
-                <div class="bg-red-400 text-white px-8 py-6 rounded flex justify-between items-center">
-                    <div class="flex items-center">
-                        <svg class="h-7 w-7 mr-6 text-red-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                        </svg>
-                        <span>${message}</span>
-                    </div>
-                    <button onclick="removeAlert()" class="hover:text-white text-red-100">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
+                <div style="background:#f87171;color:white;padding:1rem;border-radius:8px;display:flex;align-items:center;">
+                    ${message}
+                    <button onclick="removeAlert()" style="margin-left:auto;background:none;border:none;color:white;cursor:pointer;">×</button>
                 </div>
             `;
             alertContainer.style.display = 'block';
@@ -488,27 +446,18 @@
             alertContainer.innerHTML = '';
         }
 
-        function checkParameters() {
-            const minLength = 0.1, maxLength = 2.5;
-            const minAngle = -1.57, maxAngle = 1.57;
-            if (L >= minLength && L <= maxLength &&
-                theta0 >= minAngle && theta0 <= maxAngle &&
-                Math.abs(theta) <= Math.PI / 2) {
-                removeAlert();
-                isSimulationRunning = true;
-            }
-        }
-
         function animate() {
             if (isSimulationRunning) {
                 updatePhysics();
                 drawPendulum();
                 drawGraph();
+                drawPhaseGraph();
             }
             requestAnimationFrame(animate);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Modified KaTeX rendering to include initial conditions
             katex.render(
                 `\\theta'' + \\frac{b}{m} \\theta' + \\frac{g}{L} \\sin(\\theta) = 0, \\quad \\theta(0) = \\theta_0, \\quad \\theta'(0) = \\omega_0`,
                 document.getElementById('equationGeneral'),
