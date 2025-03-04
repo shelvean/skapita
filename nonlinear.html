@@ -215,6 +215,9 @@
                     drawPhasePlane();
                     instruction.style.display = "none";
                 });
+                
+                // Added this line to draw the default direction field on page load
+                drawPhasePlane();
             });
 
             function drawPhasePlane() {
@@ -245,23 +248,23 @@
                 }
             }
            
-           function drawTrajectory(points, xMin, xMax, yMin, yMax) {
-    ctx.strokeStyle = "#B7410E";  // "#353839";  // Dark gray color for trajectories
-    ctx.lineWidth = 1.5;          // Slightly thicker lines for solidity
-    ctx.beginPath();              // Start a single path
+            function drawTrajectory(points, xMin, xMax, yMin, yMax) {
+                ctx.strokeStyle = "#B7410E";  // "#353839";  // Dark gray color for trajectories
+                ctx.lineWidth = 1.5;          // Slightly thicker lines for solidity
+                ctx.beginPath();              // Start a single path
 
-    points.forEach((point, index) => {
-        const canvasX = ((point.x - xMin) / (xMax - xMin)) * canvas.width;
-        const canvasY = ((yMax - point.y) / (yMax - yMin)) * canvas.height;
-        if (index === 0) {
-            ctx.moveTo(canvasX, canvasY);  // Move to the starting point
-        } else {
-            ctx.lineTo(canvasX, canvasY);  // Draw a line to the next point
-        }
-    });
+                points.forEach((point, index) => {
+                    const canvasX = ((point.x - xMin) / (xMax - xMin)) * canvas.width;
+                    const canvasY = ((yMax - point.y) / (yMax - yMin)) * canvas.height;
+                    if (index === 0) {
+                        ctx.moveTo(canvasX, canvasY);  // Move to the starting point
+                    } else {
+                        ctx.lineTo(canvasX, canvasY);  // Draw a line to the next point
+                    }
+                });
 
-    ctx.stroke();  // Render the entire trajectory at once
-}
+                ctx.stroke();  // Render the entire trajectory at once
+            }
 
             function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
                 const dt = 0.01;
