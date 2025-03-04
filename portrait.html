@@ -42,6 +42,13 @@
         }
         .example {
             margin-bottom: 1.5rem;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        .example:hover {
+            background-color: #f8f9fa;
         }
         .example h3 {
             margin-bottom: 0.5rem;
@@ -83,7 +90,7 @@
         }
         .range-container {
             display: flex;
-            quinquflex-direction: column;
+            flex-direction: column;
             gap: 10px;
             margin: 1rem 0
         }
@@ -225,7 +232,7 @@
                 </div>
             </div>
             <div class="button-container">
-                <button onclick="clearUserPoints()">Generate Phase Portrait</button>
+                <button onclick="drawPhasePortrait()">Generate Phase Portrait</button>
                 <button class="clear" onclick="clearUserPoints()">Clear Trajectories</button>
             </div>
             <div class="scale-container">
@@ -252,28 +259,28 @@
             </div>
         </div>
         <div class="examples-column">
-            <h2>Example Matrices</h2>
-            <div class="example">
+            <h2>Example Matrices (click)</h2>
+            <div class="example" data-a="-1" data-b="0" data-c="0" data-d="-2">
                 <h3>Stable Node</h3>
                 <span class="matrix-latex">\begin{pmatrix} -1 & 0 \\ 0 & -2 \end{pmatrix}</span>
             </div>
-            <div class="example">
+            <div class="example" data-a="1" data-b="0" data-c="0" data-d="2">
                 <h3>Unstable Node</h3>
                 <span class="matrix-latex">\begin{pmatrix} 1 & 0 \\ 0 & 2 \end{pmatrix}</span>
             </div>
-            <div class="example">
+            <div class="example" data-a="1" data-b="0" data-c="0" data-d="-1">
                 <h3>Saddle Point</h3>
                 <span class="matrix-latex">\begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}</span>
             </div>
-            <div class="example">
+            <div class="example" data-a="-1" data-b="2" data-c="-2" data-d="-1">
                 <h3>Stable Spiral</h3>
                 <span class="matrix-latex">\begin{pmatrix} -1 & 2 \\ -2 & -1 \end{pmatrix}</span>
             </div>
-            <div class="example">
+            <div class="example" data-a="1" data-b="2" data-c="-2" data-d="1">
                 <h3>Unstable Spiral</h3>
                 <span class="matrix-latex">\begin{pmatrix} 1 & 2 \\ -2 & 1 \end{pmatrix}</span>
             </div>
-            <div class="example">
+            <div class="example" data-a="0" data-b="1" data-c="-1" data-d="0">
                 <h3>Center</h3>
                 <span class="matrix-latex">\begin{pmatrix} 0 & 1 \\ -1 & 0 \end{pmatrix}</span>
             </div>
@@ -283,8 +290,30 @@
     <script>
         let userPoints = [];
         document.addEventListener('DOMContentLoaded', () => {
-            katex.render('\\begin{cases}\n                \\dot{x} = ax + by \\\\\n                \\dot{y} = cx + dy\n                \\end{cases}', document.getElementById('equation-display'), { throwOnError: false, displayMode: true });
-            drawPhasePortrait();
+            // Initialize KaTeX rendering
+            katex.render('\\begin{cases}\n                \\dot{x} = ax + by \\\\\n                \\dot{y} = cx + dy\n                \\end{cases}', 
+                document.getElementById('equation-display'), 
+                { throwOnError: false, displayMode: true }
+            );
+
+            // Add click handlers for examples
+            document.querySelectorAll('.example').forEach(example => {
+                example.addEventListener('click', () => {
+                    userPoints = [];
+                    document.getElementById('a').value = example.dataset.a;
+                    document.getElementById('b').value = example.dataset.b;
+                    document.getElementById('c').value = example.dataset.c;
+                    document.getElementById('d').value = example.dataset.d;
+                    drawPhasePortrait();
+                    document.getElementById('instruction').style.display = 'none';
+                });
+                katex.render(example.querySelector('.matrix-latex').textContent, 
+                    example.querySelector('.matrix-latex'), 
+                    { throwOnError: false, displayMode: true }
+                );
+            });
+
+            // Canvas click handler
             const canvas = document.getElementById('canvas');
             canvas.addEventListener('click', event => {
                 const rect = canvas.getBoundingClientRect();
@@ -299,10 +328,8 @@
                 drawPhasePortrait();
                 document.getElementById('instruction').style.display = 'none';
             });
-            // Render example matrices
-            document.querySelectorAll('.matrix-latex').forEach(el => {
-                katex.render(el.textContent, el, { throwOnError: false, displayMode: true });
-            });
+
+            drawPhasePortrait();
         });
 
         function clearUserPoints() {
@@ -315,43 +342,59 @@
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Get matrix coefficients
             const a = parseFloat(document.getElementById('a').value) || 0;
             const b = parseFloat(document.getElementById('b').value) || 0;
             const c = parseFloat(document.getElementById('c').value) || 0;
             const d = parseFloat(document.getElementById('d').value) || 0;
+            
             const arrowCount = parseFloat(document.getElementById('arrow-count').value) || 20;
             const xMin = -10, xMax = 10, yMin = -10, yMax = 10;
+            
+            // Update scale labels
             document.getElementById('x-min-label').textContent = xMin;
             document.getElementById('x-max-label').textContent = xMax;
             document.getElementById('y-min-label').textContent = yMin;
             document.getElementById('y-max-label').textContent = yMax;
+
             const scale = 30;
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
             const xStep = (xMax - xMin) / (1.5 * arrowCount);
             const yStep = (yMax - yMin) / (1.5 * arrowCount);
+
+            // Draw vector field
             for (let x = xMin; x <= xMax; x += xStep) {
                 for (let y = yMin; y <= yMax; y += yStep) {
                     const dx = a * x + b * y;
                     const dy = c * x + d * y;
                     const len = Math.sqrt(dx * dx + dy * dy);
                     if (len === 0) continue;
-                    const slope = dy / dx;
-                    ctx.strokeStyle = slope < 0 ? '#009AEE' : '#009AEE';
+
                     const arrowScale = Math.min(0.5, len / 10);
                     const dxNorm = (dx / len) * arrowScale;
                     const dyNorm = (dy / len) * arrowScale;
                     const startX = centerX + x * scale;
                     const startY = centerY - y * scale;
-                    drawArrow(ctx, startX, startY, startX + dxNorm * scale, startY - dyNorm * scale, arrowScale);
+                    
+                    ctx.strokeStyle = '#009AEE';
+                    drawArrow(ctx, startX, startY, 
+                            startX + dxNorm * scale, 
+                            startY - dyNorm * scale, 
+                            arrowScale);
                 }
             }
+
+            // Draw trajectories
             ctx.strokeStyle = '#B7410E';
             ctx.lineWidth = 1.5;
             userPoints.forEach(point => {
                 const path = computeTrajectory(point.x, point.y, a, b, c, d, scale, centerX, centerY);
                 drawTrajectory(ctx, path);
             });
+
+            // Draw axes
             ctx.strokeStyle = '#000000';
             ctx.lineWidth = 2.0;
             ctx.beginPath();
@@ -360,6 +403,8 @@
             ctx.moveTo(0, centerY);
             ctx.lineTo(canvas.width, centerY);
             ctx.stroke();
+
+            // Axis labels
             ctx.fillStyle = '#2c3e50';
             ctx.font = '14px Arial';
             ctx.fillText('x', canvas.width - 10, centerY + 20);
@@ -374,9 +419,10 @@
             let x = x0, y = y0;
 
             function derivatives(x, y) {
-                const dx = a * x + b * y;
-                const dy = c * x + d * y;
-                return { dx, dy };
+                return {
+                    dx: a * x + b * y,
+                    dy: c * x + d * y
+                };
             }
 
             // Forward integration
@@ -386,23 +432,25 @@
                 const { dx: k2x, dy: k2y } = derivatives(x + k1x * dt / 2, y + k1y * dt / 2);
                 const { dx: k3x, dy: k3y } = derivatives(x + k2x * dt / 2, y + k2y * dt / 2);
                 const { dx: k4x, dy: k4y } = derivatives(x + k3x * dt, y + k3y * dt);
+                
                 x += (k1x + 2 * k2x + 2 * k3x + k4x) * dt / 6;
                 y += (k1y + 2 * k2y + 2 * k3y + k4y) * dt / 6;
+                
                 if (Math.abs(x) > 20 || Math.abs(y) > 20) break;
             }
 
-            // Reset to initial point
+            // Backward integration
             x = x0;
             y = y0;
-
-            // Backward integration
             for (let i = 0; i < maxSteps; i++) {
                 const { dx: k1x, dy: k1y } = derivatives(x, y);
                 const { dx: k2x, dy: k2y } = derivatives(x - k1x * dt / 2, y - k1y * dt / 2);
                 const { dx: k3x, dy: k3y } = derivatives(x - k2x * dt / 2, y - k2y * dt / 2);
                 const { dx: k4x, dy: k4y } = derivatives(x - k3x * dt, y - k3y * dt);
+                
                 x -= (k1x + 2 * k2x + 2 * k3x + k4x) * dt / 6;
                 y -= (k1y + 2 * k2y + 2 * k3y + k4y) * dt / 6;
+                
                 if (Math.abs(x) > 20 || Math.abs(y) > 20) break;
                 points.unshift({ x: cx + x * scale, y: cy - y * scale });
             }
@@ -425,13 +473,16 @@
             ctx.moveTo(fromX, fromY);
             ctx.lineTo(toX, toY);
             ctx.stroke();
+
             ctx.lineWidth = 0.7;
             const arrowSize = 5 * scale;
             ctx.beginPath();
             ctx.moveTo(toX, toY);
-            ctx.lineTo(toX - arrowSize * Math.cos(angle - Math.PI / 6), toY - arrowSize * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toX - arrowSize * Math.cos(angle - Math.PI / 6), 
+                      toY - arrowSize * Math.sin(angle - Math.PI / 6));
             ctx.moveTo(toX, toY);
-            ctx.lineTo(toX - arrowSize * Math.cos(angle + Math.PI / 6), toY - arrowSize * Math.sin(angle + Math.PI / 6));
+            ctx.lineTo(toX - arrowSize * Math.cos(angle + Math.PI / 6), 
+                      toY - arrowSize * Math.sin(angle + Math.PI / 6));
             ctx.stroke();
         }
     </script>
