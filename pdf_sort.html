@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-5B8PRB2WZT');
-</script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5B8PRB2WZT');
+    </script>
     <meta name="description" content="Sort or Organize PDF files, add blank pages, remove PDF pages, shuffle PDF pages">
-  <meta name="keywords" content="PDF sort, organize, sort, remove PDF pages, shuffle">
+    <meta name="keywords" content="PDF sort, organize, sort, remove PDF pages, shuffle">
     <meta charset="UTF-8">
     <title>PDF Sort</title>
 
@@ -149,8 +149,16 @@
             color: #7f8c8d;
             font-weight: 500;
         }
-    </style>
 
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body>
     <h1 class="header">PDF Sort</h1>
@@ -160,6 +168,11 @@
         <button onclick="savePDF()">Save PDF</button>
     </div>
     <div class="preview-container" id="previewContainer"></div>
+
+    <footer>
+        © 2025 Shelvean Kapita. All rights reserved.<br>
+        Last modified: March 5, 2025
+    </footer>
 
     <script src="https://unpkg.com/pdfjs-dist@2.11.338/build/pdf.min.js"></script>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
