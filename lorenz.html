@@ -2,15 +2,15 @@
 <html>
 <head>
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-5B8PRB2WZT');
-</script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-5B8PRB2WZT');
+    </script>
     <meta name="description" content="Lorenz Equations Simulation Animation">
-  <meta name="keywords" content="Lorenz Equations, Simulation Plot, Animation">
+    <meta name="keywords" content="Lorenz Equations, Simulation Plot, Animation">
     <title>Lorenz System</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -120,6 +120,16 @@
             height: 700px;
         }
 
+        .footer {
+            background-color: white;
+            padding: 10px;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
+        }
+
         @media (max-width: 768px) {
             .controls {
                 grid-template-columns: 1fr;
@@ -142,7 +152,9 @@
 
     <div class="controls"></div>
     <div id="plot"></div>
-
+    <div class="footer">
+        <p>© 2023 Shelvean Kapita | Last modified: March 5, 2025</p>
+    </div>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <script>
