@@ -125,6 +125,14 @@
             font-size: 0.8rem;
             fill: var(--text);
         }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px 0;
+            color: var(--secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--surface);
+        }
     </style>
     <!-- Math.js for evaluating mathematical expressions -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.0.0/math.min.js"></script>
@@ -164,6 +172,10 @@
             </div>
         </div>
         <div id="alertContainer" class="alert"></div>
+        <footer>
+            © 2025 Shelvean Kapita. All rights reserved.<br>
+            Last modified: March 5, 2025
+        </footer>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -309,77 +321,60 @@
             graphCtx.stroke();
         }
 
-    function drawPhaseGraph() {
-    // Clear the canvas
-    phaseGraphCtx.clearRect(0, 0, phaseGraphCanvas.width, phaseGraphCanvas.height);
-
-    // Calculate maximum values with padding
-    const maxTheta = Math.max(...graphData.map(d => Math.abs(d.theta))) * 1.1 || 1;
-    const maxOmega = Math.max(...graphData.map(d => Math.abs(d.omega))) * 1.1 || 1;
-
-    // Define canvas dimensions
-    const W = phaseGraphCanvas.width;
-    const H = phaseGraphCanvas.height;
-
-    // Draw axes
-    phaseGraphCtx.beginPath();
-    phaseGraphCtx.moveTo(50, H - 30); // x-axis
-    phaseGraphCtx.lineTo(W - 30, H - 30);
-    phaseGraphCtx.moveTo(50, 20); // y-axis
-    phaseGraphCtx.lineTo(50, H - 30);
-    phaseGraphCtx.strokeStyle = '#000';
-    phaseGraphCtx.stroke();
-
-    // Calculate label positions
-    const xLeft = 50; // -maxTheta
-    const xMid = 50 + (W - 80) / 2; // 0
-    const xRight = W - 30; // maxTheta
-    const yThetaLabel = H - 10; // Below x-axis
-    const yBottom = H - 30; // -maxOmega
-    const yMid = (20 + yBottom) / 2; // 0
-    const yTop = 20; // maxOmega
-    const xOmegaLabel = 40; // Left of y-axis
-
-    // Draw theta axis labels
-    phaseGraphCtx.fillStyle = '#000';
-    phaseGraphCtx.font = '10px Arial';
-    phaseGraphCtx.textAlign = 'center';
-    phaseGraphCtx.textBaseline = 'top';
-    phaseGraphCtx.fillText((-maxTheta).toFixed(2), xLeft, yThetaLabel);
-    phaseGraphCtx.fillText('0', xMid, yThetaLabel);
-    phaseGraphCtx.fillText(maxTheta.toFixed(2), xRight, yThetaLabel);
-
-    // Draw omega axis labels
-    phaseGraphCtx.textAlign = 'right';
-    phaseGraphCtx.textBaseline = 'middle';
-    phaseGraphCtx.fillText((-maxOmega).toFixed(2), xOmegaLabel, yBottom);
-    phaseGraphCtx.fillText('0', xOmegaLabel, yMid);
-    phaseGraphCtx.fillText(maxOmega.toFixed(2), xOmegaLabel, yTop);
-
-    // Draw the phase plot
-    if (graphData.length === 0) return;
-    phaseGraphCtx.beginPath();
-    phaseGraphCtx.strokeStyle = '#007bff';
-    phaseGraphCtx.lineWidth = 1.5;
-    graphData.forEach((point, idx) => {
-        const x = 50 + (point.theta + maxTheta) * (W - 80) / (2 * maxTheta);
-        const y = H - 30 - (point.omega + maxOmega) * (H - 50) / (2 * maxOmega);
-        if (idx === 0) phaseGraphCtx.moveTo(x, y);
-        else phaseGraphCtx.lineTo(x, y);
-    });
-    phaseGraphCtx.stroke();
-
-    // Draw current state dot
-    if (graphData.length > 0) {
-        const current = graphData[graphData.length - 1];
-        const x = 50 + (current.theta + maxTheta) * (W - 80) / (2 * maxTheta);
-        const y = H - 30 - (current.omega + maxOmega) * (H - 50) / (2 * maxOmega);
-        phaseGraphCtx.beginPath();
-        phaseGraphCtx.arc(x, y, 4, 0, Math.PI * 2);
-        phaseGraphCtx.fillStyle = '#ff0000';
-        phaseGraphCtx.fill();
-    }
-}
+        function drawPhaseGraph() {
+            phaseGraphCtx.clearRect(0, 0, phaseGraphCanvas.width, phaseGraphCanvas.height);
+            const maxTheta = Math.max(...graphData.map(d => Math.abs(d.theta))) * 1.1 || 1;
+            const maxOmega = Math.max(...graphData.map(d => Math.abs(d.omega))) * 1.1 || 1;
+            const W = phaseGraphCanvas.width;
+            const H = phaseGraphCanvas.height;
+            phaseGraphCtx.beginPath();
+            phaseGraphCtx.moveTo(50, H - 30);
+            phaseGraphCtx.lineTo(W - 30, H - 30);
+            phaseGraphCtx.moveTo(50, 20);
+            phaseGraphCtx.lineTo(50, H - 30);
+            phaseGraphCtx.strokeStyle = '#000';
+            phaseGraphCtx.stroke();
+            const xLeft = 50;
+            const xMid = 50 + (W - 80) / 2;
+            const xRight = W - 30;
+            const yThetaLabel = H - 10;
+            const yBottom = H - 30;
+            const yMid = (20 + yBottom) / 2;
+            const yTop = 20;
+            const xOmegaLabel = 40;
+            phaseGraphCtx.fillStyle = '#000';
+            phaseGraphCtx.font = '10px Arial';
+            phaseGraphCtx.textAlign = 'center';
+            phaseGraphCtx.textBaseline = 'top';
+            phaseGraphCtx.fillText((-maxTheta).toFixed(2), xLeft, yThetaLabel);
+            phaseGraphCtx.fillText('0', xMid, yThetaLabel);
+            phaseGraphCtx.fillText(maxTheta.toFixed(2), xRight, yThetaLabel);
+            phaseGraphCtx.textAlign = 'right';
+            phaseGraphCtx.textBaseline = 'middle';
+            phaseGraphCtx.fillText((-maxOmega).toFixed(2), xOmegaLabel, yBottom);
+            phaseGraphCtx.fillText('0', xOmegaLabel, yMid);
+            phaseGraphCtx.fillText(maxOmega.toFixed(2), xOmegaLabel, yTop);
+            if (graphData.length === 0) return;
+            phaseGraphCtx.beginPath();
+            phaseGraphCtx.strokeStyle = '#007bff';
+            phaseGraphCtx.lineWidth = 1.5;
+            graphData.forEach((point, idx) => {
+                const x = 50 + (point.theta + maxTheta) * (W - 80) / (2 * maxTheta);
+                const y = H - 30 - (point.omega + maxOmega) * (H - 50) / (2 * maxOmega);
+                if (idx === 0) phaseGraphCtx.moveTo(x, y);
+                else phaseGraphCtx.lineTo(x, y);
+            });
+            phaseGraphCtx.stroke();
+            if (graphData.length > 0) {
+                const current = graphData[graphData.length - 1];
+                const x = 50 + (current.theta + maxTheta) * (W - 80) / (2 * maxTheta);
+                const y = H - 30 - (current.omega + maxOmega) * (H - 50) / (2 * maxOmega);
+                phaseGraphCtx.beginPath();
+                phaseGraphCtx.arc(x, y, 4, 0, Math.PI * 2);
+                phaseGraphCtx.fillStyle = '#ff0000';
+                phaseGraphCtx.fill();
+            }
+        }
 
         function updateParameters() {
             try {
