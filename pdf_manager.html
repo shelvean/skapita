@@ -43,7 +43,9 @@
       gap: 10px;
       flex-wrap: wrap;
     }
-    #fileList { margin-top: 20px; }
+    #fileList { 
+      margin-top: 20px; 
+    }
     .file-item {
       margin: 5px 0;
       padding: 8px;
@@ -94,7 +96,9 @@
       animation: spin 1s ease-in-out infinite;
       margin-left: 8px;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spin { 
+      to { transform: rotate(360deg); } 
+    }
     .description {
       background: #f4f4f4;
       padding: 15px;
@@ -142,6 +146,16 @@
                   rgba(0, 0, 0, .1) 0 6px 8px;
       transform: scale(1.03);
     }
+
+    /* Footer Styles */
+    footer {
+      margin-top: 40px;
+      padding: 20px 0;
+      border-top: 1px solid #eee;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -174,6 +188,11 @@
       <button id="downloadBtn" class="button-71" role="button">💾 Download PDF</button>
     </div>
   </div>
+
+  <footer>
+    <p>© 2025 Shelvean Kapita. All rights reserved.</p>
+    <p>Last modified: March 5, 2025</p>
+  </footer>
 
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script>
