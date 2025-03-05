@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Existing head content remains unchanged -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -11,7 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Fourier Series Approximation Animation Simulation">
-  <meta name="keywords" content="Fourier Series, Approximation, Animation, Simulation">
+    <meta name="keywords" content="Fourier Series, Approximation, Animation, Simulation">
     <title>Fourier Series Animation</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.min.js"></script>
@@ -19,6 +20,7 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
+        /* Existing styles remain unchanged */
         body {font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f4f9; color: #333}
         .container {max-width: 1200px; margin: 0 auto; padding: 20px; background-color: #fff; box-shadow: 0 4px 6px rgba(0,0,0,.1); border-radius: 8px; margin-top: 20px}
         h1 {text-align: center; color: #2c3e50; margin-bottom: 20px; font-size: 2rem}
@@ -53,6 +55,7 @@
 </head>
 <body>
     <div class="container">
+        <!-- Existing body content remains unchanged -->
         <h1>Fourier Series Animation</h1>
         <div class="input-group">
             <label for="exampleSelect">Example Functions:</label>
@@ -93,6 +96,8 @@
         <div id="plot"></div>
         <div class="footer">
             <p>Created with ❤️ using <a href="https://plotly.com/javascript/" target="_blank">Plotly.js</a>, <a href="https://mathjs.org/" target="_blank">Math.js</a>, and <a href="https://katex.org/" target="_blank">KaTeX</a></p>
+            <!-- Added copyright and last modified date -->
+            <p>© <span id="copyright-year"></span> Shelvean Kapita | Last modified: March 5, 2025</p>
         </div>
     </div>
 
@@ -279,6 +284,8 @@
             document.getElementById('nInput').addEventListener('input', renderKaTeX);
             document.getElementById('xMin').addEventListener('input', renderKaTeX);
             document.getElementById('xMax').addEventListener('input', renderKaTeX);
+            // Added line to set the copyright year dynamically
+            document.getElementById('copyright-year').textContent = new Date().getFullYear();
         });
     </script>
 </body>
