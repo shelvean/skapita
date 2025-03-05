@@ -180,7 +180,7 @@
         
         let L = 2, theta0 = 1.4, omega0 = 1, m = 1, b = 0.15;
         let theta = theta0, omega = omega0, t = 0;
-        const dt = 0.04, graphMaxTime = 30;
+        const dt = 0.04, graphMaxTime = 60; // Changed from 30 to 60
         let isSimulationRunning = true;
         const graphData = [];
         let useBackwardEuler = false;
@@ -501,7 +501,7 @@
                 document.getElementById('equationGeneral'),
                 { throwOnError: false, displayMode: true }
             );
-            updateParameters();
+            resetSimulation();
             animate();
         });
     </script>
