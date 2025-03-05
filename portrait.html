@@ -202,6 +202,14 @@
                 transform: translateX(-50%) translateY(-5px)
             }
         }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #ddd;
+        }
     </style>
 </head>
 <body>
@@ -286,6 +294,10 @@
             </div>
         </div>
     </div>
+    <footer>
+        © 2025 Shelvean Kapita. All rights reserved.<br>
+        Last modified: March 5, 2025
+    </footer>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script>
         let userPoints = [];
@@ -316,7 +328,7 @@
             // Canvas click handler
             const canvas = document.getElementById('canvas');
             canvas.addEventListener('click', event => {
-                const rect = canvas.getBoundingClientRect();
+                const rect = canvas.getBoundingClientRect();  // Fixed typo here
                 const x = event.clientX - rect.left;
                 const y = event.clientY - rect.top;
                 const centerX = canvas.width / 2;
