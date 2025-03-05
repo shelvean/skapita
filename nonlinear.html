@@ -29,17 +29,15 @@
                 <h1 class="text-center text-gray-800 text-2xl font-bold">Nonlinear System Phase Portrait</h1>
                 <div class="equation text-center" id="equation-display"></div>
                 
-                <!-- Function Inputs -->
-                <div class="mb-4">
-                    <div class="latex-label" id="f-label"></div>
-                    <div class="input-group">
-                        <input type="text" id="fInput" value="y" class="w-full p-2 border border-gray-300 rounded text-sm" />
+                <!-- Function Inputs on Same Row with Labels -->
+                <div class="mb-4 flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1 flex items-center gap-2">
+                        <div class="latex-label" id="f-label"></div>
+                        <input type="text" id="fInput" value="y" class="w-full sm:w-3/4 p-2 border border-gray-300 rounded text-sm" />
                     </div>
-                </div>
-                <div class="mb-4">
-                    <div class="latex-label" id="g-label"></div>
-                    <div class="input-group">
-                        <input type="text" id="gInput" value="-0.1*y - sin(x)" class="w-full p-2 border border-gray-300 rounded text-sm" />
+                    <div class="flex-1 flex items-center gap-2">
+                        <div class="latex-label" id="g-label"></div>
+                        <input type="text" id="gInput" value="-0.1*y - sin(x)" class="w-full sm:w-3/4 p-2 border border-gray-300 rounded text-sm" />
                     </div>
                 </div>
                 
@@ -126,6 +124,11 @@
                 </div>
             </div>
         </div>
+
+        <footer class="text-center mt-8 p-4 text-gray-600 text-sm">
+            © 2025 Shelvean Kapita. All rights reserved.<br>
+            Last modified: March 5, 2025
+        </footer>
         
         <!-- External Scripts -->
         <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
