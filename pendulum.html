@@ -167,7 +167,7 @@
         
         let L = 2, theta0 = 1.4, omega0 = 1, m = 1, b = 0.15;
         let theta = theta0, omega = omega0, t = 0;
-        const dt = 0.03, graphMaxTime = 30;
+        const dt = 0.04, graphMaxTime = 30;
         let isSimulationRunning = true;
         const graphData = [];
         let useBackwardEuler = false;
@@ -259,7 +259,7 @@
             
             ctx.beginPath();
             ctx.arc(bobX, bobY, bobRadius, 0, Math.PI * 2);
-            ctx.fillStyle = '#8B4513';
+            ctx.fillStyle = '#cd7f32';
             ctx.fill();
             ctx.strokeStyle = '#000';
             ctx.stroke();
