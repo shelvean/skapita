@@ -109,17 +109,25 @@
             transform: translateY(-1px);
         }
         .alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
             padding: 1rem;
             background: #f8d7da;
             color: #721c24;
             border-radius: 8px;
-            margin-top: 1rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: none;
         }
         .graph-label {
             font-size: 0.8rem;
             fill: var(--text);
         }
     </style>
+    <!-- Added Math.js for evaluating mathematical expressions -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.0.0/math.min.js"></script>
 </head>
 <body>
     <div class="main-container">
@@ -134,16 +142,21 @@
                 </div>
             </div>
             <div class="controls-wrapper">
+                <!-- Added note to inform users about expression inputs -->
+                <div style="font-size: 0.9rem; color: var(--secondary); margin-bottom: 1rem;">
+                    Inputs can accept mathematical expressions like pi/4.
+                </div>
                 <div class="controls">
                     <div>
-                        <label for="length">Length (L) [m]:<input type="number" id="length" value="2" min="0.1" step="0.1"></label>
-                        <label for="initialAngle">Initial Angle (θ₀) [rad]:<input type="number" id="initialAngle" value="1.4" step="0.01"></label>
-                        <label for="initialVelocity">Angular Velocity (ω₀) [rad/s]:<input type="number" id="initialVelocity" value="1" step="0.1"></label>
+                        <!-- Changed input type to text -->
+                        <label for="length">Length (L) [m]:<input type="text" id="length" value="2.5"></label>
+                        <label for="initialAngle">Initial Angle (θ₀) [rad]:<input type="text" id="initialAngle" value="(99/100)*pi"></label>
+                        <label for="initialVelocity">Angular Velocity (ω₀) [rad/s]:<input type="text" id="initialVelocity" value="0"></label>
                     </div>
                     <div>
-                        <label for="mass">Mass (m) [kg]:<input type="number" id="mass" value="1" step="0.1"></label>
-                        <label for="damping">Damping (b) [kg/s]:<input type="number" id="damping" value="0.15" step="0.01"></label>
-                        <button onclick="resetSimulation()" style="margin-top: 1rem;">Reset </button>
+                        <label for="mass">Mass (m) [kg]:<input type="text" id="mass" value="5"></label>
+                        <label for="damping">Damping (b) [kg/s]:<input type="text" id="damping" value="0.08"></label>
+                        <button onclick="resetSimulation()" style="margin-top: 1rem;">Reset</button>
                     </div>
                 </div>
                 <div class="graph-container">
@@ -152,7 +165,7 @@
                 </div>
             </div>
         </div>
-        <div id="alertContainer" class="alert" style="display: none;"></div>
+        <div id="alertContainer" class="alert"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -202,9 +215,9 @@
         function updatePhysics() {
             if (!isSimulationRunning) return;
             
-            if (Math.abs(theta) > Math.PI / 2) {
+            if (Math.abs(theta) > Math.PI) {
                 isSimulationRunning = false;
-                showAlert("Pendulum angle exceeded π/2 radians! Simulation stopped.");
+                showAlert("Pendulum angle exceeded π radians! Simulation stopped.");
                 return;
             }
 
@@ -239,17 +252,21 @@
         function drawPendulum() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const pivotX = canvas.width / 2;
-            const pivotY = 60;
-            const scale = 120;
+            const pivotY = canvas.height / 2;
+            const scale = 60;
             const bobRadius = 18;
             
-            ctx.fillStyle = '#333';
-            ctx.fillRect(pivotX - 60, 0, 120, 60);
+            // Draw small black circular disk at pivot (half the bob's radius)
+            ctx.beginPath();
+            ctx.arc(pivotX, pivotY, bobRadius / 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#000';
+            ctx.fill();
             
             const visualLength = L * scale;
             const bobX = pivotX + visualLength * Math.sin(theta);
             const bobY = pivotY + visualLength * Math.cos(theta);
             
+            // Draw pendulum rod starting from pivot point
             ctx.beginPath();
             ctx.moveTo(pivotX, pivotY);
             ctx.lineTo(bobX, bobY);
@@ -257,6 +274,7 @@
             ctx.lineWidth = 4;
             ctx.stroke();
             
+            // Draw pendulum bob
             ctx.beginPath();
             ctx.arc(bobX, bobY, bobRadius, 0, Math.PI * 2);
             ctx.fillStyle = '#cd7f32';
@@ -265,73 +283,67 @@
             ctx.stroke();
         }
 
-        
-// Modified drawGraph function with corrected label positioning
-		function drawGraph() {
-			graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
-			
-			// Draw axes
-			graphCtx.beginPath();
-			graphCtx.moveTo(50, 20);
-			graphCtx.lineTo(50, graphCanvas.height - 30);  // Increased bottom margin
-			graphCtx.lineTo(graphCanvas.width - 20, graphCanvas.height - 30);
-			graphCtx.strokeStyle = '#000';
-			graphCtx.stroke();
+        function drawGraph() {
+            graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+            
+            // Draw axes
+            graphCtx.beginPath();
+            graphCtx.moveTo(50, 20);
+            graphCtx.lineTo(50, graphCanvas.height - 30);
+            graphCtx.lineTo(graphCanvas.width - 20, graphCanvas.height - 30);
+            graphCtx.strokeStyle = '#000';
+            graphCtx.stroke();
 
-			if (graphData.length === 0) return;
+            if (graphData.length === 0) return;
 
-			// Calculate max absolute theta with fallback
-			const maxTheta = Math.max(...graphData.map(d => Math.abs(d.theta)));
-			const maxAbsTheta = Math.max(maxTheta || 0.001, 0.001);  // Ensure non-zero
-			const maxTime = graphMaxTime;
+            // Calculate max absolute theta with fallback
+            const maxTheta = Math.max(...graphData.map(d => Math.abs(d.theta)));
+            const maxAbsTheta = Math.max(maxTheta || 0.001, 0.001);
+            const maxTime = graphMaxTime;
 
-			// Draw vertical axis labels
-			graphCtx.fillStyle = '#000';
-			graphCtx.font = '10px Arial';
-			graphCtx.textAlign = 'right';
-			
-			// Single loop for both positive and negative labels
-			const labelCount = 5;
-			for (let i = -labelCount; i <= labelCount; i++) {
-				const thetaVal = (i/labelCount) * maxAbsTheta;
-				const y = graphCanvas.height - 30 - 
-						 ((thetaVal + maxAbsTheta) / (2 * maxAbsTheta)) * 
-						 (graphCanvas.height - 50);
-				
-				// Set appropriate text baseline based on position
-				graphCtx.textBaseline = i === -labelCount ? 'top' : 
-									   i === labelCount ? 'bottom' : 'middle';
-				
-				graphCtx.fillText(thetaVal.toFixed(2), 45, y);
-			}
+            // Draw vertical axis labels
+            graphCtx.fillStyle = '#000';
+            graphCtx.font = '10px Arial';
+            graphCtx.textAlign = 'right';
+            
+            const labelCount = 5;
+            for (let i = -labelCount; i <= labelCount; i++) {
+                const thetaVal = (i/labelCount) * maxAbsTheta;
+                const y = graphCanvas.height - 30 - 
+                         ((thetaVal + maxAbsTheta) / (2 * maxAbsTheta)) * 
+                         (graphCanvas.height - 50);
+                
+                graphCtx.textBaseline = i === -labelCount ? 'top' : 
+                                       i === labelCount ? 'bottom' : 'middle';
+                
+                graphCtx.fillText(thetaVal.toFixed(2), 45, y);
+            }
 
-			// Draw horizontal axis labels
-			graphCtx.textAlign = 'center';
-			graphCtx.textBaseline = 'top';
-			for (let tVal = 0; tVal <= maxTime; tVal += maxTime/5) {
-				const x = 50 + (tVal/maxTime) * (graphCanvas.width - 70);
-				graphCtx.fillText(tVal.toFixed(1), x, graphCanvas.height - 25);  // Lowered position
-			}
+            // Draw horizontal axis labels
+            graphCtx.textAlign = 'center';
+            graphCtx.textBaseline = 'top';
+            for (let tVal = 0; tVal <= maxTime; tVal += maxTime/5) {
+                const x = 50 + (tVal/maxTime) * (graphCanvas.width - 70);
+                graphCtx.fillText(tVal.toFixed(1), x, graphCanvas.height - 25);
+            }
 
-			// Draw curve (existing code remains unchanged)
-			graphCtx.beginPath();
-			graphCtx.strokeStyle = '#007bff';
-			graphCtx.lineWidth = 2;
-			const verticalRange = graphCanvas.height - 50;
-			
-			graphData.forEach((point, idx) => {
-				const x = 50 + (point.t/maxTime) * (graphCanvas.width - 70);
-				const y = graphCanvas.height - 30 - 
-						 ((point.theta + maxAbsTheta) / (2 * maxAbsTheta)) * verticalRange;
-				
-				if (idx === 0) graphCtx.moveTo(x, y);
-				else graphCtx.lineTo(x, y);
-			});
-			
-			graphCtx.stroke();
-		}
-
-
+            // Draw curve
+            graphCtx.beginPath();
+            graphCtx.strokeStyle = '#007bff';
+            graphCtx.lineWidth = 2;
+            const verticalRange = graphCanvas.height - 50;
+            
+            graphData.forEach((point, idx) => {
+                const x = 50 + (point.t/maxTime) * (graphCanvas.width - 70);
+                const y = graphCanvas.height - 30 - 
+                         ((point.theta + maxAbsTheta) / (2 * maxAbsTheta)) * verticalRange;
+                
+                if (idx === 0) graphCtx.moveTo(x, y);
+                else graphCtx.lineTo(x, y);
+            });
+            
+            graphCtx.stroke();
+        }
 
         function drawPhaseGraph() {
             phaseGraphCtx.clearRect(0, 0, phaseGraphCanvas.width, phaseGraphCanvas.height);
@@ -400,12 +412,6 @@
         }
 
         function updateParameters() {
-            L = parseFloat(document.getElementById('length').value);
-            theta0 = parseFloat(document.getElementById('initialAngle').value);
-            omega0 = parseFloat(document.getElementById('initialVelocity').value);
-            m = parseFloat(document.getElementById('mass').value);
-            b = parseFloat(document.getElementById('damping').value);
-            
             try {
                 katex.render(
                     `\\theta'' + \\frac{${b.toFixed(2)}}{${m.toFixed(2)}} \\theta' + \\frac{${g.toFixed(2)}}{${L.toFixed(2)}} \\sin(\\theta) = 0`,
@@ -418,25 +424,48 @@
         }
 
         function resetSimulation() {
-            L = parseFloat(document.getElementById('length').value);
-            theta0 = parseFloat(document.getElementById('initialAngle').value);
-            omega0 = parseFloat(document.getElementById('initialVelocity').value);
-            m = parseFloat(document.getElementById('mass').value);
-            b = parseFloat(document.getElementById('damping').value);
-            
-            const D = Math.pow(b / m, 2) - 4 * (g / L);
-            useBackwardEuler = D > 0;
+            const inputs = {
+                length: document.getElementById('length').value,
+                initialAngle: document.getElementById('initialAngle').value,
+                initialVelocity: document.getElementById('initialVelocity').value,
+                mass: document.getElementById('mass').value,
+                damping: document.getElementById('damping').value
+            };
 
-            theta = theta0;
-            omega = omega0;
-            t = 0;
-            graphData.length = 0;
-            isSimulationRunning = true;
-            updateParameters();
-            drawPendulum();
-            drawGraph();
-            drawPhaseGraph();
-            removeAlert();
+            try {
+                // Evaluate inputs using Math.js
+                L = math.evaluate(inputs.length);
+                theta0 = math.evaluate(inputs.initialAngle);
+                omega0 = math.evaluate(inputs.initialVelocity);
+                m = math.evaluate(inputs.mass);
+                b = math.evaluate(inputs.damping);
+
+                // If initial angle is pi, adjust to pi - 0.01
+                if (theta0 === Math.PI) {
+                    theta0 = Math.PI - 0.01;
+                }
+
+                // Validate physical constraints
+                if (L <= 0 || m <= 0) {
+                    throw new Error("Length and mass must be positive.");
+                }
+
+                const D = Math.pow(b / m, 2) - 4 * (g / L);
+                useBackwardEuler = D > 0;
+
+                theta = theta0;
+                omega = omega0;
+                t = 0;
+                graphData.length = 0;
+                isSimulationRunning = true;
+                updateParameters();
+                drawPendulum();
+                drawGraph();
+                drawPhaseGraph();
+                removeAlert();
+            } catch (error) {
+                showAlert("Invalid input: " + error.message);
+            }
         }
 
         function showAlert(message) {
