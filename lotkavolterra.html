@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="description" content="Lotka Volterra System to Simulate Predator Prey Systems">
-  <meta name="keywords" content="Lotka-Volterra Equations, Predator Prey, Phase Diagram, Phase Portrait">
+    <meta name="keywords" content="Lotka-Volterra Equations, Predator Prey, Phase Diagram, Phase Portrait">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -60,7 +60,6 @@
             flex-direction: column;
         }
 
-        /* Updated Slider Styles */
         input[type="range"] {
             -webkit-appearance: none;
             width: 100%;
@@ -107,6 +106,14 @@
             min-width: 0;
         }
 
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 768px) {
             .plots-container {
                 flex-direction: column;
@@ -136,6 +143,11 @@
         <div class="plot-container" id="phasePlot"></div>
         <div class="plot-container" id="timePlot"></div>
     </div>
+
+    <footer>
+        &copy; 2025 Shelvean Kapita. All rights reserved.<br>
+        Last modified: March 5, 2025
+    </footer>
 
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
