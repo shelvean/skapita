@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+2<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta name="description" content="Simple Pendulum Simulation Second Order Differential Equation, Damping, Spring Constant">
@@ -442,7 +442,7 @@
 
                 // If initial angle is pi, adjust to pi - 0.01
                 if (theta0 === Math.PI) {
-                    theta0 = Math.PI - 0.01;
+                    theta0 = Math.PI - 1e-12;
                 }
 
                 // Validate physical constraints
