@@ -176,6 +176,16 @@
       font-size: 0.9rem;
     }
 
+    .footer {
+      margin-top: 20px;
+      padding: 10px 0;
+      text-align: center;
+      color: var(--text);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--surface);
+      width: 100%;
+    }
+
     @media (max-width: 840px) {
       .content-wrapper {
         flex-direction: column;
@@ -223,6 +233,10 @@
         </div>
       </div>
       <canvas id="simulationCanvas" width="500" height="600"></canvas>
+    </div>
+    <div class="footer">
+      © 2025 Shelvean Kapita. All rights reserved.<br>
+      Last modified: March 5, 2025
     </div>
   </div>
 
@@ -459,7 +473,6 @@
     }
 
     function resetSimulation() {
-      // Update all parameters from input fields
       m = parseFloat(document.getElementById('mass').value) || 4;
       k = parseFloat(document.getElementById('springConstant').value) || 36;
       const userC = parseFloat(document.getElementById('damping').value) || 0;
@@ -467,7 +480,6 @@
       y0 = parseFloat(document.getElementById('initialDisplacement').value) || 0;
       v0 = parseFloat(document.getElementById('initialVelocity').value) || 0;
 
-      // Update the equation display
       const equationElement = document.getElementById('equation');
       if (equationElement) {
         try {
@@ -482,15 +494,13 @@
         }
       }
 
-      // Reset simulation state
       y = y0;
       v = v0;
       t = 0;
       graphData.length = 0;
-      graphData.push({ t, y }); // Include initial state at t=0
+      graphData.push({ t, y });
       isSimulationRunning = true;
 
-      // Redraw
       drawSpringMass();
       drawGraph();
       hideAlert();
@@ -515,7 +525,6 @@
         );
       }
       
-      // Initialize with input values instead of hardcoded defaults
       m = parseFloat(document.getElementById('mass').value) || 4;
       k = parseFloat(document.getElementById('springConstant').value) || 36;
       const userC = parseFloat(document.getElementById('damping').value) || 0;
