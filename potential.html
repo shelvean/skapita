@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Damped Particle Rolling on Potential Curve</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            margin: 20px;
+        }
+        canvas { 
+            border: 2px solid #666;
+            border-radius: 4px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 10px;
+        }
+        #controls { 
+            margin: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        label { 
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        button {
+            padding: 8px 15px;
+            margin: 0 5px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .equations {
+            margin: 20px auto;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            max-width: 800px;
+        }
+        .equations p {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <h2>Particle on a Potential Curve</h2>
+    
+    <div class="equations">
+        <p>Equation of Motion: \( x'' + \beta x' + (1 - x^2) = 0, \quad x(0) = x_0, \quad x'(0) = v_0 \)</p>
+        <p>Potential Function: \( U(x) = x - \dfrac{1}{3}x^3 \)</p>
+    </div>
+
+    <div id="controls">
+        <label>Initial Position (\( x_0 \)):</label>
+        <input type="number" id="x0" value="2.0" step="0.1" min="-2.5" max="2.5">
+        
+        <label>Initial Velocity (\( v_0 \)):</label>
+        <input type="number" id="v0" value="-2.0" step="0.1">
+        
+        <label>Damping Coefficient (\( \beta \)):</label>
+        <input type="number" id="beta" value="0.08" step="0.01" min="0" max="1">
+        
+        <button onclick="startSimulation()">Start</button>
+        <button onclick="stopSimulation()">Stop</button>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+        <div>
+            <canvas id="curveCanvas" width="500" height="400"></canvas>
+            <div style="margin-top: 10px; font-weight: bold;">Potential Curve</div>
+        </div>
+        <div>
+            <canvas id="phaseCanvas" width="400" height="400"></canvas>
+            <div style="margin-top: 10px; font-weight: bold;">Velocity vs Position</div>
+        </div>
+    </div>
+    <footer style="
+        margin: 30px 0 20px 0;
+        padding: 15px;
+        text-align: center;
+        font-size: 0.9em;
+        color: #666;
+        border-top: 1px solid #eee;
+    ">
+        &copy; 2025 Shelvean Kapita. All rights reserved.<br>
+        Last modified: March 6, 2025
+    </footer>
+
+    <script>
+        // Potential function and physics calculations
+        function potential(x) { return x - (x ** 3) / 3; }
+        function acceleration(x, v, beta) { return -beta * v + (x ** 2 - 1); }
+
+        // RK4 solver
+        function rk4Step(x, v, dt, beta) {
+            const k1x = v;
+            const k1v = acceleration(x, v, beta);
+            const k2x = v + 0.5 * dt * k1v;
+            const k2v = acceleration(x + 0.5 * dt * k1x, v + 0.5 * dt * k1v, beta);
+            const k3x = v + 0.5 * dt * k2v;
+            const k3v = acceleration(x + 0.5 * dt * k2x, v + 0.5 * dt * k2v, beta);
+            const k4x = v + dt * k3v;
+            const k4v = acceleration(x + dt * k3x, v + dt * k3v, beta);
+
+            return {
+                x: x + (dt/6) * (k1x + 2*k2x + 2*k3x + k4x),
+                v: v + (dt/6) * (k1v + 2*k2v + 2*k3v + k4v)
+            };
+        }
+
+        // Canvas setup
+        const curveCanvas = document.getElementById('curveCanvas');
+        const curveCtx = curveCanvas.getContext('2d');
+        const phaseCanvas = document.getElementById('phaseCanvas');
+        const phaseCtx = phaseCanvas.getContext('2d');
+        const ballRadius = 15;
+        const bottomMargin = 30;
+
+        // Coordinate transformations for potential curve
+        const xToCurve = x => ((x + 2.5)/5) * curveCanvas.width;
+        const yToCurve = y => {
+            const drawingHeight = curveCanvas.height - bottomMargin;
+            return drawingHeight - ((y + 2)/4) * drawingHeight;
+        };
+
+        // Phase plot transformations with dynamic scaling
+        let phaseBounds = { xMin: -2.5, xMax: 2.5, vMin: -2, vMax: 2 };
+        function updatePhaseBounds(x, v) {
+            phaseBounds.xMin = Math.min(phaseBounds.xMin, x);
+            phaseBounds.xMax = Math.max(phaseBounds.xMax, x);
+            phaseBounds.vMin = Math.min(phaseBounds.vMin, v);
+            phaseBounds.vMax = Math.max(phaseBounds.vMax, v);
+            
+            if (phaseBounds.xMax - phaseBounds.xMin < 0.5) {
+                phaseBounds.xMax = phaseBounds.xMin + 0.5;
+            }
+            if (phaseBounds.vMax - phaseBounds.vMin < 0.5) {
+                phaseBounds.vMax = phaseBounds.vMin + 0.5;
+            }
+        }
+
+        const plotPadding = 50;
+        const plotSize = 280;
+        const plotLeft = (phaseCanvas.width - plotSize) / 2;
+        const plotTop = (phaseCanvas.height - plotSize) / 2;
+
+        function xToPhase(x) {
+            return plotLeft + ((x - phaseBounds.xMin) / (phaseBounds.xMax - phaseBounds.xMin)) * plotSize;
+        }
+
+        function vToPhase(v) {
+            return plotTop + plotSize - ((v - phaseBounds.vMin) / (phaseBounds.vMax - phaseBounds.vMin)) * plotSize;
+        }
+
+        // Drawing functions
+        function drawPotentialCurve() {
+            curveCtx.clearRect(0, 0, curveCanvas.width, curveCanvas.height);
+            
+            curveCtx.beginPath();
+            curveCtx.moveTo(0, curveCanvas.height - bottomMargin);
+            for(let x = -2.5; x <= 2.5; x += 0.05) {
+                curveCtx.lineTo(xToCurve(x), yToCurve(potential(x)));
+            }
+            curveCtx.lineTo(curveCanvas.width, curveCanvas.height - bottomMargin);
+            curveCtx.closePath();
+            curveCtx.fillStyle = '#87CEEB';
+            curveCtx.fill();
+            curveCtx.strokeStyle = 'blue';
+            curveCtx.lineWidth = 2;
+            curveCtx.stroke();
+
+            curveCtx.strokeStyle = 'black';
+            curveCtx.lineWidth = 1;
+            curveCtx.beginPath();
+            for(let x = -2.5; x <= 2.5; x += 0.5) {
+                const px = xToCurve(x);
+                curveCtx.moveTo(px, curveCanvas.height - bottomMargin - 5);
+                curveCtx.lineTo(px, curveCanvas.height - bottomMargin);
+                curveCtx.fillStyle = 'black';
+                curveCtx.fillText(x.toFixed(1), px, curveCanvas.height - bottomMargin + 15);
+            }
+            curveCtx.stroke();
+        }
+
+        function drawPhasePlot() {
+            phaseCtx.clearRect(0, 0, phaseCanvas.width, phaseCanvas.height);
+            
+            phaseCtx.strokeStyle = 'black';
+            phaseCtx.lineWidth = 1;
+            
+            phaseCtx.beginPath();
+            phaseCtx.moveTo(plotPadding, phaseCanvas.height - plotPadding);
+            phaseCtx.lineTo(phaseCanvas.width - plotPadding, phaseCanvas.height - plotPadding);
+            phaseCtx.moveTo(plotPadding, plotPadding);
+            phaseCtx.lineTo(plotPadding, phaseCanvas.height - plotPadding);
+            phaseCtx.stroke();
+
+            phaseCtx.fillStyle = 'black';
+            phaseCtx.font = '12px Arial';
+            phaseCtx.textAlign = 'center';
+            
+            const xLabels = [
+                phaseBounds.xMin.toFixed(1), 
+                ((phaseBounds.xMin + phaseBounds.xMax)/2).toFixed(1), 
+                phaseBounds.xMax.toFixed(1)
+            ];
+            xLabels.forEach((xVal, i) => {
+                const xPos = phaseBounds.xMin + (i * (phaseBounds.xMax - phaseBounds.xMin)/2);
+                const px = xToPhase(xPos);
+                phaseCtx.fillText(xVal, px, phaseCanvas.height - plotPadding + 15);
+            });
+
+            phaseCtx.textAlign = 'right';
+            const vLabels = [
+                phaseBounds.vMin.toFixed(1), 
+                ((phaseBounds.vMin + phaseBounds.vMax)/2).toFixed(1), 
+                phaseBounds.vMax.toFixed(1)
+            ];
+            vLabels.forEach((vVal, i) => {
+                const vPos = phaseBounds.vMin + (i * (phaseBounds.vMax - phaseBounds.vMin)/2);
+                const py = vToPhase(vPos);
+                phaseCtx.fillText(vVal, plotPadding - 5, py + 5);
+            });
+
+            if (phaseData.length > 1) {
+                phaseCtx.beginPath();
+                phaseCtx.moveTo(xToPhase(phaseData[0].x), vToPhase(phaseData[0].y));
+                for (let i = 1; i < phaseData.length; i++) {
+                    phaseCtx.lineTo(xToPhase(phaseData[i].x), vToPhase(phaseData[i].y));
+                }
+                phaseCtx.strokeStyle = 'blue';
+                phaseCtx.lineWidth = 1;
+                phaseCtx.stroke();
+            }
+
+            if (phaseData.length > 0) {
+                const current = phaseData[phaseData.length - 1];
+                phaseCtx.fillStyle = 'red';
+                phaseCtx.beginPath();
+                phaseCtx.arc(xToPhase(current.x), vToPhase(current.y), 3, 0, Math.PI*2);
+                phaseCtx.fill();
+            }
+        }
+
+        // Simulation state
+        let x = 0, v = 0, beta = 0.1, running = false;
+        let phaseData = [];
+        let animationFrameId = null;
+
+        function animate() {
+            if (!running) return;
+
+            const result = rk4Step(x, v, 0.04, beta);
+            x = result.x;
+            v = result.v;
+
+            if (Math.abs(x) > 2.5) {
+                running = false;
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+                return;
+            }
+
+            phaseData.push({x, y: v});
+            updatePhaseBounds(x, v);
+
+            drawPotentialCurve();
+            const canvasX = xToCurve(x);
+            const canvasY = yToCurve(potential(x)) - ballRadius;
+            curveCtx.beginPath();
+            curveCtx.arc(canvasX, canvasY, ballRadius, 0, Math.PI*2);
+            curveCtx.fillStyle = 'brown';
+            curveCtx.fill();
+
+            drawPhasePlot();
+            animationFrameId = requestAnimationFrame(animate);
+        }
+
+        // Simulation control functions
+        function startSimulation() {
+            stopSimulation();
+            
+            running = true;
+            x = parseFloat(document.getElementById('x0').value);
+            v = parseFloat(document.getElementById('v0').value);
+            beta = parseFloat(document.getElementById('beta').value);
+            phaseData = [];
+            phaseBounds = { xMin: x, xMax: x, vMin: v, vMax: v };
+            animate();
+        }
+
+        function stopSimulation() {
+            running = false;
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+        }
+
+        // Initial setup
+        window.onload = function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ],
+                throwOnError: false
+            });
+            drawPotentialCurve();
+            drawPhasePlot();
+            startSimulation();  // Add this line to start automatically
+        };
+    </script>
+</body>
+</html>
