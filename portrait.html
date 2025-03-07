@@ -317,7 +317,6 @@
                     document.getElementById('c').value = example.dataset.c;
                     document.getElementById('d').value = example.dataset.d;
                     drawPhasePortrait();
-                    document.getElementById('instruction').style.display = 'none';
                 });
                 katex.render(example.querySelector('.matrix-latex').textContent, 
                     example.querySelector('.matrix-latex'), 
@@ -328,7 +327,7 @@
             // Canvas click handler
             const canvas = document.getElementById('canvas');
             canvas.addEventListener('click', event => {
-                const rect = canvas.getBoundingClientRect();  // Fixed typo here
+                const rect = canvas.getBoundingClientRect();
                 const x = event.clientX - rect.left;
                 const y = event.clientY - rect.top;
                 const centerX = canvas.width / 2;
@@ -338,7 +337,7 @@
                 const systemY = (centerY - y) / scale;
                 userPoints.push({ x: systemX, y: systemY });
                 drawPhasePortrait();
-                document.getElementById('instruction').style.display = 'none';
+                document.getElementById('instruction').style.display = 'none'; // Hide instruction after canvas click
             });
 
             drawPhasePortrait();
@@ -347,7 +346,7 @@
         function clearUserPoints() {
             userPoints = [];
             drawPhasePortrait();
-            document.getElementById('instruction').style.display = 'block';
+            document.getElementById('instruction').style.display = 'block'; // Show instruction when clearing
         }
 
         function drawPhasePortrait() {
