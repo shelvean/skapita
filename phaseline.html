@@ -118,7 +118,7 @@
     </div>
     <footer>
         © 2025 Shelvean Kapita. All rights reserved.<br>
-        Last modified: March 5, 2025
+        Last modified: March 7, 2025
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.js"></script>
@@ -224,39 +224,60 @@
             ctx.fillStyle = '#000';
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 3;
-
+            
+            // First determine the minimum distance between any two points for arrow scaling
+            const allPoints = [yMin, ...roots, yMax];
+            let minDistance = Infinity;
+            
+            for (let i = 0; i < allPoints.length - 1; i++) {
+                const distance = allPoints[i+1] - allPoints[i];
+                if (distance < minDistance) {
+                    minDistance = distance;
+                }
+            }
+            
+            // Scale arrow size based on minimum distance
+            const baseArrowSize = 15;
+            const arrowSize = Math.max(5, Math.min(baseArrowSize, baseArrowSize * (minDistance / 1.5)));
+            
             const drawArrow = (x, direction) => {
                 ctx.beginPath();
                 if (direction === 'right') {
-                    ctx.moveTo(x - 15, zeroY - 10);
+                    ctx.moveTo(x - arrowSize, zeroY - arrowSize * 2/3);
                     ctx.lineTo(x, zeroY);
-                    ctx.lineTo(x - 15, zeroY + 10);
+                    ctx.lineTo(x - arrowSize, zeroY + arrowSize * 2/3);
                 } else {
-                    ctx.moveTo(x + 15, zeroY - 10);
+                    ctx.moveTo(x + arrowSize, zeroY - arrowSize * 2/3);
                     ctx.lineTo(x, zeroY);
-                    ctx.lineTo(x + 15, zeroY + 10);
+                    ctx.lineTo(x + arrowSize, zeroY + arrowSize * 2/3);
                 }
                 ctx.fill();
             };
 
-            if (roots.length > 0) {
-                const leftX = leftMargin + (roots[0] - 1.5 - yMin) * scaleX;
-                drawArrow(leftX, f(roots[0] - 2) > 0 ? 'right' : 'left');
-                
-                const rightX = leftMargin + (roots[roots.length-1] + 0.5 - yMin) * scaleX;
-                drawArrow(rightX, f(roots[roots.length-1] + 1) > 0 ? 'right' : 'left');
+            // If no equilibrium points, place one arrow in the middle
+            if (roots.length === 0) {
+                const midY = (yMax + yMin) / 2;
+                const midX = (midY - yMin) * scaleX;
+                drawArrow(midX, f(midY) > 0 ? 'right' : 'left');
+                return;
             }
-
-            const intervals = [-Infinity, ...roots, Infinity];
-            for (let i = 1; i < intervals.length; i++) {
-                const left = intervals[i-1];
-                const right = intervals[i];
-                const mid = left === -Infinity ? roots[0] - 1 : 
-                           right === Infinity ? roots[roots.length-1] + 0.5 : 
-                           (left + right)/2;
-                const x = leftMargin + (mid - yMin) * scaleX;
-                drawArrow(x, f(mid) > 0 ? 'right' : 'left');
+            
+            // (a) Place arrows at midpoints between consecutive equilibrium points
+            for (let i = 0; i < roots.length - 1; i++) {
+                const midY = (roots[i] + roots[i+1]) / 2;
+                const midX = (midY - yMin) * scaleX;
+                drawArrow(midX, f(midY) > 0 ? 'right' : 'left');
             }
+            
+            // (b) Place arrow at midpoint between leftmost equilibrium point and left endpoint
+            const leftMidY = (roots[0] + yMin) / 2;
+            const leftMidX = (leftMidY - yMin) * scaleX;
+            drawArrow(leftMidX, f(leftMidY) > 0 ? 'right' : 'left');
+            
+            // (c) Place arrow at midpoint between rightmost equilibrium point and right endpoint
+            const rightMidY = (roots[roots.length-1] + yMax) / 2;
+            const rightMidX = (rightMidY - yMin) * scaleX;
+            drawArrow(rightMidX, f(rightMidY) > 0 ? 'right' : 'left');
         }
 
         function drawPlot(f) {
