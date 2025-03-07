@@ -1,410 +1,455 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta name="description" content="Phase Diagram, Phase Portrait Nonlinear System Trajectories Direction Fields" />
-        <meta name="keywords" content="Nonlinear, System, Direction Fields, Phase Diagram, Portrait, Slope Fields, Trajectories" />
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() { dataLayer.push(arguments); }
-            gtag("js", new Date());
-            gtag("config", "G-5B8PRB2WZT");
-        </script>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Nonlinear System Phase Plane Diagram</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
-        <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-            @keyframes float {
-                0%, 100% { transform: translateX(-50%) translateY(0); }
-                50% { transform: translateX(-50%) translateY(-5px); }
+
+<head>
+    <meta name="description" content="Phase Diagram, Phase Portrait Nonlinear System Trajectories Direction Fields" />
+    <meta name="keywords"
+        content="Nonlinear, System, Direction Fields, Phase Diagram, Portrait, Slope Fields, Trajectories" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag("js", new Date());
+        gtag("config", "G-5B8PRB2WZT");
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nonlinear System Phase Plane Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
             }
-        </style>
-    </head>
-    <body class="font-sans bg-gray-100 flex justify-center items-center min-h-screen">
-        <div class="flex flex-col md:flex-row gap-5 max-w-6xl mx-auto">
-            <!-- Main Content Area -->
-            <div class="bg-white p-8 rounded-lg shadow-md flex-1">
-                <h1 class="text-center text-gray-800 text-2xl font-bold">Nonlinear System Phase Portrait</h1>
-                <div class="equation text-center" id="equation-display"></div>
-                
-                <!-- Function Inputs on Same Row with Labels -->
-                <div class="mb-4 flex flex-col sm:flex-row gap-4">
-                    <div class="flex-1 flex items-center gap-2">
-                        <div class="latex-label" id="f-label"></div>
-                        <input type="text" id="fInput" value="y" class="w-full sm:w-3/4 p-2 border border-gray-300 rounded text-sm" />
-                    </div>
-                    <div class="flex-1 flex items-center gap-2">
-                        <div class="latex-label" id="g-label"></div>
-                        <input type="text" id="gInput" value="-0.1*y - sin(x)" class="w-full sm:w-3/4 p-2 border border-gray-300 rounded text-sm" />
-                    </div>
+
+            50% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+    </style>
+</head>
+
+<body class="font-sans bg-gray-100 flex flex-col justify-center items-center min-h-screen">
+    <div class="flex flex-col md:flex-row gap-5 max-w-6xl mx-auto w-full">
+        <!-- Main Content Area - Expanded to fill remaining space -->
+        <div class="bg-white p-8 rounded-lg shadow-md flex-1">
+            <h1 class="text-center text-gray-800 text-2xl font-bold">Nonlinear System Phase Portrait</h1>
+            <div class="equation text-center" id="equation-display"></div>
+
+            <!-- Function Inputs on Same Row with Labels -->
+            <div class="mb-4 flex flex-col sm:flex-row gap-4">
+                <div class="flex-1 flex items-center gap-2">
+                    <div class="latex-label" id="f-label"></div>
+                    <input type="text" id="fInput" value="y"
+                        class="w-full sm:w-3/4 p-2 border border-gray-300 rounded text-sm" />
                 </div>
-                
-                <!-- Range Inputs -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    <div class="input-group">
-                        <label for="xMin" class="block mb-1 text-sm">X Min:</label>
-                        <input type="number" id="xMin" value="-7" class="w-full p-2 border border-gray-300 rounded text-sm" />
-                    </div>
-                    <div class="input-group">
-                        <label for="xMax" class="block mb-1 text-sm">X Max:</label>
-                        <input type="number" id="xMax" value="7" class="w-full p-2 border border-gray-300 rounded text-sm" />
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    <div class="input-group">
-                        <label for="yMin" class="block mb-1 text-sm">Y Min:</label>
-                        <input type="number" id="yMin" value="-5" class="w-full p-2 border border-gray-300 rounded text-sm" />
-                    </div>
-                    <div class="input-group">
-                        <label for="yMax" class="block mb-1 text-sm">Y Max:</label>
-                        <input type="number" id="yMax" value="5" class="w-full p-2 border border-gray-300 rounded text-sm" />
-                    </div>
-                </div>
-                
-                <!-- Arrow Count Input -->
-                <div class="mb-4">
-                    <div class="input-group">
-                        <label for="arrowCount" class="block mb-1 text-sm">Number of Arrows per Axis:</label>
-                        <input type="number" id="arrowCount" value="45" class="w-full p-2 border border-gray-300 rounded text-sm" />
-                    </div>
-                </div>
-                
-                <!-- Buttons -->
-                <div class="flex gap-2 mb-4">
-                    <button class="flex-1 bg-blue-500 text-white py-2 px-4 rounded cursor-pointer text-base hover:bg-blue-600" onclick="drawPhasePlane()">Generate Phase Plane</button>
-                    <button class="flex-1 bg-red-500 text-white py-2 px-4 rounded cursor-pointer text-base hover:bg-red-600" onclick="clearTrajectories()">Clear Trajectories</button>
-                </div>
-                
-                <!-- Canvas Container -->
-                <div id="plot-container" class="relative mt-4">
-                    <canvas id="canvas" class="border border-gray-300 w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]"></canvas>
-                    <div class="absolute top-5 left-1/2 transform -translate-x-1/2 bg-white/90 p-2 rounded-full text-sm text-blue-600 shadow-md animate-[float_3s_ease-in-out_infinite]" id="instruction">✨ Click anywhere on the graph to draw trajectories</div>
+                <div class="flex-1 flex items-center gap-2">
+                    <div class="latex-label" id="g-label"></div>
+                    <input type="text" id="gInput" value="-0.1*y - sin(x)"
+                        class="w-full sm:w-3/4 p-2 border border-gray-300 rounded text-sm" />
                 </div>
             </div>
-            
-            <!-- Examples Column -->
-            <div class="w-full md:w-80 bg-white p-4 rounded-lg shadow-md">
-                <h2 class="text-center text-gray-800 text-xl font-bold">Example Systems (click)</h2>
-                <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="y" data-g="-0.1*y - sin(x)" data-xmin="-7" data-xmax="7" data-ymin="-5" data-ymax="5">
-                    <h3 class="text-lg font-semibold">Damped Pendulum</h3>
-                    <div class="system-equations">\begin{cases} \dot{x} = y \\ \dot{y} = -0.1 y - \sin(x) \end{cases}</div>
-                    <div class="domain">Domain: [-7, 7] × [-5, 5]</div>
+
+            <!-- Range Inputs on Same Row -->
+            <div class="mb-4 flex items-center gap-4">
+                <div class="input-group flex items-center gap-1">
+                    <div class="latex-label" id="xmin-label"></div>
+                    <input type="number" id="xMin" value="-7"
+                        class="w-20 p-2 border border-gray-300 rounded text-sm" />
                 </div>
-                <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="y" data-g="(1 - x^2)*y - x" data-xmin="-3" data-xmax="3" data-ymin="-3" data-ymax="3">
-                    <h3 class="text-lg font-semibold">Van der Pol Oscillator</h3>
-                    <div class="system-equations">\begin{cases} \dot{x} = y \\ \dot{y} = (1 - x^2) y - x \end{cases}</div>
-                    <div class="domain">Domain: [-3, 3] × [-3, 3]</div>
+                <div class="input-group flex items-center gap-1">
+                    <div class="latex-label" id="xmax-label"></div>
+                    <input type="number" id="xMax" value="7"
+                        class="w-20 p-2 border border-gray-300 rounded text-sm" />
                 </div>
-                <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="1*x - 0.1*x*y" data-g="0.075*x*y - 1.5*y" data-xmin="0" data-xmax="50" data-ymin="0" data-ymax="30">
-                    <h3 class="text-lg font-semibold">Lotka-Volterra</h3>
-                    <div class="system-equations">\begin{cases} \dot{x} =  x - 0.1 \cdot x y \\ \dot{y} = 0.075 \cdot x y - 1.5 \cdot y \end{cases}</div>
-                    <div class="domain">Domain: [0, 50] × [0, 30]</div>
+                <div class="input-group flex items-center gap-1">
+                    <div class="latex-label" id="ymin-label"></div>
+                    <input type="number" id="yMin" value="-5"
+                        class="w-20 p-2 border border-gray-300 rounded text-sm" />
                 </div>
-                <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="y" data-g="x - x^3 - 0.15*y" data-xmin="-2" data-xmax="2" data-ymin="-2" data-ymax="2">
-                    <h3 class="text-lg font-semibold">Duffing Oscillator</h3>
-                    <div class="system-equations">\begin{cases} \dot{x} = y \\ \dot{y} = x - x^3 - 0.15 y \end{cases}</div>
-                    <div class="domain">Domain: [-2, 2] × [-2, 2]</div>
+                <div class="input-group flex items-center gap-1">
+                    <div class="latex-label" id="ymax-label"></div>
+                    <input type="number" id="yMax" value="5"
+                        class="w-20 p-2 border border-gray-300 rounded text-sm" />
                 </div>
-                <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="x - x^3" data-g="-y" data-xmin="-2" data-xmax="2" data-ymin="-2" data-ymax="2">
-                    <h3 class="text-lg font-semibold">Simple Nonlinear</h3>
-                    <div class="system-equations">\begin{cases} \dot{x} = x - x^3 \\ \dot{y} = -y \end{cases}</div>
-                    <div class="domain">Domain: [-2, 2] × [-2, 2]</div>
+            </div>
+
+            <!-- Arrow Count Input (separate row) -->
+            <div class="mb-4">
+                <div class="input-group">
+                    <label for="arrowCount" class="block mb-1 text-sm">Number of Arrows per Axis:</label>
+                    <input type="number" id="arrowCount" value="35"
+                        class="w-1/4 p-2 border border-gray-300 rounded text-sm" />
                 </div>
-                <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="-y + x*(1 - x^2 - y^2)" data-g="x + y*(1 - x^2 - y^2)" data-xmin="-2" data-xmax="2" data-ymin="-2" data-ymax="2">
-                    <h3 class="text-lg font-semibold">Limit Cycle</h3>
-                    <div class="system-equations">\begin{cases} \dot{x} = -y + x(1 - x^2 - y^2) \\ \dot{y} = x + y(1 - x^2 - y^2) \end{cases}</div>
-                    <div class="domain">Domain: [-2, 2] × [-2, 2]</div>
-                </div>
-                <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="y" data-g="-0.1*y-x*(1-x)" data-xmin="-2" data-xmax="2" data-ymin="-2" data-ymax="2">
-                    <h3 class="text-lg font-semibold">Escape Equation</h3>
-                    <div class="system-equations">\begin{cases} \dot{x} = y \\ \dot{y} = -0.1y-x(1-x) \end{cases}</div>
-                    <div class="domain">Domain: [-2, 2] × [-2, 2]</div>
-                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-2 mb-4">
+                <button
+                    class="flex-1 bg-blue-500 text-white py-2 px-4 rounded cursor-pointer text-base hover:bg-blue-600"
+                    onclick="drawPhasePlane()">Generate Phase Plane</button>
+                <button
+                    class="flex-1 bg-red-500 text-white py-2 px-4 rounded cursor-pointer text-base hover:bg-red-600"
+                    onclick="clearTrajectories()">Clear Trajectories</button>
+            </div>
+
+            <!-- Canvas Container -->
+            <div id="plot-container" class="relative mt-4">
+                <canvas id="canvas"
+                    class="border border-gray-300 w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]"></canvas>
+                <div class="absolute top-5 left-1/2 transform -translate-x-1/2 bg-white/90 p-2 rounded-full text-sm text-blue-600 shadow-md animate-[float_3s_ease-in-out_infinite]"
+                    id="instruction">✨ Click anywhere on the graph to draw trajectories</div>
             </div>
         </div>
 
-        <footer class="text-center mt-8 p-4 text-gray-600 text-sm">
-            © 2025 Shelvean Kapita. All rights reserved.<br>
-            Last modified: March 5, 2025
-        </footer>
-        
-        <!-- External Scripts -->
-        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.min.js"></script>
-        
-        <!-- JavaScript Logic -->
-        <script>
-            let userPoints = [];
-            const canvas = document.getElementById("canvas");
-            const ctx = canvas.getContext("2d");
-            let scaleLabels = [];
-            const instruction = document.getElementById("instruction");
+        <!-- Examples Column - Fixed width -->
+        <div class="w-full md:w-80 bg-white p-4 rounded-lg shadow-md">
+            <h2 class="text-center text-gray-800 text-xl font-bold">Example Systems (click)</h2>
+            <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="y" data-g="-0.1*y - sin(x)"
+                data-xmin="-7" data-xmax="7" data-ymin="-5" data-ymax="5">
+                <h3 class="text-lg font-semibold">Damped Pendulum</h3>
+                <div class="system-equations">\begin{cases} \dot{x} = y \\ \dot{y} = -0.1 y - \sin(x) \end{cases}</div>
+                <div class="domain">Domain: [-7, 7] × [-5, 5]</div>
+            </div>
+            <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="y" data-g="(1 - x^2)*y - x"
+                data-xmin="-3" data-xmax="3" data-ymin="-3" data-ymax="3">
+                <h3 class="text-lg font-semibold">Van der Pol Oscillator</h3>
+                <div class="system-equations">\begin{cases} \dot{x} = y \\ \dot{y} = (1 - x^2) y - x \end{cases}</div>
+                <div class="domain">Domain: [-3, 3] × [-3, 3]</div>
+            </div>
+            <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="1*x - 0.1*x*y"
+                data-g="0.075*x*y - 1.5*y" data-xmin="0" data-xmax="50" data-ymin="0" data-ymax="30">
+                <h3 class="text-lg font-semibold">Lotka-Volterra</h3>
+                <div class="system-equations">\begin{cases} \dot{x} = x - 0.1 \cdot x y \\ \dot{y} = 0.075 \cdot x y - 1.5
+                    \cdot y \end{cases}</div>
+                <div class="domain">Domain: [0, 50] × [0, 30]</div>
+            </div>
+            <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="y" data-g="x - x^3 - 0.15*y"
+                data-xmin="-2" data-xmax="2" data-ymin="-2" data-ymax="2">
+                <h3 class="text-lg font-semibold">Duffing Oscillator</h3>
+                <div class="system-equations">\begin{cases} \dot{x} = y \\ \dot{y} = x - x^3 - 0.15 y \end{cases}</div>
+                <div class="domain">Domain: [-2, 2] × [-2, 2]</div>
+            </div>
+            <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="x - x^3" data-g="-y" data-xmin="-2"
+                data-xmax="2" data-ymin="-2" data-ymax="2">
+                <h3 class="text-lg font-semibold">Simple Nonlinear</h3>
+                <div class="system-equations">\begin{cases} \dot{x} = x - x^3 \\ \dot{y} = -y \end{cases}</div>
+                <div class="domain">Domain: [-2, 2] × [-2, 2]</div>
+            </div>
+            <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="-y + x*(1 - x^2 - y^2)"
+                data-g="x + y*(1 - x^2 - y^2)" data-xmin="-2" data-xmax="2" data-ymin="-2" data-ymax="2">
+                <h3 class="text-lg font-semibold">Limit Cycle</h3>
+                <div class="system-equations">\begin{cases} \dot{x} = -y + x(1 - x^2 - y^2) \\ \dot{y} = x + y(1 - x^2 - y^2)
+                    \end{cases}</div>
+                <div class="domain">Domain: [-2, 2] × [-2, 2]</div>
+            </div>
+            <div class="example cursor-pointer mb-4 hover:bg-gray-50" data-f="y" data-g="-0.1*y-x*(1-x)"
+                data-xmin="-2" data-xmax="2" data-ymin="-2" data-ymax="2">
+                <h3 class="text-lg font-semibold">Escape Equation</h3>
+                <div class="system-equations">\begin{cases} \dot{x} = y \\ \dot{y} = -0.1y-x(1-x) \end{cases}</div>
+                <div class="domain">Domain: [-2, 2] × [-2, 2]</div>
+            </div>
+        </div>
+    </div>
 
-            // Set canvas resolution based on its size
-            function setCanvasResolution() {
-                canvas.width = canvas.clientWidth;
-                canvas.height = canvas.clientHeight;
-            }
+    <!-- Footer moved to bottom -->
+    <footer class="text-center mt-8 p-4 text-gray-600 text-sm w-full">
+        © 2025 Shelvean Kapita. All rights reserved.<br>
+        Last modified: March 5, 2025
+    </footer>
 
-            // Initialize page
-            document.addEventListener("DOMContentLoaded", function () {
-                setCanvasResolution();
-                katex.render("f(x,y)=", document.getElementById("f-label"));
-                katex.render("g(x,y)=", document.getElementById("g-label"));
-                katex.render(`\\begin{cases}\\dot{x}=f(x,y) \\\\ \\dot{y}=g(x,y) \\end{cases}`, 
-                           document.getElementById("equation-display"), 
-                           { throwOnError: false, displayMode: true });
+    <!-- External Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.min.js"></script>
 
-                // Canvas click event for trajectories
-                canvas.addEventListener("click", function (event) {
-                    const rect = canvas.getBoundingClientRect();
-                    const clickX = event.clientX - rect.left;
-                    const clickY = event.clientY - rect.top;
-                    const normX = clickX / canvas.width;
-                    const normY = clickY / canvas.height;
-                    const xMin = parseFloat(document.getElementById("xMin").value);
-                    const xMax = parseFloat(document.getElementById("xMax").value);
-                    const yMin = parseFloat(document.getElementById("yMin").value);
-                    const yMax = parseFloat(document.getElementById("yMax").value);
-                    const systemX = xMin + normX * (xMax - xMin);
-                    const systemY = yMax - normY * (yMax - yMin);
-                    userPoints.push({ x: systemX, y: systemY });
-                    drawPhasePlane();
-                    instruction.style.display = "none";
-                });
+    <!-- JavaScript Logic -->
+    <script>
+        let userPoints = [];
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let scaleLabels = [];
+        const instruction = document.getElementById("instruction");
 
-                // Render example equations with KaTeX
-                document.querySelectorAll('.system-equations').forEach(el => {
-                    katex.render(el.textContent, el, { throwOnError: false, displayMode: true });
-                });
+        // Set canvas resolution based on its size
+        function setCanvasResolution() {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+        }
 
-                // Example system click handlers
-                document.querySelectorAll('.example').forEach(example => {
-                    example.addEventListener('click', () => {
-                        userPoints = [];
-                        document.getElementById('fInput').value = example.dataset.f;
-                        document.getElementById('gInput').value = example.dataset.g;
-                        document.getElementById('xMin').value = example.dataset.xmin;
-                        document.getElementById('xMax').value = example.dataset.xmax;
-                        document.getElementById('yMin').value = example.dataset.ymin;
-                        document.getElementById('yMax').value = example.dataset.ymax;
-                        drawPhasePlane();
-                    });
-                });
+        // Initialize page
+        document.addEventListener("DOMContentLoaded", function () {
+            setCanvasResolution();
+            katex.render("f(x,y)=", document.getElementById("f-label"));
+            katex.render("g(x,y)=", document.getElementById("g-label"));
+            katex.render(`\\begin{cases}\\dot{x}=f(x,y) \\\\ \\dot{y}=g(x,y) \\end{cases}`,
+                document.getElementById("equation-display"),
+                { throwOnError: false, displayMode: true });
 
-                // Initial drawing
-                drawPhasePlane();
-            });
+            // Render xMin, xMax, yMin, yMax labels using KaTeX
+            katex.render("x_{{min}} =", document.getElementById("xmin-label"));
+            katex.render("x_{{max}} =", document.getElementById("xmax-label"));
+            katex.render("y_{{min}} =", document.getElementById("ymin-label"));
+            katex.render("y_{{max}} =", document.getElementById("ymax-label"));
 
-            // Draw the phase plane
-            function drawPhasePlane() {
-                setCanvasResolution();
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                scaleLabels.forEach((label) => label.remove());
-                scaleLabels = [];
-                
-                const f = document.getElementById("fInput").value;
-                const g = document.getElementById("gInput").value;
+            // Canvas click event for trajectories
+            canvas.addEventListener("click", function (event) {
+                const rect = canvas.getBoundingClientRect();
+                const clickX = event.clientX - rect.left;
+                const clickY = event.clientY - rect.top;
+                const normX = clickX / canvas.width;
+                const normY = clickY / canvas.height;
                 const xMin = parseFloat(document.getElementById("xMin").value);
                 const xMax = parseFloat(document.getElementById("xMax").value);
                 const yMin = parseFloat(document.getElementById("yMin").value);
                 const yMax = parseFloat(document.getElementById("yMax").value);
-                const arrowCount = parseInt(document.getElementById("arrowCount").value);
-
-                drawAxes(xMin, xMax, yMin, yMax);
-                drawVectorField(f, g, xMin, xMax, yMin, yMax, arrowCount);
-                
-                ctx.lineWidth = 1;
-                userPoints.forEach((point) => {
-                    const path = computeTrajectory(f, g, point.x, point.y, xMin, xMax, yMin, yMax);
-                    drawTrajectory(path, xMin, xMax, yMin, yMax);
-                });
-
-                if (userPoints.length === 0) {
-                    instruction.style.display = "block";
-                }
-            }
-
-            // Draw a single trajectory
-            function drawTrajectory(points, xMin, xMax, yMin, yMax) {
-                ctx.strokeStyle = "#B7410E";
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                points.forEach((point, index) => {
-                    const canvasX = ((point.x - xMin) / (xMax - xMin)) * canvas.width;
-                    const canvasY = ((yMax - point.y) / (yMax - yMin)) * canvas.height;
-                    if (index === 0) {
-                        ctx.moveTo(canvasX, canvasY);
-                    } else {
-                        ctx.lineTo(canvasX, canvasY);
-                    }
-                });
-                ctx.stroke();
-            }
-
-            // Compute trajectory using RK4
-            function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
-                const dt = 0.01;
-                const maxSteps = 3000;
-                const points = [{ x: x0, y: y0 }];
-                const fCompiled = math.compile(f);
-                const gCompiled = math.compile(g);
-
-                const rk4Step = (x, y, dt) => {
-                    try {
-                        const k1x = fCompiled.evaluate({ x, y, t: 0 });
-                        const k1y = gCompiled.evaluate({ x, y, t: 0 });
-                        const k2x = fCompiled.evaluate({ x: x + (k1x * dt)/2, y: y + (k1y * dt)/2, t: dt/2 });
-                        const k2y = gCompiled.evaluate({ x: x + (k1x * dt)/2, y: y + (k1y * dt)/2, t: dt/2 });
-                        const k3x = fCompiled.evaluate({ x: x + (k2x * dt)/2, y: y + (k2y * dt)/2, t: dt/2 });
-                        const k3y = gCompiled.evaluate({ x: x + (k2x * dt)/2, y: y + (k2y * dt)/2, t: dt/2 });
-                        const k4x = fCompiled.evaluate({ x: x + k3x * dt, y: y + k3y * dt, t: dt });
-                        const k4y = gCompiled.evaluate({ x: x + k3x * dt, y: y + k3y * dt, t: dt });
-
-                        return {
-                            dx: ((k1x + 2*k2x + 2*k3x + k4x)/6) * dt,
-                            dy: ((k1y + 2*k2y + 2*k3y + k4y)/6) * dt
-                        };
-                    } catch (e) {
-                        console.error("Error in RK4 step at x=", x, "y=", y, ":", e);
-                        return { dx: 0, dy: 0 };
-                    }
-                };
-
-                let x = x0, y = y0;
-                for (let i = 0; i < maxSteps; i++) {
-                    const { dx, dy } = rk4Step(x, y, dt);
-                    x += dx;
-                    y += dy;
-                    if (x < xMin || x > xMax || y < yMin || y > yMax) break;
-                    points.push({ x, y });
-                }
-
-                x = x0;
-                y = y0;
-                for (let i = 0; i < maxSteps; i++) {
-                    const { dx, dy } = rk4Step(x, y, -dt);
-                    x += dx;
-                    y += dy;
-                    if (x < xMin || x > xMax || y < yMin || y > yMax) break;
-                    points.unshift({ x, y });
-                }
-                return points;
-            }
-
-            // Draw axes and scale labels
-            function drawAxes(xMin, xMax, yMin, yMax) {
-                ctx.strokeStyle = "#95a5a6";
-                ctx.lineWidth = 1;
-                const yZeroCanvas = (yMax/(yMax - yMin)) * canvas.height;
-                ctx.beginPath();
-                ctx.moveTo(0, yZeroCanvas);
-                ctx.lineTo(canvas.width, yZeroCanvas);
-                ctx.stroke();
-
-                const xZeroCanvas = (-xMin/(xMax - xMin)) * canvas.width;
-                ctx.beginPath();
-                ctx.moveTo(xZeroCanvas, 0);
-                ctx.lineTo(xZeroCanvas, canvas.height);
-                ctx.stroke();
-
-                const xLabels = [xMin, 0, xMax];
-                xLabels.forEach((label) => {
-                    const xCanvas = ((label - xMin)/(xMax - xMin)) * canvas.width;
-                    const labelEl = document.createElement("div");
-                    labelEl.className = "absolute text-xs text-gray-600";
-                    labelEl.textContent = label.toFixed(1);
-                    labelEl.style.left = `${xCanvas}px`;
-                    labelEl.style.bottom = "-25px";
-                    document.getElementById("plot-container").appendChild(labelEl);
-                    scaleLabels.push(labelEl);
-                });
-
-                const yLabels = [yMin, 0, yMax];
-                yLabels.forEach((label) => {
-                    const yCanvas = canvas.height - ((label - yMin)/(yMax - yMin)) * canvas.height;
-                    const labelEl = document.createElement("div");
-                    labelEl.className = "absolute text-xs text-gray-600";
-                    labelEl.textContent = label.toFixed(1);
-                    labelEl.style.top = `${yCanvas}px`;
-                    labelEl.style.left = "-25px";
-                    document.getElementById("plot-container").appendChild(labelEl);
-                    scaleLabels.push(labelEl);
-                });
-            }
-
-            // Draw vector field with arrows
-            function drawVectorField(f, g, xMin, xMax, yMin, yMax, arrowCount) {
-                ctx.strokeStyle = "#007BFF";
-                ctx.lineWidth = 1.0;
-                const xStep = (xMax - xMin) / arrowCount;
-                const yStep = (yMax - yMin) / arrowCount;
-
-                let maxMag = 0;
-                for (let x = xMin; x <= xMax; x += xStep) {
-                    for (let y = yMin; y <= yMax; y += yStep) {
-                        try {
-                            const dx = math.evaluate(f, { x, y, t: 0 });
-                            const dy = math.evaluate(g, { x, y, t: 0 });
-                            const mag = Math.sqrt(dx * dx + dy * dy);
-                            maxMag = Math.max(maxMag, mag);
-                        } catch (e) {
-                            console.error("Error evaluating function at x=", x, "y=", y, ":", e);
-                        }
-                    }
-                }
-
-                const arrowScale = 0.05 * canvas.width / (maxMag > 0 ? maxMag : 1);
-
-                for (let x = xMin; x <= xMax; x += xStep) {
-                    for (let y = yMin; y <= yMax; y += yStep) {
-                        try {
-                            const dx = math.evaluate(f, { x, y, t: 0 });
-                            const dy = math.evaluate(g, { x, y, t: 0 });
-                            const startX = ((x - xMin) / (xMax - xMin)) * canvas.width;
-                            const startY = canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height;
-                            const u = dx * arrowScale;
-                            const v = -dy * arrowScale;
-                            drawArrow(ctx, startX, startY, startX + u, startY + v);
-                        } catch (e) {
-                            console.error("Error drawing arrow at x=", x, "y=", y, ":", e);
-                        }
-                    }
-                }
-            }
-
-            // Draw an arrow on the canvas
-            function drawArrow(ctx, x1, y1, x2, y2) {
-                const dx = x2 - x1;
-                const dy = y2 - y1;
-                const shaftLength = Math.sqrt(dx * dx + dy * dy);
-                const headLength = shaftLength / 6;
-                const angle = Math.atan2(dy, dx);
-
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
-
-                ctx.save();
-                ctx.lineWidth = 0.7;
-                ctx.beginPath();
-                ctx.moveTo(x2, y2);
-                ctx.lineTo(x2 - headLength * Math.cos(angle - Math.PI / 6), y2 - headLength * Math.sin(angle - Math.PI / 6));
-                ctx.moveTo(x2, y2);
-                ctx.lineTo(x2 - headLength * Math.cos(angle + Math.PI / 6), y2 - headLength * Math.sin(angle + Math.PI / 6));
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            // Clear trajectories and redraw
-            function clearTrajectories() {
-                userPoints = [];
+                const systemX = xMin + normX * (xMax - xMin);
+                const systemY = yMax - normY * (yMax - yMin);
+                userPoints.push({ x: systemX, y: systemY });
                 drawPhasePlane();
+                instruction.style.display = "none";
+            });
+
+            // Render example equations with KaTeX
+            document.querySelectorAll('.system-equations').forEach(el => {
+                katex.render(el.textContent, el, { throwOnError: false, displayMode: true });
+            });
+
+            // Example system click handlers
+            document.querySelectorAll('.example').forEach(example => {
+                example.addEventListener('click', () => {
+                    userPoints = [];
+                    document.getElementById('fInput').value = example.dataset.f;
+                    document.getElementById('gInput').value = example.dataset.g;
+                    document.getElementById('xMin').value = example.dataset.xmin;
+                    document.getElementById('xMax').value = example.dataset.xmax;
+                    document.getElementById('yMin').value = example.dataset.ymin;
+                    document.getElementById('yMax').value = example.dataset.ymax;
+                    drawPhasePlane();
+                });
+            });
+
+            // Initial drawing
+            drawPhasePlane();
+        });
+
+        // Draw the phase plane
+        function drawPhasePlane() {
+            setCanvasResolution();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            scaleLabels.forEach((label) => label.remove());
+            scaleLabels = [];
+
+            const f = document.getElementById("fInput").value;
+            const g = document.getElementById("gInput").value;
+            const xMin = parseFloat(document.getElementById("xMin").value);
+            const xMax = parseFloat(document.getElementById("xMax").value);
+            const yMin = parseFloat(document.getElementById("yMin").value);
+            const yMax = parseFloat(document.getElementById("yMax").value);
+            const arrowCount = parseInt(document.getElementById("arrowCount").value);
+
+            drawAxes(xMin, xMax, yMin, yMax);
+            drawVectorField(f, g, xMin, xMax, yMin, yMax, arrowCount);
+
+            ctx.lineWidth = 1;
+            userPoints.forEach((point) => {
+                const path = computeTrajectory(f, g, point.x, point.y, xMin, xMax, yMin, yMax);
+                drawTrajectory(path, xMin, xMax, yMin, yMax);
+            });
+
+            if (userPoints.length === 0) {
                 instruction.style.display = "block";
             }
-        </script>
-    </body>
+        }
+
+        // Draw a single trajectory
+        function drawTrajectory(points, xMin, xMax, yMin, yMax) {
+            ctx.strokeStyle = "#B7410E";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            points.forEach((point, index) => {
+                const canvasX = ((point.x - xMin) / (xMax - xMin)) * canvas.width;
+                const canvasY = ((yMax - point.y) / (yMax - yMin)) * canvas.height;
+                if (index === 0) {
+                    ctx.moveTo(canvasX, canvasY);
+                } else {
+                    ctx.lineTo(canvasX, canvasY);
+                }
+            });
+            ctx.stroke();
+        }
+
+        // Compute trajectory using RK4
+        function computeTrajectory(f, g, x0, y0, xMin, xMax, yMin, yMax) {
+            const dt = 0.01;
+            const maxSteps = 3000;
+            const points = [{ x: x0, y: y0 }];
+            const fCompiled = math.compile(f);
+            const gCompiled = math.compile(g);
+
+            const rk4Step = (x, y, dt) => {
+                try {
+                    const k1x = fCompiled.evaluate({ x, y, t: 0 });
+                    const k1y = gCompiled.evaluate({ x, y, t: 0 });
+                    const k2x = fCompiled.evaluate({ x: x + (k1x * dt) / 2, y: y + (k1y * dt) / 2, t: dt / 2 });
+                    const k2y = gCompiled.evaluate({ x: x + (k1x * dt) / 2, y: y + (k1y * dt) / 2, t: dt / 2 });
+                    const k3x = fCompiled.evaluate({ x: x + (k2x * dt) / 2, y: y + (k2y * dt) / 2, t: dt / 2 });
+                    const k3y = gCompiled.evaluate({ x: x + (k2x * dt) / 2, y: y + (k2y * dt) / 2, t: dt / 2 });
+                    const k4x = fCompiled.evaluate({ x: x + k3x * dt, y: y + k3y * dt, t: dt });
+                    const k4y = gCompiled.evaluate({ x: x + k3x * dt, y: y + k3y * dt, t: dt });
+
+                    return {
+                        dx: ((k1x + 2 * k2x + 2 * k3x + k4x) / 6) * dt,
+                        dy: ((k1y + 2 * k2y + 2 * k3y + k4y) / 6) * dt
+                    };
+                } catch (e) {
+                    console.error("Error in RK4 step at x=", x, "y=", y, ":", e);
+                    return { dx: 0, dy: 0 };
+                }
+            };
+
+            let x = x0, y = y0;
+            for (let i = 0; i < maxSteps; i++) {
+                const { dx, dy } = rk4Step(x, y, dt);
+                x += dx;
+                y += dy;
+                if (x < xMin || x > xMax || y < yMin || y > yMax) break;
+                points.push({ x, y });
+            }
+
+            x = x0;
+            y = y0;
+            for (let i = 0; i < maxSteps; i++) {
+                const { dx, dy } = rk4Step(x, y, -dt);
+                x += dx;
+                y += dy;
+                if (x < xMin || x > xMax || y < yMin || y > yMax) break;
+                points.unshift({ x, y });
+            }
+            return points;
+        }
+
+        // Draw axes and scale labels
+        function drawAxes(xMin, xMax, yMin, yMax) {
+            ctx.strokeStyle = "#95a5a6";
+            ctx.lineWidth = 1;
+            const yZeroCanvas = (yMax / (yMax - yMin)) * canvas.height;
+            ctx.beginPath();
+            ctx.moveTo(0, yZeroCanvas);
+            ctx.lineTo(canvas.width, yZeroCanvas);
+            ctx.stroke();
+
+            const xZeroCanvas = (-xMin / (xMax - xMin)) * canvas.width;
+            ctx.beginPath();
+            ctx.moveTo(xZeroCanvas, 0);
+            ctx.lineTo(xZeroCanvas, canvas.height);
+            ctx.stroke();
+
+            const xLabels = [xMin, 0, xMax];
+            xLabels.forEach((label) => {
+                const xCanvas = ((label - xMin) / (xMax - xMin)) * canvas.width;
+                const labelEl = document.createElement("div");
+                labelEl.className = "absolute text-xs text-gray-600";
+                labelEl.textContent = label.toFixed(1);
+                labelEl.style.left = `${xCanvas}px`;
+                labelEl.style.bottom = "-25px";
+                document.getElementById("plot-container").appendChild(labelEl);
+                scaleLabels.push(labelEl);
+            });
+
+            const yLabels = [yMin, 0, yMax];
+            yLabels.forEach((label) => {
+                const yCanvas = canvas.height - ((label - yMin) / (yMax - yMin)) * canvas.height;
+                const labelEl = document.createElement("div");
+                labelEl.className = "absolute text-xs text-gray-600";
+                labelEl.textContent = label.toFixed(1);
+                labelEl.style.top = `${yCanvas}px`;
+                labelEl.style.left = "-25px";
+                document.getElementById("plot-container").appendChild(labelEl);
+                scaleLabels.push(labelEl);
+            });
+        }
+
+        // Draw vector field with arrows
+        function drawVectorField(f, g, xMin, xMax, yMin, yMax, arrowCount) {
+            const arrowColor = "#007BFF"; // Define arrow color
+            const density = arrowCount; // Number of arrows in each direction
+            const maxLength = 20; // Increased Maximum arrow length
+            ctx.strokeStyle = arrowColor;
+            ctx.lineWidth = 1.0;
+
+            for (let i = 0; i < density; i++) {
+                for (let j = 0; j < density; j++) {
+                    // Calculate x and y positions
+                    let x = xMin + (xMax - xMin) * i / (density - 1);
+                    let y = yMin + (yMax - yMin) * j / (density - 1);
+
+                    // Evaluate the derivatives
+                    let dx, dy;
+                    try {
+                        dx = math.evaluate(f, { x: x, y: y });
+                        dy = math.evaluate(g, { x: x, y: y });
+                    } catch (e) {
+                        console.error("Error evaluating function at x=", x, "y=", y, ":", e);
+                        continue;
+                    }
+
+                    // Normalize the vector
+                    let magnitude = Math.sqrt(dx * dx + dy * dy);
+                    if (magnitude === 0) continue;
+                    dx /= magnitude;
+                    dy /= magnitude;
+
+                    // Calculate arrow length
+                    let arrowLength = Math.min(maxLength, 12); //increased max length
+
+                    // Calculate canvas coordinates
+                    let canvasX = ((x - xMin) / (xMax - xMin)) * canvas.width;
+                    let canvasY = canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height;
+
+                    // Draw the arrow
+                    drawArrow(ctx, canvasX, canvasY, canvasX + dx * arrowLength, canvasY - dy * arrowLength);
+                }
+            }
+        }
+
+        // Draw an arrow on the canvas
+        function drawArrow(ctx, x1, y1, x2, y2) {
+            const arrowColor = "#007BFF"; // Define arrow color
+            ctx.strokeStyle = arrowColor;
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const shaftLength = Math.sqrt(dx * dx + dy * dy);
+            const headLength = Math.min(shaftLength / 3, 10); // Adjust headLength for visibility
+            const angle = Math.atan2(dy, dx);
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            ctx.save();
+            ctx.lineWidth = 0.7;
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - headLength * Math.cos(angle - Math.PI / 6), y2 - headLength * Math.sin(angle - Math.PI /
+                6));
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - headLength * Math.cos(angle + Math.PI / 6), y2 - headLength * Math.sin(angle + Math.PI /
+                6));
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // Clear trajectories and redraw
+        function clearTrajectories() {
+            userPoints = [];
+            drawPhasePlane();
+            instruction.style.display = "block";
+        }
+    </script>
+</body>
+
 </html>
