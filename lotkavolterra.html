@@ -55,9 +55,25 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
+        .instruction {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
         .slider-container {
             display: flex;
             flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
         }
 
         input[type="range"] {
@@ -70,7 +86,7 @@
             outline-offset: 0.125rem;
             box-shadow: 0 3px 2px -1px rgba(255,255,255,0.25) inset,
                         0 0 10px 2px rgba(0,0,0,0.25);
-            margin: 1rem 0;
+            margin: 0.5rem 0;
         }
 
         input[type="range"]::-webkit-slider-thumb {
@@ -89,6 +105,16 @@
             height: 0.25rem;
             border-radius: 0.125rem;
             margin: 0 0.5rem;
+        }
+
+        .slider-value {
+            background: #f0f4f8;
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            width: 80px;
+            text-align: center;
+            font-weight: 600;
         }
 
         .plots-container {
@@ -146,7 +172,7 @@
 
     <footer>
         &copy; 2025 Shelvean Kapita. All rights reserved.<br>
-        Last modified: March 5, 2025
+        Last modified: March 10, 2025
     </footer>
 
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -190,14 +216,31 @@
 
         function createSliders() {
             const container = document.querySelector('.controls');
+            const instruction = document.createElement('div');
+            instruction.className = 'instruction';
+            instruction.textContent = 'Enter values manually or use sliders';
+            container.appendChild(instruction);
+
             params.forEach(param => {
                 const div = document.createElement('div');
                 div.className = 'slider-container';
                 div.innerHTML = `
-                    <label>${param.label}: <span id="${param.id}Value">${param.value}</span></label>
-                    <input type="range" id="${param.id}" 
-                           min="${param.min}" max="${param.max}" 
-                           step="${param.step}" value="${param.value}">
+                    <div class="slider-label">
+                        <span>${param.label}</span>
+                        <input type="number" 
+                               id="${param.id}Value" 
+                               class="slider-value"
+                               min="${param.min}" 
+                               max="${param.max}"
+                               step="${param.step}"
+                               value="${param.value}">
+                    </div>
+                    <input type="range" 
+                           id="${param.id}" 
+                           min="${param.min}" 
+                           max="${param.max}" 
+                           step="${param.step}" 
+                           value="${param.value}">
                 `;
                 container.appendChild(div);
             });
@@ -302,8 +345,19 @@
 
             createSliders();
             params.forEach(param => {
-                document.getElementById(param.id).addEventListener('input', function() {
-                    document.getElementById(`${param.id}Value`).textContent = this.value;
+                const slider = document.getElementById(param.id);
+                const input = document.getElementById(`${param.id}Value`);
+
+                slider.addEventListener('input', function() {
+                    input.value = this.value;
+                    updatePlots();
+                });
+
+                input.addEventListener('change', function() {
+                    let newValue = parseFloat(this.value);
+                    newValue = Math.max(param.min, Math.min(param.max, newValue));
+                    slider.value = newValue;
+                    input.value = newValue;
                     updatePlots();
                 });
             });
