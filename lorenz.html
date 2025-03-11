@@ -217,7 +217,7 @@
             const dt = 0.01;
             let x = x0, y = y0, z = z0;
             const trajectory = {x: [], y: [], z: [], t: []};
-            const maxSteps = 15000;
+            const maxSteps = 5000;
 
             for(let i = 0; i < maxSteps; i++) {
                 const [k1x, k1y, k1z] = lorenz(x, y, z, σ, ρ, β);
