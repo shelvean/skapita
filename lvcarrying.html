@@ -60,7 +60,21 @@
             flex-direction: column;
         }
 
-        /* Updated Slider Styles */
+        .slider-container label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .slider-container input[type="number"] {
+            width: 80px;
+            padding: 4px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
         input[type="range"] {
             -webkit-appearance: none;
             width: 100%;
@@ -147,6 +161,7 @@
         \]
     </div>
 
+    <p style="text-align: center; margin: 1rem 0; color: var(--primary)">Enter values manually or use the sliders</p>
     <div class="controls"></div>
 
     <div class="plots-container">
@@ -214,10 +229,16 @@
                 const div = document.createElement('div');
                 div.className = 'slider-container';
                 div.innerHTML = `
-                    <label>${param.label}: <span id="${param.id}Value">${param.value}</span></label>
+                    <label>
+                        ${param.label}:
+                        <input type="number" id="${param.id}Value" 
+                            min="${param.min}" max="${param.max}"
+                            step="${param.step}" value="${param.value}"
+                            style="margin-left: 8px">
+                    </label>
                     <input type="range" id="${param.id}" 
-                           min="${param.min}" max="${param.max}" 
-                           step="${param.step}" value="${param.value}">
+                        min="${param.min}" max="${param.max}" 
+                        step="${param.step}" value="${param.value}">
                 `;
                 container.appendChild(div);
             });
@@ -327,8 +348,16 @@
 
             createSliders();
             params.forEach(param => {
-                document.getElementById(param.id).addEventListener('input', function() {
-                    document.getElementById(`${param.id}Value`).textContent = this.value;
+                const slider = document.getElementById(param.id);
+                const valueInput = document.getElementById(`${param.id}Value`);
+
+                slider.addEventListener('input', function() {
+                    valueInput.value = this.value;
+                    updatePlots();
+                });
+
+                valueInput.addEventListener('change', function() {
+                    slider.value = this.value;
                     updatePlots();
                 });
             });
