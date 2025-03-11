@@ -13,7 +13,10 @@
     <meta name="keywords" content="Lorenz Equations, Simulation Plot, Animation">
     <title>Lorenz System</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Load KaTeX earlier and synchronously -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         :root {
             --primary: #2c3e50;
@@ -44,6 +47,17 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             font-size: 1.2rem;
+            opacity: 0; /* Hide until rendered */
+            transition: opacity 0.2s ease-in;
+        }
+
+        .equations.rendered {
+            opacity: 1; /* Show when rendered */
+        }
+
+        /* Hide raw LaTeX until processed */
+        .equations:not(.rendered) .katex {
+            display: none;
         }
 
         .controls {
@@ -145,6 +159,22 @@
             }
         }
     </style>
+    <!-- Inline script to render equations immediately -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const equationsDiv = document.querySelector('.equations');
+            renderMathInElement(equationsDiv, {
+                delimiters: [
+                    {left: '\\[', right: '\\]', display: true},
+                    {left: '\\(', right: '\\)', display: false}
+                ],
+                throwOnError: false,
+                preProcess: (math) => math, // Pre-process math
+                trust: true // Allow all commands
+            });
+            equationsDiv.classList.add('rendered'); // Mark as rendered
+        });
+    </script>
 </head>
 <body>
     <h1>Lorenz System</h1>
@@ -164,8 +194,7 @@
     <div class="footer">
         <p>© 2025 Shelvean Kapita | Last modified: March 10, 2025</p>
     </div>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
     <script>
         const params = [
             {id: 'sigma', label: 'σ', min: 1, max: 20, step: 0.1, value: 10},
@@ -293,14 +322,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            renderMathInElement(document.body, {
-                delimiters: [
-                    {left: '\\[', right: '\\]', display: true},
-                    {left: '\\(', right: '\\)', display: false}
-                ],
-                throwOnError: false
-            });
-
             createSliders();
             params.forEach(param => {
                 const slider = document.getElementById(param.id);
