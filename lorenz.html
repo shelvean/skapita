@@ -214,10 +214,10 @@
         }
 
         function solveLorenz(σ, ρ, β, x0, y0, z0) {
-            const dt = 0.005;
+            const dt = 0.01;
             let x = x0, y = y0, z = z0;
             const trajectory = {x: [], y: [], z: [], t: []};
-            const maxSteps = 10000;
+            const maxSteps = 15000;
 
             for(let i = 0; i < maxSteps; i++) {
                 const [k1x, k1y, k1z] = lorenz(x, y, z, σ, ρ, β);
