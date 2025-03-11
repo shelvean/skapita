@@ -57,13 +57,20 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
+        .instruction {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
         .slider-container {
             display: flex;
             flex-direction: column;
             gap: 0.8rem;
         }
 
-        /* Updated Slider Styles */
         input[type="range"] {
             -webkit-appearance: none;
             width: 100%;
@@ -110,6 +117,8 @@
             font-weight: 600;
             min-width: 60px;
             text-align: center;
+            border: 1px solid #ddd;
+            width: 80px;
         }
 
         #plot {
@@ -153,7 +162,7 @@
     <div class="controls"></div>
     <div id="plot"></div>
     <div class="footer">
-        <p>© 2025 Shelvean Kapita | Last modified: March 5, 2025</p>
+        <p>© 2025 Shelvean Kapita | Last modified: March 10, 2025</p>
     </div>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
@@ -253,17 +262,31 @@
 
         function createSliders() {
             const container = document.querySelector('.controls');
+            const instruction = document.createElement('div');
+            instruction.className = 'instruction';
+            instruction.textContent = 'Enter values manually or use sliders';
+            container.appendChild(instruction);
+
             params.forEach(param => {
                 const div = document.createElement('div');
                 div.className = 'slider-container';
                 div.innerHTML = `
                     <div class="slider-label">
                         <span>${param.label}</span>
-                        <span class="slider-value" id="${param.id}Value">${param.value}</span>
+                        <input type="number" 
+                               id="${param.id}Value" 
+                               class="slider-value"
+                               min="${param.min}" 
+                               max="${param.max}"
+                               step="${param.step}"
+                               value="${param.value}">
                     </div>
-                    <input type="range" id="${param.id}" 
-                           min="${param.min}" max="${param.max}" 
-                           step="${param.step}" value="${param.value}">
+                    <input type="range" 
+                           id="${param.id}" 
+                           min="${param.min}" 
+                           max="${param.max}" 
+                           step="${param.step}" 
+                           value="${param.value}">
                 `;
                 container.appendChild(div);
             });
@@ -281,8 +304,18 @@
             createSliders();
             params.forEach(param => {
                 const slider = document.getElementById(param.id);
+                const input = document.getElementById(`${param.id}Value`);
+
                 slider.addEventListener('input', function() {
-                    document.getElementById(`${param.id}Value`).textContent = this.value;
+                    input.value = this.value;
+                    updatePlot();
+                });
+
+                input.addEventListener('change', function() {
+                    let newValue = parseFloat(this.value);
+                    newValue = Math.max(param.min, Math.min(param.max, newValue));
+                    slider.value = newValue;
+                    input.value = newValue;
                     updatePlot();
                 });
             });
