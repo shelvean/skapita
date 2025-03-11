@@ -12,11 +12,11 @@
     <meta name="description" content="Lorenz Equations Simulation Animation">
     <meta name="keywords" content="Lorenz Equations, Simulation Plot, Animation">
     <title>Lorenz System</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <!-- Load KaTeX earlier and synchronously -->
+    <script defer src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Load KaTeX synchronously for equations, but defer rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         :root {
             --primary: #2c3e50;
@@ -47,15 +47,14 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             font-size: 1.2rem;
-            opacity: 0; /* Hide until rendered */
+            opacity: 0;
             transition: opacity 0.2s ease-in;
         }
 
         .equations.rendered {
-            opacity: 1; /* Show when rendered */
+            opacity: 1;
         }
 
-        /* Hide raw LaTeX until processed */
         .equations:not(.rendered) .katex {
             display: none;
         }
@@ -159,7 +158,6 @@
             }
         }
     </style>
-    <!-- Inline script to render equations immediately -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const equationsDiv = document.querySelector('.equations');
@@ -169,10 +167,10 @@
                     {left: '\\(', right: '\\)', display: false}
                 ],
                 throwOnError: false,
-                preProcess: (math) => math, // Pre-process math
-                trust: true // Allow all commands
+                preProcess: (math) => math,
+                trust: true
             });
-            equationsDiv.classList.add('rendered'); // Mark as rendered
+            equationsDiv.classList.add('rendered');
         });
     </script>
 </head>
@@ -214,41 +212,49 @@
         }
 
         function solveLorenz(σ, ρ, β, x0, y0, z0) {
-            const dt = 0.01;
-            let x = x0, y = y0, z = z0;
+            const dt = 0.01; // Increased dt to reduce steps
+            const maxSteps = 5000; // Reduced from 5000
             const trajectory = {x: [], y: [], z: [], t: []};
-            const maxSteps = 5000;
+            let x = x0, y = y0, z = z0;
 
-            for(let i = 0; i < maxSteps; i++) {
+            for (let i = 0; i < maxSteps; i++) {
                 const [k1x, k1y, k1z] = lorenz(x, y, z, σ, ρ, β);
-                const [k2x, k2y, k2z] = lorenz(x + k1x*dt/2, y + k1y*dt/2, z + k1z*dt/2, σ, ρ, β);
-                const [k3x, k3y, k3z] = lorenz(x + k2x*dt/2, y + k2y*dt/2, z + k2z*dt/2, σ, ρ, β);
-                const [k4x, k4y, k4z] = lorenz(x + k3x*dt, y + k3y*dt, z + k3z*dt, σ, ρ, β);
+                const [k2x, k2y, k2z] = lorenz(x + k1x * dt / 2, y + k1y * dt / 2, z + k1z * dt / 2, σ, ρ, β);
+                const [k3x, k3y, k3z] = lorenz(x + k2x * dt / 2, y + k2y * dt / 2, z + k2z * dt / 2, σ, ρ, β);
+                const [k4x, k4y, k4z] = lorenz(x + k3x * dt, y + k3y * dt, z + k3z * dt, σ, ρ, β);
 
-                x += (k1x + 2*k2x + 2*k3x + k4x) * dt / 6;
-                y += (k1y + 2*k2y + 2*k3y + k4y) * dt / 6;
-                z += (k1z + 2*k2z + 2*k3z + k4z) * dt / 6;
+                x += (k1x + 2 * k2x + 2 * k3x + k4x) * dt / 6;
+                y += (k1y + 2 * k2y + 2 * k3y + k4y) * dt / 6;
+                z += (k1z + 2 * k2z + 2 * k3z + k4z) * dt / 6;
 
                 trajectory.x.push(x);
                 trajectory.y.push(y);
                 trajectory.z.push(z);
-                trajectory.t.push(i/maxSteps);
+                trajectory.t.push(i / maxSteps);
             }
             return trajectory;
         }
 
-        function updatePlot() {
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        const updatePlot = debounce(function () {
             const values = params.reduce((acc, param) => {
                 acc[param.id] = parseFloat(document.getElementById(param.id).value);
                 return acc;
             }, {});
 
             const trajectory = solveLorenz(
-                values.sigma, 
-                values.rho, 
+                values.sigma,
+                values.rho,
                 values.beta,
-                values.x0, 
-                values.y0, 
+                values.x0,
+                values.y0,
                 values.z0
             );
 
@@ -287,38 +293,33 @@
                 paper_bgcolor: '#1f1f1f',
                 font: {color: 'white'}
             });
-        }
+        }, 100); // 100ms debounce
 
         function createSliders() {
             const container = document.querySelector('.controls');
-            const instruction = document.createElement('div');
-            instruction.className = 'instruction';
-            instruction.textContent = 'Enter values manually or use sliders';
-            container.appendChild(instruction);
-
-            params.forEach(param => {
-                const div = document.createElement('div');
-                div.className = 'slider-container';
-                div.innerHTML = `
-                    <div class="slider-label">
-                        <span>${param.label}</span>
-                        <input type="number" 
-                               id="${param.id}Value" 
-                               class="slider-value"
+            container.innerHTML = `
+                <div class="instruction">Enter values manually or use sliders</div>
+                ${params.map(param => `
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>${param.label}</span>
+                            <input type="number" 
+                                   id="${param.id}Value" 
+                                   class="slider-value"
+                                   min="${param.min}" 
+                                   max="${param.max}"
+                                   step="${param.step}"
+                                   value="${param.value}">
+                        </div>
+                        <input type="range" 
+                               id="${param.id}" 
                                min="${param.min}" 
-                               max="${param.max}"
-                               step="${param.step}"
+                               max="${param.max}" 
+                               step="${param.step}" 
                                value="${param.value}">
                     </div>
-                    <input type="range" 
-                           id="${param.id}" 
-                           min="${param.min}" 
-                           max="${param.max}" 
-                           step="${param.step}" 
-                           value="${param.value}">
-                `;
-                container.appendChild(div);
-            });
+                `).join('')}
+            `;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -327,12 +328,12 @@
                 const slider = document.getElementById(param.id);
                 const input = document.getElementById(`${param.id}Value`);
 
-                slider.addEventListener('input', function() {
+                slider.addEventListener('input', function () {
                     input.value = this.value;
                     updatePlot();
                 });
 
-                input.addEventListener('change', function() {
+                input.addEventListener('change', function () {
                     let newValue = parseFloat(this.value);
                     newValue = Math.max(param.min, Math.min(param.max, newValue));
                     slider.value = newValue;
@@ -340,7 +341,7 @@
                     updatePlot();
                 });
             });
-            updatePlot();
+            updatePlot(); // Initial plot render
         });
     </script>
 </body>
