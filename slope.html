@@ -70,7 +70,7 @@
         </div>
         <div class="footer">
             © 2025 Shelvean Kapita. All rights reserved.<br>
-            Last modified: March 5, 2025
+            Last modified: March 11, 2025
         </div>
     </div>
     <script>
@@ -89,6 +89,8 @@
 
         function preprocessEquation(eq) {
             let processed = eq;
+            // Replace standalone 'x' with 't' to make them interchangeable
+            processed = processed.replace(/\bx\b/g, 't');
             processed = processed.replace(/\b(sin|cos|tan|sinh|cosh|tanh|coth|sech|csch|asin|acos|atan|acot|asec|acsc|asinh|acosh|atanh|acoth|asech|acsch|exp|log|log10|sqrt|abs|ceil|floor|round|sign|max|min)\b/gi, 'Math.$1');
             const recipFuncs = [
                 { name: 'sec', replacement: '1/Math.cos' },
