@@ -96,6 +96,14 @@
             });
         });
         
+        // Add custom inverse trig and hyperbolic functions to Math object
+        Math.asec = function(x) { return Math.acos(1/x); };
+        Math.acot = function(x) { return Math.atan(1/x); };
+        Math.acsc = function(x) { return Math.asin(1/x); };
+        Math.asech = function(x) { return Math.log((1 + Math.sqrt(1 - x*x))/x); };
+        Math.acoth = function(x) { return 0.5 * Math.log((x + 1)/(x - 1)); };
+        Math.acsch = function(x) { return Math.log(1/x + Math.sqrt(1/(x*x) + 1)); };
+        
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const instruction = document.getElementById('instruction');
