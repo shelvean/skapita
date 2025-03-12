@@ -118,7 +118,7 @@
     </div>
     <footer>
         © 2025 Shelvean Kapita. All rights reserved.<br>
-        Last modified: March 7, 2025
+        Last modified: March 11, 2025
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/katex@0.15.6/dist/katex.min.js"></script>
@@ -279,98 +279,103 @@
             const rightMidX = (rightMidY - yMin) * scaleX;
             drawArrow(rightMidX, f(rightMidY) > 0 ? 'right' : 'left');
         }
+			function drawPlot(f) {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.save();
+				ctx.translate(leftMargin, 0);
+				
+				const scaleX = graphWidth / (yMax - yMin);
+				const zeroY = canvas.height/2;
+				let maxYPrime = 0;
 
-        function drawPlot(f) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-            ctx.translate(leftMargin, 0);
-            
-            const scaleX = graphWidth / (yMax - yMin);
-            const zeroY = canvas.height/2;
-            let maxYPrime = 0;
+				for (let x = 0; x < graphWidth; x++) {
+					const y = yMin + (x / scaleX);
+					maxYPrime = Math.max(maxYPrime, Math.abs(f(y)));
+				}
 
-            for (let x = 0; x < graphWidth; x++) {
-                const y = yMin + (x / scaleX);
-                maxYPrime = Math.max(maxYPrime, Math.abs(f(y)));
-            }
+				const scaleY = maxYPrime > 0 ? Math.min(100, Math.max(40, 100/maxYPrime)) : 40;
 
-            const scaleY = maxYPrime > 0 ? Math.min(100, Math.max(40, 100/maxYPrime)) : 40;
+				// Draw axis
+				ctx.beginPath();
+				ctx.moveTo(0, zeroY);
+				ctx.lineTo(graphWidth, zeroY);
+				ctx.strokeStyle = '#000';
+				ctx.lineWidth = 2;
+				ctx.stroke();
 
-            // Draw axis
-            ctx.beginPath();
-            ctx.moveTo(0, zeroY);
-            ctx.lineTo(graphWidth, zeroY);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+				// Draw phase line
+				ctx.beginPath();
+				ctx.strokeStyle = '#007bff';
+				ctx.lineWidth = 2;
+				for (let x = 0; x < graphWidth; x++) {
+					const y = yMin + (x / scaleX);
+					const yPrime = f(y);
+					const yPrimeScaled = zeroY - yPrime * scaleY;
+					ctx.lineTo(x, yPrimeScaled);
+				}
+				ctx.stroke();
 
-            // Draw phase line
-            ctx.beginPath();
-            ctx.strokeStyle = '#007bff';
-            ctx.lineWidth = 2;
-            for (let x = 0; x < graphWidth; x++) {
-                const y = yMin + (x / scaleX);
-                const yPrime = f(y);
-                const yPrimeScaled = zeroY - yPrime * scaleY;
-                ctx.lineTo(x, yPrimeScaled);
-            }
-            ctx.stroke();
+				// Draw equilibrium points
+				const roots = findRoots(f);
+				roots.forEach((y, i) => {
+					const x = (y - yMin) * scaleX;
+					const type = classifyEquilibrium(f, y);
+					
+					ctx.beginPath();
+					ctx.arc(x, zeroY, 8, 0, Math.PI * 2);
+					ctx.strokeStyle = '#000';
+					ctx.lineWidth = 2;
+					ctx.stroke();
+					
+					if (type === 'stable') {
+						ctx.fillStyle = '#28a745';
+						ctx.fill();
+					} else if (type === 'unstable') {
+						ctx.fillStyle = '#dc3545';
+						ctx.fill();
+					} else {
+						ctx.fillStyle = '#28a745';
+						ctx.beginPath();
+						ctx.arc(x, zeroY, 8, -Math.PI/2, Math.PI/2);
+						ctx.fill();
+						ctx.fillStyle = '#dc3545';
+						ctx.beginPath();
+						ctx.arc(x, zeroY, 8, Math.PI/2, 3*Math.PI/2);
+						ctx.fill();
+					}
+					
+					ctx.fillStyle = '#000';
+					ctx.font = '14px Arial';
+					ctx.fillText(String.fromCharCode(97 + i), x + 10, zeroY - 10);
+				});
 
-            // Draw equilibrium points
-            const roots = findRoots(f);
-            roots.forEach((y, i) => {
-                const x = (y - yMin) * scaleX;
-                const type = classifyEquilibrium(f, y);
-                
-                ctx.beginPath();
-                ctx.arc(x, zeroY, 8, 0, Math.PI * 2);
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                
-                if (type === 'stable') {
-                    ctx.fillStyle = '#28a745';
-                    ctx.fill();
-                } else if (type === 'unstable') {
-                    ctx.fillStyle = '#dc3545';
-                    ctx.fill();
-                } else {
-                    ctx.fillStyle = '#28a745';
-                    ctx.beginPath();
-                    ctx.arc(x, zeroY, 8, -Math.PI/2, Math.PI/2);
-                    ctx.fill();
-                    ctx.fillStyle = '#dc3545';
-                    ctx.beginPath();
-                    ctx.arc(x, zeroY, 8, Math.PI/2, 3*Math.PI/2);
-                    ctx.fill();
-                }
-                
-                ctx.fillStyle = '#000';
-                ctx.font = '14px Arial';
-                ctx.fillText(String.fromCharCode(97 + i), x + 10, zeroY - 10);
-            });
+				drawArrowheads(ctx, zeroY, scaleX, roots, f);
+				ctx.restore();
 
-            drawArrowheads(ctx, zeroY, scaleX, roots, f);
-            ctx.restore();
+						const tableHTML = `<table>
+			<tr><th>Label</th><th>Value</th><th>Classification</th></tr>
+			${roots.map((y, i) => `
+				<tr>
+					<td>${String.fromCharCode(97 + i)}</td>
+					<td>${y.toFixed(2)}</td>
+					<td style="display: flex; align-items: center;">
+						<span class="classification-circle ${classifyEquilibrium(f, y).includes('semistable') ? 
+							'semistable-circle' : 
+							classifyEquilibrium(f, y).replace(' ', '-') + '-circle'}"></span>
+						${classifyEquilibrium(f, y)
+							.replace(/-right|-left/g, '')
+							.replace(/^semistable$/, 'semistable (node)')
+							.replace(/^unstable$/, 'unstable (source)')
+							.replace(/^stable$/, 'stable (sink)')}
+					</td>
+				</tr>
+			`).join('')}
+		</table>`;
 
-            const tableHTML = `<table>
-                <tr><th>Label</th><th>Value</th><th>Classification</th></tr>
-                ${roots.map((y, i) => `
-                    <tr>
-                        <td>${String.fromCharCode(97 + i)}</td>
-                        <td>${y.toFixed(2)}</td>
-                        <td style="display: flex; align-items: center;">
-                            <span class="classification-circle ${classifyEquilibrium(f, y).includes('semistable') ? 
-                                'semistable-circle' : 
-                                classifyEquilibrium(f, y).replace(' ', '-') + '-circle'}"></span>
-                            ${classifyEquilibrium(f, y).replace(/-right|-left/g, '')}
-                        </td>
-                    </tr>
-                `).join('')}
-            </table>`;
 
-            document.getElementById('equilibriumTable').innerHTML = tableHTML;
-        }
+				document.getElementById('equilibriumTable').innerHTML = tableHTML;
+			}
+
 
         // Initialize title and first plot
         katex.render("\\text{Phase Line Diagram for } y' = f(y)", 
