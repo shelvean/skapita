@@ -5,6 +5,10 @@
     <meta name="keywords" content="Direction Fields, Slope Fields, Differential Equations, Solution Curves">
     <meta name="designer" content="Shelvean Kapita">
     <title>Direction Field Visualizer</title>
+    <!-- Add KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <!-- Add KaTeX JS -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); min-height: 100vh; }
@@ -29,6 +33,14 @@
         .axis-scale.vertical > div { position: absolute; left: -25px; white-space: nowrap; }
         @media (max-width: 768px) { .main-container { padding: 1rem; } .controls { padding: 1rem; } .control-group { flex-wrap: wrap; gap: 0.5rem; } label { min-width: 100%; } }
         .footer { margin-top: 20px; padding: 10px; text-align: center; color: #6c757d; font-size: 0.9rem; border-top: 1px solid #dee2e6; }
+        /* Style for the KaTeX instruction */
+        .katex-instruction {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #2b2d42;
+            padding-top: 0.5rem;
+        }
     </style>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
     <script>
@@ -41,6 +53,8 @@
 <body>
     <div class="main-container">
         <div class="controls">
+            <!-- Add KaTeX instruction at the top -->
+            <div class="katex-instruction" id="katex-instruction"></div>
             <div class="control-group">
                 <label>Differential Equation: y'= </label>
                 <input type="text" id="equation" value="y-3*sin(t)" placeholder="Enter equation"/>
@@ -74,6 +88,14 @@
         </div>
     </div>
     <script>
+        // Render the KaTeX instruction when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const katexElement = document.getElementById('katex-instruction');
+            katex.render("\\text{Enter } \\dfrac{dy}{dt} = f(t,y) \\text{ or } \\dfrac{dy}{dx} = f(x,y)", katexElement, {
+                throwOnError: false
+            });
+        });
+        
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const instruction = document.getElementById('instruction');
