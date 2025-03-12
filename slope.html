@@ -104,6 +104,11 @@
         Math.acoth = function(x) { return 0.5 * Math.log((x + 1)/(x - 1)); };
         Math.acsch = function(x) { return Math.log(1/x + Math.sqrt(1/(x*x) + 1)); };
         
+        // Add hyperbolic functions
+        Math.coth = function(x) { return 1 / Math.tanh(x); };
+        Math.sech = function(x) { return 1 / Math.cosh(x); };
+        Math.csch = function(x) { return 1 / Math.sinh(x); };
+        
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const instruction = document.getElementById('instruction');
