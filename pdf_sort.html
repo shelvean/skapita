@@ -180,11 +180,14 @@
         let pdfDocs = [];
         let pages = [];
         let currentDraggedItem = null;
+        const THUMBNAIL_WIDTH = 100; // Fixed width for thumbnails to speed up rendering
 
         document.getElementById('pdfInput').addEventListener('change', handleFileSelect);
 
         async function handleFileSelect(event) {
             const files = event.target.files;
+            const renderPromises = []; // Collect render promises for parallel processing
+
             for (const file of files) {
                 const arrayBuffer = await file.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
@@ -193,18 +196,20 @@
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const viewport = page.getViewport({ scale: 1 });
-                    const scale = 0.5;
-
+                    const scale = THUMBNAIL_WIDTH / viewport.width; // Dynamic scale for fixed width
                     const previewViewport = page.getViewport({ scale });
+
                     const canvas = document.createElement('canvas');
                     const context = canvas.getContext('2d');
-                    canvas.height = previewViewport.height;
                     canvas.width = previewViewport.width;
+                    canvas.height = previewViewport.height;
 
-                    await page.render({
+                    // Start rendering without awaiting, collect promise
+                    const renderPromise = page.render({
                         canvasContext: context,
                         viewport: previewViewport
                     }).promise;
+                    renderPromises.push(renderPromise);
 
                     pages.push({
                         type: 'pdf',
@@ -212,11 +217,18 @@
                         pdfIndex: pdfDocs.length - 1,
                         pageNumber: i,
                         originalWidth: viewport.width,
-                        originalHeight: viewport.height
+                        originalHeight: viewport.height,
+                        thumbnailWidth: previewViewport.width,
+                        thumbnailHeight: previewViewport.height
                     });
                 }
             }
+
+            // Render the preview immediately, allowing UI to update
             renderPreview();
+
+            // Wait for all renders to complete in parallel
+            await Promise.all(renderPromises);
         }
 
         async function savePDF() {
@@ -231,33 +243,21 @@
 
                 for (let i = 0; i < pages.length; i++) {
                     const page = pages[i];
-                    console.log(`Processing page ${i + 1}:`, page);
-                    console.log('Page number:', page.pageNumber, 'Adjusted Index:', page.pageNumber - 1);
-
                     if (page.type === 'pdf') {
-                        // Load the PDF only once and cache it
                         if (!loadedPdfs.has(page.pdfIndex)) {
                             const originalPdf = await PDFLib.PDFDocument.load(pdfDocs[page.pdfIndex].arrayBuffer);
                             loadedPdfs.set(page.pdfIndex, originalPdf);
                         }
-
                         const originalPdf = loadedPdfs.get(page.pdfIndex);
                         const [copiedPage] = await pdfDoc.copyPages(originalPdf, [page.pageNumber - 1]);
                         pdfDoc.addPage(copiedPage);
                     } else {
-                        // Handle blank pages
                         const blankPdf = await PDFLib.PDFDocument.load(page.arrayBuffer);
                         const [blankPage] = await pdfDoc.copyPages(blankPdf, [0]);
                         pdfDoc.addPage(blankPage);
                     }
-
-                    // Update progress
                     progress.textContent = `Generating PDF... ${Math.round(((i + 1) / pages.length) * 100)}%`;
                 }
-
-                console.log('Pages array before saving:', JSON.stringify(pages.map(p => p.pageNumber)));
-                const pageCount = pdfDoc.getPages().length;
-                console.log('Total Pages in New PDF:', pageCount);
 
                 const pdfBytes = await pdfDoc.save();
                 const blob = new Blob([pdfBytes], { type: 'application/pdf' });
@@ -266,16 +266,11 @@
                 link.download = 'sorted-document.pdf';
                 link.click();
 
-                // Remove progress indicator
                 document.body.removeChild(progress);
             } catch (error) {
                 console.error('Error generating PDF:', error);
                 alert('An error occurred while generating the PDF. Please try again.');
             }
-        }
-
-        function logPages() {
-            console.log('Pages array:', pages);
         }
 
         function clearAll() {
@@ -302,7 +297,6 @@
             }
 
             pages.forEach((page, index) => {
-                // Create page thumbnail
                 const wrapper = document.createElement('div');
                 wrapper.className = 'page-thumbnail';
                 wrapper.draggable = true;
@@ -316,16 +310,14 @@
                 } else {
                     const blank = document.createElement('div');
                     blank.className = 'blank-page';
-                    blank.style.width = `${page.originalWidth * 0.5}px`;
-                    blank.style.height = `${page.originalHeight * 0.5}px`;
+                    blank.style.width = `${page.thumbnailWidth}px`;
+                    blank.style.height = `${page.thumbnailHeight}px`;
                     blank.textContent = 'Blank Page';
                     wrapper.appendChild(blank);
                 }
 
-                // Add insert button after page
                 const addButton = createAddButton(index + 1);
 
-                // Event listeners for drag and drop
                 wrapper.addEventListener('dragstart', () => currentDraggedItem = index);
                 wrapper.addEventListener('dragover', (e) => e.preventDefault());
                 wrapper.addEventListener('drop', () => movePage(currentDraggedItem, index));
@@ -334,7 +326,6 @@
                 container.appendChild(addButton);
             });
 
-            // Add final insert button
             container.appendChild(createAddButton(pages.length));
         }
 
@@ -360,10 +351,16 @@
             const bytes = await pdfDoc.save();
             const arrayBuffer = bytes.buffer;
 
+            const scale = THUMBNAIL_WIDTH / width;
+            const thumbnailWidth = THUMBNAIL_WIDTH;
+            const thumbnailHeight = height * scale;
+
             pages.splice(index, 0, {
                 type: 'blank',
                 originalWidth: width,
                 originalHeight: height,
+                thumbnailWidth: thumbnailWidth,
+                thumbnailHeight: thumbnailHeight,
                 arrayBuffer
             });
 
