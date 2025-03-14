@@ -53,6 +53,7 @@
       gap: 15px;
       margin: 20px 0;
       justify-content: center;
+      align-items: center;
     }
 
     button, .upload-button {
@@ -65,6 +66,8 @@
       font-weight: 600;
       transition: all 0.3s;
       font-size: 16px;
+      display: inline-block;
+      line-height: normal;
     }
 
     button:hover, .upload-button:hover {
@@ -152,6 +155,16 @@
       display: inline-block;
     }
 
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
     .loading {
       opacity: 0.7;
       position: relative;
@@ -187,12 +200,10 @@
   </div>
 
   <div class="actions">
-    <div class="file-input-wrapper">
-      <label for="fileInput" class="upload-button">
-        📁 Upload Files
-      </label>
-      <input type="file" id="fileInput" multiple accept="application/pdf, image/jpeg, image/png" hidden />
-    </div>
+    <button class="upload-button">
+      📁 Upload Files
+      <input type="file" id="fileInput" multiple accept="application/pdf, image/jpeg, image/png" style="display:none"/>
+    </button>
     <button id="mergeBtn">🔄 Merge</button>
     <button id="clearBtn">❌ Clear</button>
   </div>
@@ -216,6 +227,7 @@
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script>
     const fileInput = document.getElementById('fileInput');
+    const uploadButton = document.querySelector('.upload-button');
     const mergeBtn = document.getElementById('mergeBtn');
     const clearBtn = document.getElementById('clearBtn');
     const fileList = document.getElementById('fileList');
@@ -228,6 +240,10 @@
     let dragIndex = null;
 
     // File Input Handler
+    uploadButton.addEventListener('click', () => {
+      fileInput.click();
+    });
+
     fileInput.addEventListener('change', (event) => {
       const validTypes = ['application/pdf', 'image/jpeg', 'image/png'];
       const newFiles = Array.from(event.target.files).filter(file => 
