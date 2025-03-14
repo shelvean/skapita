@@ -25,7 +25,28 @@
         .header {
             text-align: center;
             color: #2c3e50;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
+        }
+
+        .app-description {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            color: #34495e;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        
+        .app-features {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            color: #34495e;
+        }
+        
+        .app-features ul {
+            display: inline-block;
+            text-align: left;
         }
 
         .toolbar {
@@ -162,6 +183,14 @@
 </head>
 <body>
     <h1 class="header">PDF Sort</h1>
+    <div class="app-features">
+        <ul>
+            <li>Upload and combine multiple PDF documents</li>
+            <li>Rearrange pages with simple drag-and-drop</li>
+            <li>Add blank pages or remove unwanted content</li>
+            <li>Save your reorganized PDF document</li>
+        </ul>
+    </div>
     <div class="toolbar">
         <input type="file" id="pdfInput" accept="application/pdf" multiple>
         <button onclick="clearAll()">Clear Files</button>
