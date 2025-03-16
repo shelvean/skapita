@@ -1,58 +1,502 @@
-
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>JavaScript Linear Algebra Projects</title>
-<meta name="generator" content="Org mode" />
-<meta name="author" content="Shelvean Kapita" />
-<!-- Add Tailwind CSS CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css?family=Neuton:400,400i,700,700i" rel="stylesheet">
-<style>
-  a:active {
-    color: #1e40af; /* darker blue */
-  }
-</style>
+    <meta name="description" content="Linear Phase Diagram, Phase Portrait, Spirals, Centers, Trajectories">
+    <meta name="keywords" content="Linear, Phase Portrait, Phase Diagram, Spirals, Centers, Trajectories, Stable, Unstable">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments) }
+        gtag('js', new Date());
+        gtag('config', 'G-5B8PRB2WZT');
+    </script>
+    <title>Linear System Phase Portrait</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fb;
+        }
+        .main-content {
+            display: flex;
+            gap: 20px;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, .1);
+            flex: 1;
+        }
+        .examples-column {
+            width: 300px;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, .1);
+        }
+        .example {
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        .example:hover {
+            background-color: #f8f9fa;
+        }
+        .example h3 {
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        .matrix-latex {
+            font-size: 1.2rem;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .matrix-container {
+            display: flex;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        .matrix-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .matrix-column {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .matrix-column input {
+            width: 60px;
+            padding: .5rem;
+            text-align: center;
+        }
+        .bracket {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            line-height: 1;
+            margin: 0 5px;
+        }
+        .range-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 1rem 0;
+        }
+        .range-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .input-group input {
+            width: 80px;
+            padding: .3rem;
+            text-align: center;
+        }
+        .input-group label {
+            font-size: .9rem;
+            color: #2c3e50;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: .8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background .3s ease;
+            margin: 1rem 0;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+        .equation {
+            font-size: 1.2rem;
+            text-align: center;
+            margin: 1rem 0;
+            min-height: 60px;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        button.clear {
+            background: #e74c3c;
+        }
+        button.clear:hover {
+            background: #c0392b;
+        }
+        .scale-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            margin-top: 10px;
+        }
+        .x-scale {
+            display: flex;
+            justify-content: space-between;
+            width: 600px;
+            font-size: .9rem;
+            color: #2c3e50;
+            margin-top: 10px;
+        }
+        .y-scale {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 450px;
+            font-size: .9rem;
+            color: #2c3e50;
+            margin-right: 10px;
+        }
+        .canvas-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .instruction {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, .9);
+            backdrop-filter: blur(5px);
+            padding: .8rem 1.5rem;
+            border-radius: 30px;
+            font-size: .9rem;
+            color: #4361ee;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
+            z-index: 10;
+            animation: float 3s ease-in-out infinite;
+            border: 1px solid rgba(255, 255, 255, .3);
+        }
+        @keyframes float {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px 0;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
 </head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-5B8PRB2WZT');
-</script>
-<body class="bg-gray-100 font-[Neuton] min-h-screen">
-<div class="container mx-auto px-4 py-8">
-    <header class="mb-8">
-        <h1 class="text-4xl font-serif text-blue-600 text-center mb-4">
-          <a href="index.html">Shelvean Kapita</a>
-        </h1>
-        <nav>
-          <ul class="flex justify-center gap-8">
-            <li>
-              <a href="index.html" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">Home</a>
-            </li>
-            <li>
-              <a href="teaching.html" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">Teaching</a>
-            </li>
-            <li>
-              <a href="projects.html" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">Projects</a>
-            </li>
-          </ul>
-        </nav>
-    </header>
-
-    <div class="bg-white shadow-md rounded-lg p-6 flex justify-center">
-        <ul class="list-disc pl-4 space-y-2 text-lg"> <!-- Added text-lg here -->
-            <li><a href="rref.html" class="text-blue-600 hover:text-blue-800">Row Reduced Echelon Calculator</a></li>
-            <li><a href="eigs.html" class="text-blue-600 hover:text-blue-800">Eigenvalues and Eigenvectors Calculator</a></li>
-        </ul>
+<body>
+    <div class="main-content">
+        <div class="container">
+            <h1>Linear System Phase Portrait</h1>
+            <div class="equation" id="equation-display"></div>
+            <div class="matrix-container">
+                <div class="matrix-row">
+                    <span class="bracket">[</span>
+                    <div class="matrix-column">
+                        <input type="number" id="a" placeholder="a" step="any" value="-1">
+                        <input type="number" id="c" placeholder="c" step="any" value="-2">
+                    </div>
+                    <div class="matrix-column">
+                        <input type="number" id="b" placeholder="b" step="any" value="2">
+                        <input type="number" id="d" placeholder="d" step="any" value="-1">
+                    </div>
+                    <span class="bracket">]</span>
+                </div>
+            </div>
+            <div class="range-container">
+                <div class="range-row">
+                    <div class="input-group">
+                        <label for="arrow-count">Number of Arrows (per axis):</label>
+                        <input type="number" id="arrow-count" value="20">
+                    </div>
+                </div>
+            </div>
+            <div class="button-container">
+                <button onclick="drawPhasePortrait()">Generate Phase Portrait</button>
+                <button class="clear" onclick="clearUserPoints()">Clear Trajectories</button>
+            </div>
+            <div class="scale-container">
+                <div class="y-scale">
+                    <span id="y-max-label">10</span>
+                    <span>5</span>
+                    <span>0</span>
+                    <span>-5</span>
+                    <span id="y-min-label">-10</span>
+                </div>
+                <div class="canvas-wrapper">
+                    <div style="position: relative">
+                        <canvas id="canvas" width="600" height="450"></canvas>
+                        <div id="instruction" class="instruction">✨ Click anywhere to add trajectories</div>
+                    </div>
+                    <div class="x-scale">
+                        <span id="x-min-label">-10</span>
+                        <span>-5</span>
+                        <span>0</span>
+                        <span>5</span>
+                        <span id="x-max-label">10</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="examples-column">
+            <h2>Example Matrices (click)</h2>
+            <div class="example" data-a="-1" data-b="0" data-c="0" data-d="-2">
+                <h3>Stable Node</h3>
+                <span class="matrix-latex">\begin{pmatrix} -1 & 0 \\ 0 & -2 \end{pmatrix}</span>
+            </div>
+            <div class="example" data-a="1" data-b="0" data-c="0" data-d="2">
+                <h3>Unstable Node</h3>
+                <span class="matrix-latex">\begin{pmatrix} 1 & 0 \\ 0 & 2 \end{pmatrix}</span>
+            </div>
+            <div class="example" data-a="1" data-b="0" data-c="0" data-d="-1">
+                <h3>Saddle Point</h3>
+                <span class="matrix-latex">\begin{pmatrix} 1 & 0 \\ 0 & -1 \end{pmatrix}</span>
+            </div>
+            <div class="example" data-a="-1" data-b="2" data-c="-2" data-d="-1">
+                <h3>Stable Spiral</h3>
+                <span class="matrix-latex">\begin{pmatrix} -1 & 2 \\ -2 & -1 \end{pmatrix}</span>
+            </div>
+            <div class="example" data-a="1" data-b="2" data-c="-2" data-d="1">
+                <h3>Unstable Spiral</h3>
+                <span class="matrix-latex">\begin{pmatrix} 1 & 2 \\ -2 & 1 \end{pmatrix}</span>
+            </div>
+            <div class="example" data-a="0" data-b="1" data-c="-1" data-d="0">
+                <h3>Center</h3>
+                <span class="matrix-latex">\begin{pmatrix} 0 & 1 \\ -1 & 0 \end{pmatrix}</span>
+            </div>
+        </div>
     </div>
-</div>
+    <footer>
+        © 2025 Shelvean Kapita. All rights reserved.<br>
+        Last modified: March 16, 2025
+    </footer>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script>
+        let userPoints = [];
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize KaTeX rendering
+            katex.render('\\begin{cases}\\dot{x} = ax + by \\\\\\dot{y} = cx + dy\\end{cases}', 
+                document.getElementById('equation-display'), 
+                { throwOnError: false, displayMode: true }
+            );
+
+            // Add click handlers for examples
+            document.querySelectorAll('.example').forEach(example => {
+                example.addEventListener('click', () => {
+                    userPoints = [];
+                    document.getElementById('a').value = example.dataset.a;
+                    document.getElementById('b').value = example.dataset.b;
+                    document.getElementById('c').value = example.dataset.c;
+                    document.getElementById('d').value = example.dataset.d;
+                    document.getElementById('instruction').style.display = 'block';
+                    drawPhasePortrait();
+                });
+                katex.render(example.querySelector('.matrix-latex').textContent, 
+                    example.querySelector('.matrix-latex'), 
+                    { throwOnError: false, displayMode: true }
+                );
+            });
+
+            // Canvas click handler
+            const canvas = document.getElementById('canvas');
+            canvas.addEventListener('click', event => {
+                const rect = canvas.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const scale = 30;
+                const systemX = (x - centerX) / scale;
+                const systemY = (centerY - y) / scale;
+                userPoints.push({ x: systemX, y: systemY });
+                drawPhasePortrait();
+                document.getElementById('instruction').style.display = 'none';
+            });
+
+            drawPhasePortrait();
+        });
+
+        function clearUserPoints() {
+            userPoints = [];
+            drawPhasePortrait();
+            document.getElementById('instruction').style.display = 'block';
+        }
+
+        function drawPhasePortrait() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Get matrix coefficients
+            const a = parseFloat(document.getElementById('a').value) || 0;
+            const b = parseFloat(document.getElementById('b').value) || 0;
+            const c = parseFloat(document.getElementById('c').value) || 0;
+            const d = parseFloat(document.getElementById('d').value) || 0;
+            
+            const arrowCount = parseFloat(document.getElementById('arrow-count').value) || 20;
+            const xMin = -10, xMax = 10, yMin = -10, yMax = 10;
+            
+            // Update scale labels
+            document.getElementById('x-min-label').textContent = xMin;
+            document.getElementById('x-max-label').textContent = xMax;
+            document.getElementById('y-min-label').textContent = yMin;
+            document.getElementById('y-max-label').textContent = yMax;
+
+            const scale = 30;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const xStep = (xMax - xMin) / (1.5 * arrowCount);
+            const yStep = (yMax - yMin) / (1.5 * arrowCount);
+
+            // Draw vector field
+            for (let x = xMin; x <= xMax; x += xStep) {
+                for (let y = yMin; y <= yMax; y += yStep) {
+                    const dx = a * x + b * y;
+                    const dy = c * x + d * y;
+                    const len = Math.sqrt(dx * dx + dy * dy);
+                    if (len === 0) continue;
+
+                    const arrowScale = Math.min(0.5, len / 10);
+                    const dxNorm = (dx / len) * arrowScale;
+                    const dyNorm = (dy / len) * arrowScale;
+                    const startX = centerX + x * scale;
+                    const startY = centerY - y * scale;
+                    
+                    ctx.strokeStyle = '#009AEE';
+                    drawArrow(ctx, startX, startY, 
+                            startX + dxNorm * scale, 
+                            startY - dyNorm * scale, 
+                            arrowScale);
+                }
+            }
+
+            // Draw trajectories
+            ctx.strokeStyle = '#B7410E';
+            ctx.lineWidth = 1.5;
+            userPoints.forEach(point => {
+                const path = computeTrajectory(point.x, point.y, a, b, c, d, scale, centerX, centerY);
+                drawTrajectory(ctx, path);
+            });
+
+            // Draw axes
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2.0;
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+
+            // Axis labels
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = '14px Arial';
+            ctx.fillText('x', canvas.width - 10, centerY + 20);
+            ctx.fillText('y', centerX + 10, 10);
+        }
+
+        function computeTrajectory(x0, y0, a, b, c, d, scale, cx, cy) {
+            const M = Math.max(Math.abs(a), Math.abs(b), Math.abs(c), Math.abs(d));
+            const dt = 0.01 / (1 + M);
+            const maxSteps = 10000;
+            const points = [];
+            let x = x0, y = y0;
+
+            function derivatives(x, y) {
+                return {
+                    dx: a * x + b * y,
+                    dy: c * x + d * y
+                };
+            }
+
+            // Forward integration
+            for (let i = 0; i < maxSteps; i++) {
+                points.push({ x: cx + x * scale, y: cy - y * scale });
+                const { dx: k1x, dy: k1y } = derivatives(x, y);
+                const { dx: k2x, dy: k2y } = derivatives(x + k1x * dt / 2, y + k1y * dt / 2);
+                const { dx: k3x, dy: k3y } = derivatives(x + k2x * dt / 2, y + k2y * dt / 2);
+                const { dx: k4x, dy: k4y } = derivatives(x + k3x * dt, y + k3y * dt);
+                
+                x += (k1x + 2 * k2x + 2 * k3x + k4x) * dt / 6;
+                y += (k1y + 2 * k2y + 2 * k3y + k4y) * dt / 6;
+                
+                if (Math.abs(x) > 20 || Math.abs(y) > 20) break;
+            }
+
+            // Backward integration
+            x = x0;
+            y = y0;
+            for (let i = 0; i < maxSteps; i++) {
+                const { dx: k1x, dy: k1y } = derivatives(x, y);
+                const { dx: k2x, dy: k2y } = derivatives(x - k1x * dt / 2, y - k1y * dt / 2);
+                const { dx: k3x, dy: k3y } = derivatives(x - k2x * dt / 2, y - k2y * dt / 2);
+                const { dx: k4x, dy: k4y } = derivatives(x - k3x * dt, y - k3y * dt);
+                
+                x -= (k1x + 2 * k2x + 2 * k3x + k4x) * dt / 6;
+                y -= (k1y + 2 * k2y + 2 * k3y + k4y) * dt / 6;
+                
+                if (Math.abs(x) > 20 || Math.abs(y) > 20) break;
+                points.unshift({ x: cx + x * scale, y: cy - y * scale });
+            }
+
+            return points;
+        }
+
+        function drawTrajectory(ctx, points) {
+            ctx.beginPath();
+            points.forEach((p, i) => {
+                if (i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            });
+            ctx.stroke();
+        }
+
+        function drawArrow(ctx, fromX, fromY, toX, toY, scale) {
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+
+            ctx.lineWidth = 0.7;
+            const arrowSize = 5 * scale;
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - arrowSize * Math.cos(angle - Math.PI / 6), 
+                      toY - arrowSize * Math.sin(angle - Math.PI / 6));
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - arrowSize * Math.cos(angle + Math.PI / 6), 
+                      toY - arrowSize * Math.sin(angle + Math.PI / 6));
+            ctx.stroke();
+        }
+    </script>
 </body>
 </html>
