@@ -174,7 +174,7 @@
         <div id="alertContainer" class="alert"></div>
         <footer>
             © 2025 Shelvean Kapita. All rights reserved.<br>
-            Last modified: March 5, 2025
+            Last modified: March 17, 2025
         </footer>
     </div>
 
@@ -408,7 +408,7 @@
                     throw new Error("Length and mass must be positive.");
                 }
 
-                b_over_m = b / m;
+                b_over_m = b / (m*L);
                 g_over_L = g / L;
                 const D = b_over_m ** 2 - 4 * g_over_L;
                 useBackwardEuler = D > 0;
@@ -465,7 +465,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             katex.render(
-                `\\theta'' + \\frac{b}{m} \\theta' + \\frac{g}{L} \\sin(\\theta) = 0,  \\quad \\theta(0) = \\theta_0, \\quad \\theta'(0) = \\omega_0`,
+                `\\theta'' + \\frac{b}{mL} \\theta' + \\frac{g}{L} \\sin(\\theta) = 0,  \\quad \\theta(0) = \\theta_0, \\quad \\theta'(0) = \\omega_0`,
                 document.getElementById('equationGeneral'),
                 { throwOnError: false, displayMode: true }
             );
