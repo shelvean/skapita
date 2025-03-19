@@ -318,7 +318,7 @@
 
       t += dt;
 
-      if (t > 2 && y < -2.7) {
+      if (y > 4 || y < -2.7) {
         isSimulationRunning = false;
         showAlert("Displacement has exceeded the maximum.");
       }
