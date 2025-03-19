@@ -209,13 +209,13 @@
         let pdfDocs = [];
         let pages = [];
         let currentDraggedItem = null;
-        const THUMBNAIL_WIDTH = 100; // Fixed width for thumbnails to speed up rendering
+        const THUMBNAIL_WIDTH = 200; // Increased from 100 to 200
 
         document.getElementById('pdfInput').addEventListener('change', handleFileSelect);
 
         async function handleFileSelect(event) {
             const files = event.target.files;
-            const renderPromises = []; // Collect render promises for parallel processing
+            const renderPromises = [];
 
             for (const file of files) {
                 const arrayBuffer = await file.arrayBuffer();
@@ -225,15 +225,20 @@
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const viewport = page.getViewport({ scale: 1 });
-                    const scale = THUMBNAIL_WIDTH / viewport.width; // Dynamic scale for fixed width
+                    const scale = THUMBNAIL_WIDTH / viewport.width;
                     const previewViewport = page.getViewport({ scale });
 
                     const canvas = document.createElement('canvas');
                     const context = canvas.getContext('2d');
-                    canvas.width = previewViewport.width;
-                    canvas.height = previewViewport.height;
+                    
+                    // High-resolution rendering
+                    const pixelRatio = window.devicePixelRatio || 1;
+                    canvas.width = previewViewport.width * pixelRatio;
+                    canvas.height = previewViewport.height * pixelRatio;
+                    canvas.style.width = previewViewport.width + 'px';
+                    canvas.style.height = previewViewport.height + 'px';
+                    context.scale(pixelRatio, pixelRatio);
 
-                    // Start rendering without awaiting, collect promise
                     const renderPromise = page.render({
                         canvasContext: context,
                         viewport: previewViewport
@@ -253,10 +258,7 @@
                 }
             }
 
-            // Render the preview immediately, allowing UI to update
             renderPreview();
-
-            // Wait for all renders to complete in parallel
             await Promise.all(renderPromises);
         }
 
@@ -265,7 +267,6 @@
                 const pdfDoc = await PDFLib.PDFDocument.create();
                 const loadedPdfs = new Map();
 
-                // Add a progress indicator
                 const progress = document.createElement('div');
                 progress.textContent = 'Generating PDF...';
                 document.body.appendChild(progress);
