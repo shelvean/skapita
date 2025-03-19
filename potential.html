@@ -1,336 +1,407 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5B8PRB2WZT"></script>
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-5B8PRB2WZT');
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5B8PRB2WZT');
     </script>
-    <title>Damped Particle Rolling on Potential Curve</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <meta name="description" content="Sort or Organize PDF files, add blank pages, remove PDF pages, shuffle PDF pages">
+    <meta name="keywords" content="PDF sort, organize, sort, remove PDF pages, shuffle">
+    <meta charset="UTF-8">
+    <title>PDF Sort</title>
+
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            text-align: center; 
-            margin: 20px;
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
         }
-        canvas { 
-            border: 2px solid #666;
-            border-radius: 4px;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin: 10px;
+
+        .header {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
         }
-        #controls { 
-            margin: 20px;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 8px;
+
+        .app-features {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            color: #34495e;
         }
-        label { 
-            margin-right: 10px;
-            font-weight: bold;
+        
+        .app-features ul {
+            display: inline-block;
+            text-align: left;
         }
+
+        .toolbar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
         button {
-            padding: 8px 15px;
-            margin: 0 5px;
-            background: #4CAF50;
-            color: white;
+            padding: 12px 24px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
+            background: #3498db;
+            color: white;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 15px;
         }
+
         button:hover {
-            background: #45a049;
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
         }
-        .equations {
-            margin: 20px auto;
-            padding: 15px;
-            background: #f8f9fa;
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .page-thumbnail {
+            position: relative;
+            cursor: move;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
             border-radius: 8px;
-            max-width: 800px;
+            overflow: hidden;
+            background: white;
         }
-        .equations p {
-            margin: 10px 0;
-            font-size: 1.1em;
+
+        .page-thumbnail:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #e74c3c;
+            padding: 5px 10px;
+            border-radius: 3px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .add-blank {
+            background: #27ae60;
+            border: none;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .add-blank:hover {
+            background: #219a52;
+            transform: scale(1.1);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        .add-blank::before,
+        .add-blank::after {
+            content: '';
+            position: absolute;
+            background: white;
+            transition: all 0.3s;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .add-blank::before {
+            width: 20px;
+            height: 2px;
+        }
+
+        .add-blank::after {
+            width: 2px;
+            height: 20px;
+        }
+
+        .blank-page {
+            background: #ecf0f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-style: italic;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px 0;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #ddd;
         }
     </style>
 </head>
 <body>
-    <h2>Particle on a Potential Curve</h2>
+    <h1 class="header">PDF Sort</h1>
+    <div class="app-features">
+        <ul>
+            <li>Upload and combine multiple PDF documents</li>
+            <li>Rearrange pages with simple drag-and-drop</li>
+            <li>Add blank pages or remove unwanted content</li>
+            <li>Save your reorganized PDF document</li>
+        </ul>
+    </div>
     
-    <div class="equations">
-        <p>Equation of Motion: \( x'' + c x' + (1 - x^2) = 0, \quad x(0) = x_0, \quad x'(0) = v_0 \)</p>
-        <p>Potential Function: \( U(x) = x - \dfrac{1}{3}x^3 \)</p>
-    </div>
-
-    <div id="controls">
-        <label>Initial Position (\( x_0 \)):</label>
-        <input type="number" id="x0" value="2.0" step="0.1" min="-2.5" max="2.5">
-        
-        <label>Initial Velocity (\( v_0 \)):</label>
-        <input type="number" id="v0" value="-2.0" step="0.1">
-        
-        <label>Damping constant (\( c \)):</label>
-        <input type="number" id="c" value="0.0692071752" step="0.01" min="0" max="1">
-        
-        <button onclick="startSiclation()">Start</button>
-        <button onclick="stopSiclation()">Stop</button>
-    </div>
-
-    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-        <div>
-            <canvas id="curveCanvas" width="500" height="400"></canvas>
-            <div style="margin-top: 10px; font-weight: bold;">Potential Curve</div>
-        </div>
-        <div>
-            <canvas id="phaseCanvas" width="400" height="400"></canvas>
-            <div style="margin-top: 10px; font-weight: bold;">Velocity vs Position</div>
+    <div class="toolbar">
+        <input type="file" id="pdfInput" accept="application/pdf" multiple>
+        <div class="button-row">
+            <button onclick="clearAll()">Clear Files</button>
+            <button onclick="savePDF()">Save PDF</button>
         </div>
     </div>
-    <footer style="
-        margin: 30px 0 20px 0;
-        padding: 15px;
-        text-align: center;
-        font-size: 0.9em;
-        color: #666;
-        border-top: 1px solid #eee;
-    ">
-        &copy; 2025 Shelvean Kapita. All rights reserved.<br>
-        Last modified: March 6, 2025
+
+    <div class="preview-container" id="previewContainer"></div>
+
+    <footer>
+        © 2025 Shelvean Kapita. All rights reserved.<br>
+        Last modified: March 5, 2025
     </footer>
 
+    <script src="https://unpkg.com/pdfjs-dist@2.11.338/build/pdf.min.js"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script>
-        // Potential function and physics calculations
-        function potential(x) { return x - (x ** 3) / 3; }
-        function acceleration(x, v, c) { return -c * v + (x ** 2 - 1); }
+        let pdfDocs = [];
+        let pages = [];
+        let currentDraggedItem = null;
+        const THUMBNAIL_WIDTH = 200;
 
-        // RK4 solver
-        function rk4Step(x, v, dt, c) {
-            const k1x = v;
-            const k1v = acceleration(x, v, c);
-            const k2x = v + 0.5 * dt * k1v;
-            const k2v = acceleration(x + 0.5 * dt * k1x, v + 0.5 * dt * k1v, c);
-            const k3x = v + 0.5 * dt * k2v;
-            const k3v = acceleration(x + 0.5 * dt * k2x, v + 0.5 * dt * k2v, c);
-            const k4x = v + dt * k3v;
-            const k4v = acceleration(x + dt * k3x, v + dt * k3v, c);
+        document.getElementById('pdfInput').addEventListener('change', handleFileSelect);
 
-            return {
-                x: x + (dt/6) * (k1x + 2*k2x + 2*k3x + k4x),
-                v: v + (dt/6) * (k1v + 2*k2v + 2*k3v + k4v)
-            };
-        }
+        async function handleFileSelect(event) {
+            const files = event.target.files;
+            const renderPromises = [];
 
-        // Canvas setup
-        const curveCanvas = document.getElementById('curveCanvas');
-        const curveCtx = curveCanvas.getContext('2d');
-        const phaseCanvas = document.getElementById('phaseCanvas');
-        const phaseCtx = phaseCanvas.getContext('2d');
-        const ballRadius = 15;
-        const bottomMargin = 30;
+            for (const file of files) {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                pdfDocs.push({ pdf, arrayBuffer });
 
-        // Coordinate transformations for potential curve
-        const xToCurve = x => ((x + 2.5)/5) * curveCanvas.width;
-        const yToCurve = y => {
-            const drawingHeight = curveCanvas.height - bottomMargin;
-            return drawingHeight - ((y + 2)/4) * drawingHeight;
-        };
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 1 });
+                    const scale = THUMBNAIL_WIDTH / viewport.width;
+                    const previewViewport = page.getViewport({ scale });
 
-        // Phase plot transformations with dynamic scaling
-        let phaseBounds = { xMin: -2.5, xMax: 2.5, vMin: -2, vMax: 2 };
-        function updatePhaseBounds(x, v) {
-            phaseBounds.xMin = Math.min(phaseBounds.xMin, x);
-            phaseBounds.xMax = Math.max(phaseBounds.xMax, x);
-            phaseBounds.vMin = Math.min(phaseBounds.vMin, v);
-            phaseBounds.vMax = Math.max(phaseBounds.vMax, v);
-            
-            if (phaseBounds.xMax - phaseBounds.xMin < 0.5) {
-                phaseBounds.xMax = phaseBounds.xMin + 0.5;
-            }
-            if (phaseBounds.vMax - phaseBounds.vMin < 0.5) {
-                phaseBounds.vMax = phaseBounds.vMin + 0.5;
-            }
-        }
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    
+                    const pixelRatio = window.devicePixelRatio || 1;
+                    canvas.width = previewViewport.width * pixelRatio;
+                    canvas.height = previewViewport.height * pixelRatio;
+                    canvas.style.width = previewViewport.width + 'px';
+                    canvas.style.height = previewViewport.height + 'px';
+                    context.scale(pixelRatio, pixelRatio);
 
-        const plotPadding = 50;
-        const plotSize = 280;
-        const plotLeft = (phaseCanvas.width - plotSize) / 2;
-        const plotTop = (phaseCanvas.height - plotSize) / 2;
+                    const renderPromise = page.render({
+                        canvasContext: context,
+                        viewport: previewViewport
+                    }).promise;
+                    renderPromises.push(renderPromise);
 
-        function xToPhase(x) {
-            return plotLeft + ((x - phaseBounds.xMin) / (phaseBounds.xMax - phaseBounds.xMin)) * plotSize;
-        }
-
-        function vToPhase(v) {
-            return plotTop + plotSize - ((v - phaseBounds.vMin) / (phaseBounds.vMax - phaseBounds.vMin)) * plotSize;
-        }
-
-        // Drawing functions
-        function drawPotentialCurve() {
-            curveCtx.clearRect(0, 0, curveCanvas.width, curveCanvas.height);
-            
-            curveCtx.beginPath();
-            curveCtx.moveTo(0, curveCanvas.height - bottomMargin);
-            for(let x = -2.5; x <= 2.5; x += 0.05) {
-                curveCtx.lineTo(xToCurve(x), yToCurve(potential(x)));
-            }
-            curveCtx.lineTo(curveCanvas.width, curveCanvas.height - bottomMargin);
-            curveCtx.closePath();
-            curveCtx.fillStyle = '#89CFF0';
-            curveCtx.fill();
-            curveCtx.strokeStyle = '#0047AB';
-            curveCtx.lineWidth = 2;
-            curveCtx.stroke();
-
-            curveCtx.strokeStyle = 'black';
-            curveCtx.lineWidth = 1;
-            curveCtx.beginPath();
-            for(let x = -2.5; x <= 2.5; x += 0.5) {
-                const px = xToCurve(x);
-                curveCtx.moveTo(px, curveCanvas.height - bottomMargin - 5);
-                curveCtx.lineTo(px, curveCanvas.height - bottomMargin);
-                curveCtx.fillStyle = 'black';
-                curveCtx.fillText(x.toFixed(1), px, curveCanvas.height - bottomMargin + 15);
-            }
-            curveCtx.stroke();
-        }
-
-        function drawPhasePlot() {
-            phaseCtx.clearRect(0, 0, phaseCanvas.width, phaseCanvas.height);
-            
-            phaseCtx.strokeStyle = 'black';
-            phaseCtx.lineWidth = 1;
-            
-            phaseCtx.beginPath();
-            phaseCtx.moveTo(plotPadding, phaseCanvas.height - plotPadding);
-            phaseCtx.lineTo(phaseCanvas.width - plotPadding, phaseCanvas.height - plotPadding);
-            phaseCtx.moveTo(plotPadding, plotPadding);
-            phaseCtx.lineTo(plotPadding, phaseCanvas.height - plotPadding);
-            phaseCtx.stroke();
-
-            phaseCtx.fillStyle = 'black';
-            phaseCtx.font = '12px Arial';
-            phaseCtx.textAlign = 'center';
-            
-            const xLabels = [
-                phaseBounds.xMin.toFixed(1), 
-                ((phaseBounds.xMin + phaseBounds.xMax)/2).toFixed(1), 
-                phaseBounds.xMax.toFixed(1)
-            ];
-            xLabels.forEach((xVal, i) => {
-                const xPos = phaseBounds.xMin + (i * (phaseBounds.xMax - phaseBounds.xMin)/2);
-                const px = xToPhase(xPos);
-                phaseCtx.fillText(xVal, px, phaseCanvas.height - plotPadding + 15);
-            });
-
-            phaseCtx.textAlign = 'right';
-            const vLabels = [
-                phaseBounds.vMin.toFixed(1), 
-                ((phaseBounds.vMin + phaseBounds.vMax)/2).toFixed(1), 
-                phaseBounds.vMax.toFixed(1)
-            ];
-            vLabels.forEach((vVal, i) => {
-                const vPos = phaseBounds.vMin + (i * (phaseBounds.vMax - phaseBounds.vMin)/2);
-                const py = vToPhase(vPos);
-                phaseCtx.fillText(vVal, plotPadding - 5, py + 5);
-            });
-
-            if (phaseData.length > 1) {
-                phaseCtx.beginPath();
-                phaseCtx.moveTo(xToPhase(phaseData[0].x), vToPhase(phaseData[0].y));
-                for (let i = 1; i < phaseData.length; i++) {
-                    phaseCtx.lineTo(xToPhase(phaseData[i].x), vToPhase(phaseData[i].y));
+                    pages.push({
+                        type: 'pdf',
+                        canvas,
+                        pdfIndex: pdfDocs.length - 1,
+                        pageNumber: i,
+                        originalWidth: viewport.width,
+                        originalHeight: viewport.height,
+                        thumbnailWidth: previewViewport.width,
+                        thumbnailHeight: previewViewport.height
+                    });
                 }
-                phaseCtx.strokeStyle = 'blue';
-                phaseCtx.lineWidth = 1;
-                phaseCtx.stroke();
             }
 
-            if (phaseData.length > 0) {
-                const current = phaseData[phaseData.length - 1];
-                phaseCtx.fillStyle = 'red';
-                phaseCtx.beginPath();
-                phaseCtx.arc(xToPhase(current.x), vToPhase(current.y), 3, 0, Math.PI*2);
-                phaseCtx.fill();
+            renderPreview();
+            await Promise.all(renderPromises);
+        }
+
+        async function savePDF() {
+            try {
+                const pdfDoc = await PDFLib.PDFDocument.create();
+                const loadedPdfs = new Map();
+
+                const progress = document.createElement('div');
+                progress.textContent = 'Generating PDF...';
+                document.body.appendChild(progress);
+
+                for (let i = 0; i < pages.length; i++) {
+                    const page = pages[i];
+                    if (page.type === 'pdf') {
+                        if (!loadedPdfs.has(page.pdfIndex)) {
+                            const originalPdf = await PDFLib.PDFDocument.load(pdfDocs[page.pdfIndex].arrayBuffer);
+                            loadedPdfs.set(page.pdfIndex, originalPdf);
+                        }
+                        const originalPdf = loadedPdfs.get(page.pdfIndex);
+                        const [copiedPage] = await pdfDoc.copyPages(originalPdf, [page.pageNumber - 1]);
+                        pdfDoc.addPage(copiedPage);
+                    } else {
+                        const blankPdf = await PDFLib.PDFDocument.load(page.arrayBuffer);
+                        const [blankPage] = await pdfDoc.copyPages(blankPdf, [0]);
+                        pdfDoc.addPage(blankPage);
+                    }
+                    progress.textContent = `Generating PDF... ${Math.round(((i + 1) / pages.length) * 100)}%`;
+                }
+
+                const pdfBytes = await pdfDoc.save();
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'sorted-document.pdf';
+                link.click();
+
+                document.body.removeChild(progress);
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('An error occurred while generating the PDF. Please try again.');
             }
         }
 
-        // Siclation state
-        let x = 0, v = 0, c = 0.1, running = false;
-        let phaseData = [];
-        let animationFrameId = null;
+        function clearAll() {
+            pdfDocs = [];
+            pages = [];
+            document.getElementById('previewContainer').innerHTML = '';
+            document.getElementById('pdfInput').value = '';
+        }
 
-        function animate() {
-            if (!running) return;
+        function movePage(fromIndex, toIndex) {
+            const [movedPage] = pages.splice(fromIndex, 1);
+            pages.splice(toIndex, 0, movedPage);
+            renderPreview();
+        }
 
-            const result = rk4Step(x, v, 0.04, c);
-            x = result.x;
-            v = result.v;
+        function renderPreview() {
+            const container = document.getElementById('previewContainer');
+            container.innerHTML = '';
 
-            if (Math.abs(x) > 2.5) {
-                running = false;
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
-                }
+            if (pages.length === 0) {
+                const addButton = createAddButton(0);
+                container.appendChild(addButton);
                 return;
             }
 
-            phaseData.push({x, y: v});
-            updatePhaseBounds(x, v);
+            pages.forEach((page, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'page-thumbnail';
+                wrapper.draggable = true;
+                wrapper.innerHTML = `
+                    <div style="position: absolute; top: 5px; left: 5px; font-size: 12px; color: #666;">Page ${index + 1}</div>
+                    <button class="delete-btn" onclick="deletePage(${index})">×</button>
+                `;
 
-            drawPotentialCurve();
-            const canvasX = xToCurve(x);
-            const canvasY = yToCurve(potential(x)) - ballRadius;
-            curveCtx.beginPath();
-            curveCtx.arc(canvasX, canvasY, ballRadius, 0, Math.PI*2);
-            curveCtx.fillStyle = '#C04000';
-            curveCtx.fill();
+                if (page.type === 'pdf') {
+                    wrapper.appendChild(page.canvas);
+                } else {
+                    const blank = document.createElement('div');
+                    blank.className = 'blank-page';
+                    blank.style.width = `${page.thumbnailWidth}px`;
+                    blank.style.height = `${page.thumbnailHeight}px`;
+                    blank.textContent = 'Blank Page';
+                    wrapper.appendChild(blank);
+                }
 
-            drawPhasePlot();
-            animationFrameId = requestAnimationFrame(animate);
-        }
+                const addButton = createAddButton(index + 1);
 
-        // Siclation control functions
-        function startSiclation() {
-            stopSiclation();
-            
-            running = true;
-            x = parseFloat(document.getElementById('x0').value);
-            v = parseFloat(document.getElementById('v0').value);
-            c = parseFloat(document.getElementById('c').value);
-            phaseData = [];
-            phaseBounds = { xMin: x, xMax: x, vMin: v, vMax: v };
-            animate();
-        }
+                wrapper.addEventListener('dragstart', () => currentDraggedItem = index);
+                wrapper.addEventListener('dragover', (e) => e.preventDefault());
+                wrapper.addEventListener('drop', () => movePage(currentDraggedItem, index));
 
-        function stopSiclation() {
-            running = false;
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
-            }
-        }
-
-        // Initial setup
-        window.onload = function() {
-            renderMathInElement(document.body, {
-                delimiters: [
-                    {left: '\\(', right: '\\)', display: false},
-                    {left: '\\[', right: '\\]', display: true}
-                ],
-                throwOnError: false
+                container.appendChild(wrapper);
+                container.appendChild(addButton);
             });
-            drawPotentialCurve();
-            drawPhasePlot();
-            startSiclation();  // Add this line to start automatically
-        };
+
+            container.appendChild(createAddButton(pages.length));
+        }
+
+        function createAddButton(index) {
+            const button = document.createElement('button');
+            button.className = 'add-blank';
+            button.onclick = () => addBlankPage(index);
+            return button;
+        }
+
+        async function addBlankPage(index) {
+            let width = 595;
+            let height = 842;
+
+            if (index > 0 && pages[index - 1]) {
+                const prevPage = pages[index - 1];
+                width = prevPage.originalWidth;
+                height = prevPage.originalHeight;
+            }
+
+            const pdfDoc = await PDFLib.PDFDocument.create();
+            const page = pdfDoc.addPage([width, height]);
+            const bytes = await pdfDoc.save();
+            const arrayBuffer = bytes.buffer;
+
+            const scale = THUMBNAIL_WIDTH / width;
+            const thumbnailWidth = THUMBNAIL_WIDTH;
+            const thumbnailHeight = height * scale;
+
+            pages.splice(index, 0, {
+                type: 'blank',
+                originalWidth: width,
+                originalHeight: height,
+                thumbnailWidth: thumbnailWidth,
+                thumbnailHeight: thumbnailHeight,
+                arrayBuffer
+            });
+
+            renderPreview();
+        }
+
+        function deletePage(index) {
+            pages.splice(index, 1);
+            renderPreview();
+        }
     </script>
 </body>
 </html>
