@@ -108,7 +108,8 @@
     function calculateMedian(grades) {
       const sorted = [...grades].sort((a, b) => a - b);
       const mid = Math.floor(sorted.length / 2);
-      return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+      const median = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+      return median;
     }
 
     // Function to calculate the standard deviation
@@ -137,9 +138,8 @@
       const ctx = document.getElementById('gradeChart').getContext('2d');
       const dataValues = [counts.A, counts.B, counts.C, counts.D, counts.F];
       const maxFrequency = Math.max(...dataValues);
-      const padding = maxFrequency > 0 ? Math.max(1, Math.ceil(maxFrequency * 0.1)) : 1; // 10% padding or at least 1
+      const padding = maxFrequency > 0 ? Math.max(1, Math.ceil(maxFrequency * 0.1)) : 1;
 
-      // Destroy existing chart if it exists
       if (gradeChart) {
         gradeChart.destroy();
       }
@@ -149,19 +149,19 @@
         data: {
           labels: ['A', 'B', 'C', 'D', 'F'],
           datasets: [{
-            label: 'Grade Frequency', // Internal reference only
+            label: 'Grade Frequency',
             data: dataValues,
-            backgroundColor: '#4169E1', // Royal Blue
+            backgroundColor: '#4169E1',
             borderColor: '#4169E1',
             borderWidth: 1
           }]
         },
         options: {
-          maintainAspectRatio: false, // Allow the chart to fill the canvas height
+          maintainAspectRatio: false,
           scales: {
             y: {
               beginAtZero: true,
-              suggestedMax: maxFrequency + padding, // Scale to max frequency plus padding
+              suggestedMax: maxFrequency + padding,
               title: {
                 display: true,
                 text: 'Frequency'
@@ -176,11 +176,11 @@
           },
           plugins: {
             legend: {
-              display: false // Disable legend
+              display: false
             },
             title: {
               display: true,
-              text: 'Grade Frequency' // Chart title
+              text: 'Grade Frequency'
             }
           }
         }
@@ -193,11 +193,9 @@
       const columnTitle = document.getElementById('column-title').value.trim();
       const statsDiv = document.getElementById('stats');
 
-      // Clear previous results
       statsDiv.innerHTML = '';
       document.getElementById('chart-container').style.display = 'none';
 
-      // Get grade ranges
       let ranges;
       try {
         ranges = {
@@ -212,7 +210,6 @@
         return;
       }
 
-      // Validation for file
       if (!fileInput.files.length) {
         statsDiv.innerHTML = '<p class="text-red-500">Please upload a file.</p>';
         return;
@@ -222,105 +219,96 @@
       const reader = new FileReader();
 
       reader.onload = function(e) {
-        // Parse the file
-        const data = e.target.result;
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        try {
+          const data = e.target.result;
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-        // Check if file is empty
-        if (rawData.length === 0) {
-          statsDiv.innerHTML = '<p class="text-red-500">File is empty.</p>';
-          return;
-        }
-
-        const columnCount = rawData[0].length;
-        if (columnCount === 0) {
-          statsDiv.innerHTML = '<p class="text-red-500">No columns found in the file.</p>';
-          return;
-        }
-
-        let allValues;
-        if (columnCount === 1) {
-          // Single column: ignore column title, treat all rows as data
-          allValues = rawData.map(row => row[0]);
-        } else {
-          // Multiple columns: require valid column title
-          if (!columnTitle) {
-            statsDiv.innerHTML = '<p class="text-red-500">Please provide a column title for files with multiple columns.</p>';
+          if (rawData.length === 0) {
+            statsDiv.innerHTML = '<p class="text-red-500">File is empty.</p>';
             return;
           }
 
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
-          if (jsonData.length === 0) {
-            statsDiv.innerHTML = '<p class="text-red-500">No data found after headers.</p>';
+          const columnCount = rawData[0].length;
+          if (columnCount === 0) {
+            statsDiv.innerHTML = '<p class="text-red-500">No columns found in the file.</p>';
             return;
           }
 
-          if (!(columnTitle in jsonData[0])) {
-            statsDiv.innerHTML = '<p class="text-red-500">Specified column title not found in the file.</p>';
+          let allValues;
+          if (columnCount === 1) {
+            allValues = rawData.map(row => row[0]);
+          } else {
+            if (!columnTitle) {
+              statsDiv.innerHTML = '<p class="text-red-500">Please provide a column title for files with multiple columns.</p>';
+              return;
+            }
+
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+            if (jsonData.length === 0) {
+              statsDiv.innerHTML = '<p class="text-red-500">No data found after headers.</p>';
+              return;
+            }
+
+            if (!(columnTitle in jsonData[0])) {
+              statsDiv.innerHTML = '<p class="text-red-500">Specified column title not found in the file.</p>';
+              return;
+            }
+
+            allValues = jsonData.map(row => row[columnTitle]);
+          }
+
+          const missingCount = allValues.filter(val => 
+            val === undefined || 
+            (typeof val === 'string' && (val.trim() === '' || val.trim().toUpperCase() === 'NA'))
+          ).length;
+
+          const grades = allValues
+            .filter(val => !isNaN(parseFloat(val)) && isFinite(val))
+            .map(val => parseFloat(val)); // Preserve decimal places from input
+
+          if (grades.length === 0) {
+            statsDiv.innerHTML = '<p class="text-red-500">No numeric grades found in the column.</p>';
             return;
           }
 
-          allValues = jsonData.map(row => row[columnTitle]);
+          const numberOfStudents = grades.length;
+          const mean = grades.reduce((a, b) => a + b, 0) / numberOfStudents;
+          const max = Math.max(...grades);
+          const min = Math.min(...grades);
+          const median = calculateMedian(grades);
+          const stdDev = calculateStdDev(grades);
+          const counts = countGrades(grades, ranges);
+          const totalGpaPoints = (counts.A * 4.0) + (counts.B * 3.0) + (counts.C * 2.0) + (counts.D * 1.0) + (counts.F * 0.0);
+          const averageGpa = totalGpaPoints / numberOfStudents;
+
+          document.getElementById('chart-container').style.display = 'block';
+          createGradeChart(counts);
+
+          statsDiv.innerHTML = `
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Results</h2>
+            <p><span class="font-medium">Number of Students with Grades:</span> ${numberOfStudents}</p>
+            <p><span class="font-medium">Mean:</span> ${mean.toFixed(2)}</p>
+            <p><span class="font-medium">Maximum:</span> ${max.toFixed(2)}</p>
+            <p><span class="font-medium">Minimum:</span> ${min.toFixed(2)}</p>
+            <p><span class="font-medium">Median:</span> ${median.toFixed(2)}</p>
+            <p><span class="font-medium">Standard Deviation:</span> ${stdDev.toFixed(2)}</p>
+            <p><span class="font-medium">Number of As (${ranges.A.min}-${ranges.A.max}):</span> ${counts.A}</p>
+            <p><span class="font-medium">Number of Bs (${ranges.B.min}-${ranges.B.max}):</span> ${counts.B}</p>
+            <p><span class="font-medium">Number of Cs (${ranges.C.min}-${ranges.C.max}):</span> ${counts.C}</p>
+            <p><span class="font-medium">Number of Ds (${ranges.D.min}-${ranges.D.max}):</span> ${counts.D}</p>
+            <p><span class="font-medium">Number of Fs (${ranges.F.min}-${ranges.F.max}):</span> ${counts.F}</p>
+            <p><span class="font-medium">Number of Missing Grades:</span> ${missingCount}</p>
+            <p><span class="font-medium">Average GPA:</span> ${averageGpa.toFixed(2)}</p>
+          `;
+        } catch (error) {
+          statsDiv.innerHTML = `<p class="text-red-500">Error processing file: ${error.message}</p>`;
+          console.error('Processing error:', error);
         }
-
-        // Count missing grades: undefined, empty string, or "NA" (case-insensitive)
-        const missingCount = allValues.filter(val => 
-          val === undefined || 
-          (typeof val === 'string' && (val.trim() === '' || val.trim().toUpperCase() === 'NA'))
-        ).length;
-
-        // Extract and filter numeric grades
-        const grades = allValues
-          .filter(val => !isNaN(parseFloat(val)) && isFinite(val))
-          .map(Number);
-
-        if (grades.length === 0) {
-          statsDiv.innerHTML = '<p class="text-red-500">No numeric grades found in the column.</p>';
-          return;
-        }
-
-        // Calculate number of students and mean
-        const numberOfStudents = grades.length;
-        const mean = grades.reduce((a, b) => a + b, 0) / numberOfStudents;
-
-        // Calculate other statistics
-        const max = Math.max(...grades);
-        const min = Math.min(...grades);
-        const median = calculateMedian(grades);
-        const stdDev = calculateStdDev(grades);
-        const counts = countGrades(grades, ranges);
-
-        // Calculate total GPA points and average GPA
-        const totalGpaPoints = (counts.A * 4.0) + (counts.B * 3.0) + (counts.C * 2.0) + (counts.D * 1.0) + (counts.F * 0.0);
-        const averageGpa = totalGpaPoints / numberOfStudents;
-
-        // Display chart
-        document.getElementById('chart-container').style.display = 'block';
-        createGradeChart(counts);
-
-        // Display statistics
-        statsDiv.innerHTML = `
-          <h2 class="text-xl font-semibold mb-4 text-gray-800">Results</h2>
-          <p><span class="font-medium">Number of Students with Grades:</span> ${numberOfStudents}</p>
-          <p><span class="font-medium">Mean:</span> ${mean.toFixed(2)}</p>
-          <p><span class="font-medium">Maximum:</span> ${max}</p>
-          <p><span class="font-medium">Minimum:</span> ${min}</p>
-          <p><span class="font-medium">Median:</span> ${median}</p>
-          <p><span class="font-medium">Standard Deviation:</span> ${stdDev.toFixed(2)}</p>
-          <p><span class="font-medium">Number of As (${ranges.A.min}-${ranges.A.max}):</span> ${counts.A}</p>
-          <p><span class="font-medium">Number of Bs (${ranges.B.min}-${ranges.B.max}):</span> ${counts.B}</p>
-          <p><span class="font-medium">Number of Cs (${ranges.C.min}-${ranges.C.max}):</span> ${counts.C}</p>
-          <p><span class="font-medium">Number of Ds (${ranges.D.min}-${ranges.D.max}):</span> ${counts.D}</p>
-          <p><span class="font-medium">Number of Fs (${ranges.F.min}-${ranges.F.max}):</span> ${counts.F}</p>
-          <p><span class="font-medium">Number of Missing Grades:</span> ${missingCount}</p>
-          <p><span class="font-medium">Average GPA:</span> ${averageGpa.toFixed(2)}</p>
-        `;
       };
 
-      // Read the file as an ArrayBuffer
       reader.readAsArrayBuffer(file);
     });
 
@@ -330,18 +318,13 @@
       const statsDiv = document.getElementById('stats');
       const chartContainer = document.getElementById('chart-container');
 
-      // Clear file input
       fileInput.value = '';
-
-      // Clear stats
       statsDiv.innerHTML = '';
-
-      // Clear chart
       if (gradeChart) {
         gradeChart.destroy();
-        gradeChart = null; // Reset the chart reference
+        gradeChart = null;
       }
-      chartContainer.style.display = 'none'; // Hide the chart container
+      chartContainer.style.display = 'none';
     });
   </script>
 </body>
