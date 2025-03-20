@@ -8,9 +8,17 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <!-- SheetJS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    #gradeChart {
+      height: 400px !important; /* Set a fixed height for the canvas */
+      width: 100% !important;  /* Ensure it takes full width of container */
+    }
+  </style>
 </head>
 <body>
-  <div class="container mx-auto p-4 max-w-2xl">
+  <div class="container mx-auto p-4 max-w-4xl">
     <h1 class="text-3xl font-bold mb-6 text-gray-800">Grades Statistics Calculator</h1>
 
     <!-- File Upload Input -->
@@ -51,7 +59,7 @@
         </div>
         <div>
           <label for="range-D" class="block text-sm font-medium text-gray-700">D</label>
-          <input type="text" id="range-D" value="60-69" class="mt-1 block w-24 border-gray-300 rounded-md shadow-sm p-2" placeholder="e.g., 60-69">
+          <input type="text" id="range-D" value="60-69" class="mt-1 block w-24 border-gray-300 rounded-md shadow-sm p-2" placeholder="e.g., 80-89">
         </div>
         <div>
           <label for="range-F" class="block text-sm font-medium text-gray-700">F</label>
@@ -66,8 +74,13 @@
       Process File
     </button>
 
-    <!-- Results Display -->
-    <div id="results" class="mt-6 p-6 bg-white shadow-md rounded-lg"></div>
+    <!-- Results Display with Graph -->
+    <div id="results" class="mt-6 flex flex-col md:flex-row gap-6">
+      <div id="chart-container" class="w-full md:w-1/2 p-6 bg-white shadow-md rounded-lg">
+        <canvas id="gradeChart"></canvas>
+      </div>
+      <div id="stats" class="w-full md:w-1/2 p-6 bg-white shadow-md rounded-lg"></div>
+    </div>
   </div>
 
   <script>
@@ -112,14 +125,71 @@
       return counts;
     }
 
+    // Function to create the bar chart
+    let gradeChart = null;
+    function createGradeChart(counts) {
+      const ctx = document.getElementById('gradeChart').getContext('2d');
+      const dataValues = [counts.A, counts.B, counts.C, counts.D, counts.F];
+      const maxFrequency = Math.max(...dataValues);
+      const padding = maxFrequency > 0 ? Math.max(1, Math.ceil(maxFrequency * 0.1)) : 1; // 10% padding or at least 1
+
+      // Destroy existing chart if it exists
+      if (gradeChart) {
+        gradeChart.destroy();
+      }
+
+      gradeChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['A', 'B', 'C', 'D', 'F'],
+          datasets: [{
+            label: 'Grade Frequency', // This label is only for internal reference, not displayed
+            data: dataValues,
+            backgroundColor: '#4169E1', // Royal Blue
+            borderColor: '#4169E1',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          maintainAspectRatio: false, // Allow the chart to fill the canvas height
+          scales: {
+            y: {
+              beginAtZero: true,
+              suggestedMax: maxFrequency + padding, // Scale to max frequency plus padding
+              title: {
+                display: true,
+                text: 'Frequency'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Grades'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false // Disable the legend to remove the second "Grade Frequency" and blue box
+            },
+            title: {
+              display: true,
+              text: 'Grade Frequency' // Keep this as the chart title
+            }
+          }
+        }
+      });
+    }
+
     // Event listener for the process button
     document.getElementById('process-btn').addEventListener('click', () => {
       const fileInput = document.getElementById('file-upload');
       const columnTitle = document.getElementById('column-title').value.trim();
-      const resultsDiv = document.getElementById('results');
+      const statsDiv = document.getElementById('stats');
 
       // Clear previous results
-      resultsDiv.innerHTML = '';
+      statsDiv.innerHTML = '';
+      document.getElementById('chart-container').style.display = 'none';
 
       // Get grade ranges
       let ranges;
@@ -132,13 +202,13 @@
           F: parseRange(document.getElementById('range-F').value),
         };
       } catch (error) {
-        resultsDiv.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+        statsDiv.innerHTML = `<p class="text-red-500">${error.message}</p>`;
         return;
       }
 
       // Validation for file
       if (!fileInput.files.length) {
-        resultsDiv.innerHTML = '<p class="text-red-500">Please upload a file.</p>';
+        statsDiv.innerHTML = '<p class="text-red-500">Please upload a file.</p>';
         return;
       }
 
@@ -155,13 +225,13 @@
 
         // Check if file is empty
         if (rawData.length === 0) {
-          resultsDiv.innerHTML = '<p class="text-red-500">File is empty.</p>';
+          statsDiv.innerHTML = '<p class="text-red-500">File is empty.</p>';
           return;
         }
 
         const columnCount = rawData[0].length;
         if (columnCount === 0) {
-          resultsDiv.innerHTML = '<p class="text-red-500">No columns found in the file.</p>';
+          statsDiv.innerHTML = '<p class="text-red-500">No columns found in the file.</p>';
           return;
         }
 
@@ -172,18 +242,18 @@
         } else {
           // Multiple columns: require valid column title
           if (!columnTitle) {
-            resultsDiv.innerHTML = '<p class="text-red-500">Please provide a column title for files with multiple columns.</p>';
+            statsDiv.innerHTML = '<p class="text-red-500">Please provide a column title for files with multiple columns.</p>';
             return;
           }
 
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
           if (jsonData.length === 0) {
-            resultsDiv.innerHTML = '<p class="text-red-500">No data found after headers.</p>';
+            statsDiv.innerHTML = '<p class="text-red-500">No data found after headers.</p>';
             return;
           }
 
           if (!(columnTitle in jsonData[0])) {
-            resultsDiv.innerHTML = '<p class="text-red-500">Specified column title not found in the file.</p>';
+            statsDiv.innerHTML = '<p class="text-red-500">Specified column title not found in the file.</p>';
             return;
           }
 
@@ -202,7 +272,7 @@
           .map(Number);
 
         if (grades.length === 0) {
-          resultsDiv.innerHTML = '<p class="text-red-500">No numeric grades found in the column.</p>';
+          statsDiv.innerHTML = '<p class="text-red-500">No numeric grades found in the column.</p>';
           return;
         }
 
@@ -221,8 +291,12 @@
         const totalGpaPoints = (counts.A * 4.0) + (counts.B * 3.0) + (counts.C * 2.0) + (counts.D * 1.0) + (counts.F * 0.0);
         const averageGpa = totalGpaPoints / numberOfStudents;
 
-        // Display results with user-defined ranges and missing grades
-        resultsDiv.innerHTML = `
+        // Display chart
+        document.getElementById('chart-container').style.display = 'block';
+        createGradeChart(counts);
+
+        // Display statistics
+        statsDiv.innerHTML = `
           <h2 class="text-xl font-semibold mb-4 text-gray-800">Results</h2>
           <p><span class="font-medium">Number of Students with Grades:</span> ${numberOfStudents}</p>
           <p><span class="font-medium">Mean:</span> ${mean.toFixed(2)}</p>
