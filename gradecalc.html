@@ -260,17 +260,26 @@
             allValues = jsonData.map(row => row[columnTitle]);
           }
 
-          const missingCount = allValues.filter(val => 
-            val === undefined || 
-            (typeof val === 'string' && (val.trim() === '' || val.trim().toUpperCase() === 'NA'))
-          ).length;
+          // Count missing grades: only empty (undefined, null, or ''), 'NA'/'na', 'E'/'e'
+          const missingCount = allValues.filter(val => {
+            const strVal = val === undefined || val === null ? '' : String(val).trim();
+            return strVal === '' || strVal.toUpperCase() === 'NA' || strVal.toUpperCase() === 'E';
+          }).length;
 
+          // Filter grades: include only valid numerical values (including 0)
           const grades = allValues
-            .filter(val => !isNaN(parseFloat(val)) && isFinite(val))
-            .map(val => parseFloat(val)); // Preserve decimal places from input
+            .map(val => {
+              const strVal = val === undefined || val === null ? '' : String(val).trim();
+              return { original: strVal, parsed: parseFloat(strVal) };
+            })
+            .filter(item => !isNaN(item.parsed) && 
+                           item.original !== '' && 
+                           item.original.toUpperCase() !== 'NA' && 
+                           item.original.toUpperCase() !== 'E')
+            .map(item => item.parsed);
 
           if (grades.length === 0) {
-            statsDiv.innerHTML = '<p class="text-red-500">No numeric grades found in the column.</p>';
+            statsDiv.innerHTML = `<p class="text-red-500">No valid numerical grades found in the column. Missing grades (empty, NA/na, or E/e): ${missingCount}</p>`;
             return;
           }
 
@@ -300,7 +309,7 @@
             <p><span class="font-medium">Number of Cs (${ranges.C.min}-${ranges.C.max}):</span> ${counts.C}</p>
             <p><span class="font-medium">Number of Ds (${ranges.D.min}-${ranges.D.max}):</span> ${counts.D}</p>
             <p><span class="font-medium">Number of Fs (${ranges.F.min}-${ranges.F.max}):</span> ${counts.F}</p>
-            <p><span class="font-medium">Number of Missing Grades:</span> ${missingCount}</p>
+            <p><span class="font-medium">Number of Missing Grades (empty, NA/na, or E/e):</span> ${missingCount}</p>
             <p><span class="font-medium">Average GPA:</span> ${averageGpa.toFixed(2)}</p>
           `;
         } catch (error) {
